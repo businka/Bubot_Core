@@ -1,0 +1,9 @@
+{
+  "/oic/d": {
+    "n": "TestDevice"
+  },
+  "/oic/mnt": {
+    "i": 0,
+    "j": 0
+  }
+}

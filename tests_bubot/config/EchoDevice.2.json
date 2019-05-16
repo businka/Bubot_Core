@@ -1,0 +1,9 @@
+{
+  "/oic/d": {
+    "di": "2"
+  },
+  "/oic/con": {
+    "udpCoapPort": 11112,
+    "logLevel": "debug"
+  }
+}
