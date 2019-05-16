@@ -1,10 +1,10 @@
-import setuptools
-from bubot.devices import Device as Device
+from setuptools import setup, find_packages, find_namespace_packages
+from src.bubot.devices import Device as Device
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-setuptools.setup(
+setup(
     name='bubot_Core',
     version=Device.__version__,
     author="Razgovorov Mikhail",
@@ -13,15 +13,20 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/businka/bubot_Core",
-    packages=setuptools.find_packages(),
+    package_dir={'': 'src'},
+    package_data={
+        '': ['*.md', '*.json'],
+    },
+    packages=find_namespace_packages(where='src'),
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: Apache License 2.0",
+        "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
+		"Framework :: AsyncIO"
     ],
     python_requires='>=3.5.3',
+    zip_safe=False,
     install_requires=[
         'cbor2'
-    ],
-    include_package_data=True,
+    ]
 )
