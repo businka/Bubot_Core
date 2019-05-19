@@ -122,7 +122,7 @@ class CoapServer:
         try:
             _transport, _protocol = await self.loop.create_datagram_endpoint(
                 lambda: protocol_factory(self),
-                local_addr=('', port),
+                local_addr=('::', port),
                 family=socket.AF_INET6,
                 proto=socket.IPPROTO_UDP,
             )
