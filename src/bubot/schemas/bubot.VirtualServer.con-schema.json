@@ -1,0 +1,54 @@
+{
+  "id": "http://razgovorov.ru/bubot/schemas/bubot.VirtualServer.con-schema.json#",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "",
+  "title": "configuration",
+  "definitions": {
+    "local_device": {
+      "type": "object",
+      "properties": {
+        "di": {
+          "type": "string"
+        },
+        "dmno": {
+          "type": "string",
+          "enum": [
+            "ff",
+            "fff"
+          ]
+        }
+      }
+    },
+    "con": {
+      "type": "object",
+      "properties": {
+        "running_devices": {
+          "description": "running local devices.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "allOf": [
+                {
+                  "$ref": "oic.core-schema.json#/definitions/oic.core"
+                },
+                {
+                  "$ref": "#/definitions/local_device"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "oic.core-schema.json#/definitions/oic.core"
+    },
+    {
+      "$ref": "#/definitions/con"
+    }
+  ]
+}
