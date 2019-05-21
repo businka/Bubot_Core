@@ -14,7 +14,7 @@ class CoapServer:
         self._mid = 0
         self._token = 0
         self.log = device.log
-        self.loop = asyncio.get_event_loop()
+        self.loop = device.loop
         self.ipv6 = self.device.get_param('/oic/con', 'udpCoapIPv6', True)
         self.ipv4 = self.device.get_param('/oic/con', 'udpCoapIPv4', False)
         self.multicast_port = 5683
@@ -61,6 +61,7 @@ class CoapServer:
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             # sock.setsockopt(41, socket.IPV6_V6ONLY, 0)
             sock.bind(('::', port))
+            # sock.bind(('::', port))
             for group in address:
                 sock.setsockopt(
                     41,  # socket.IPPROTO_IPV6 = 41 - not found in windows 10, bug python
@@ -76,12 +77,12 @@ class CoapServer:
                 lambda: protocol_factory(self, multicast=True),
                 sock=sock,
             )
-            _address = _transport.get_extra_info('socket').getsockname()
+            # _address = _transport.get_extra_info('socket').getsockname()
             self.endpoint['multicast'].append(
                 dict(
                     transport=_transport,
                     protocol=_protocol,
-                    uri='coap://[{0}]:{1}'.format(_address[0], _address[1])
+                    # uri='coap://[{0}]:{1}'.format(_address[0], _address[1])
                 )
             )
         except Exception as e:
@@ -93,7 +94,6 @@ class CoapServer:
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        # sock.setsockopt(41, socket.IPV6_V6ONLY, 0)
         sock.bind(('', port))
         for group in address:
             sock.setsockopt(
@@ -109,26 +109,31 @@ class CoapServer:
             lambda: protocol_factory(self, multicast=True),
             sock=sock,
         )
-        _address = _transport.get_extra_info('socket').getsockname()
         self.endpoint['multicast'].append(
             dict(
                 transport=_transport,
                 protocol=_protocol,
-                uri='coap://[{0}]:{1}'.format(_address[0], _address[1])
+                # uri='coap://[{0}]:{1}'.format(_address[0], _address[1])
             )
         )
 
     async def run_unicast_ipv6(self, protocol_factory, port=None):
         try:
+            interface_index = 0  # default
+            sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            # sock.setsockopt(41, socket.IPV6_V6ONLY, 0)
+            sock.bind(('::', port))
             _transport, _protocol = await self.loop.create_datagram_endpoint(
-                lambda: protocol_factory(self),
-                local_addr=('::', port),
-                family=socket.AF_INET6,
-                proto=socket.IPPROTO_UDP,
+                lambda: protocol_factory(self, multicast=True),
+                sock=sock,
             )
+
             _address = _transport.get_extra_info('socket').getsockname()
             if self.unicast_port and self.unicast_port != _address[1]:
                 raise Exception('IPv6 unicast port {} not installed'.format(self.unicast_port))
+            _address = socket.getaddrinfo(socket.gethostname(), _address[1], socket.AF_INET6, socket.SOCK_DGRAM)[0][4]
+
             self.unicast_port = _address[1]
             self.endpoint['IPv6'] = dict(
                 transport=_transport,
@@ -151,6 +156,7 @@ class CoapServer:
         _address = _transport.get_extra_info('socket').getsockname()
         if self.unicast_port and self.unicast_port != _address[1]:
             raise Exception('IPv4 unicast port {} not installed'.format(self.unicast_port))
+        _address = socket.getaddrinfo(socket.gethostname(), _address[1], socket.AF_INET, socket.SOCK_DGRAM)[0][4]
         self.unicast_port = _address[1]
         self.endpoint['IPv4'] = dict(
             transport=_transport,
@@ -210,7 +216,8 @@ class CoapServer:
                 transport = self.endpoint['IPv4']['transport']
             raw_data = message.encode()
             self.log.debug('send message {0} {1}'.format(message.mid, remote))
-            transport.sendto(raw_data, remote)
+            res = transport.sendto(raw_data, remote)
+            pass
         except Exception as e:
             self.log.error(e)
             raise e from None

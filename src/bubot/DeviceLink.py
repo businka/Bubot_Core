@@ -242,7 +242,7 @@ class DeviceLink:
                 continue
             index.append(href)
             requests.append(self.links[href].retrieve(sender_device))
-        result = await asyncio.gather(*requests, return_exceptions=True)
+        result = await sender_device.loop.gather(*requests, return_exceptions=True)
         for i in range(len(result)):
             if not isinstance(result[i], Exception):
                 self.data[index[i]] = result[i]

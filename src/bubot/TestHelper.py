@@ -4,7 +4,7 @@ from os import path
 
 
 async def wait_run_device(device):
-    device_task = asyncio.ensure_future(device.main())
+    device_task = device.loop.create_task(device.main())
     while device.get_param('/oic/mnt', 'currentMachineState') != 'idle':
         try:
             device_task.result()

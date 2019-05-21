@@ -50,7 +50,7 @@ class CoapProtocol:
                     handler_name,
                     message.mid
                 ))
-                asyncio.ensure_future(getattr(self, handler_name)(message))
+                self.server.loop.create_task(getattr(self, handler_name)(message))
             except Exception as err:
                 # self.server.devices.log.error('{0} {1}'.format(handler, e))
                 answer = Message.generate_error(err, message)
@@ -87,7 +87,7 @@ class CoapProtocol:
                     self.log.debug('long response {0}'.format(
                         message.token
                     ))
-                    asyncio.ensure_future(answer['response'](message, answer))
+                    self.server.loop.create_task(answer['response'](message, answer))
                 except Exception as err:
                     self.log.error(err)
             # if isinstance(answer['response'], list):

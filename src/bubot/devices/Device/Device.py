@@ -32,6 +32,7 @@ class Device(MainLoopMixin):
 
     def __init__(self, **kwargs):
         MainLoopMixin.__init__(self, **kwargs)
+        self.loop = kwargs.get('loop', asyncio.get_event_loop())
         self.path = kwargs.get('path', './config/')
 
     def run(self):
@@ -52,7 +53,7 @@ class Device(MainLoopMixin):
     @classmethod
     def init_from_file(cls, class_name=None, di=None, **kwargs):
         kwargs['path'] = kwargs.get('path', '.')
-        kwargs['log'] = kwargs['log'] if kwargs.get('log') else Logger(None)
+        kwargs['log'] = kwargs['log'] if kwargs.get('log') else logging.getLogger()
         config = {}
         if not class_name:
             class_name = cls.__name__

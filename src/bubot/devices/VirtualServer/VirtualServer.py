@@ -11,6 +11,7 @@ from sys import path as syspath
 from bubot.ExtException import ExtException
 from bubot.Helper import Helper, ArrayHelper
 
+
 # _logger = multiprocessing.get_logger()
 
 
@@ -26,35 +27,30 @@ class VirtualServer(Device):
         self.queue = None
         Device.__init__(self, **kwargs)
 
-    # def init_logger(self):
-        # multiprocessing.log_to_stderr()
-        # logging.basicConfig(
-        #     level=self.get_param('/oic/con', 'logLevel', logging.DEBUG),
-        #     format='%(levelname)s \033[96m%(name)s\033[0m.\033[95m%(funcName)s\033[0m %(message)s'
-        # )
-        # self.logger = multiprocessing.get_logger()
-
     def run(self):
         self.log.debug('begin')
-        self.loop = asyncio.get_event_loop()
         if multiprocessing.current_process().name == 'MainProcess':
             self.queue = multiprocessing.Queue(-1)
             self.task = self.loop.create_task(self.logger())
+
         self.task = self.loop.create_task(self.main())
+
         if not self.loop.is_running():
             self.loop.run_forever()
         self.log.debug('end')
         pass
 
     async def logger(self):
+        def _get(_queue):
+            return _queue.get()
+
         while True:
             try:
-                record = self.queue.get(False)
+                record = await self.loop.run_in_executor(None, _get, self.queue)
                 if record is None:  # We send this as a sentinel to tell the listener to quit.
                     break
                 logger = logging.getLogger(record.name)
                 logger.handle(record)  # No level or filter logic applied - just do it!
-                await asyncio.sleep(0)
             except queue.Empty:
                 await asyncio.sleep(0.5)
             except Exception as e:
@@ -152,10 +148,12 @@ class VirtualServer(Device):
             device = Device.init_from_file(
                 class_name,
                 link.get('di'),
-                path=self.path
+                path=self.path,
+                loop=self.loop,
+                log=self.log
             )
             link['di'] = device.get_device_id()
-            task = asyncio.ensure_future(device.main())
+            task = self.loop.create_task(device.main())
             device.task = task
             self._running_devices[link['di']] = device
 
@@ -188,7 +186,9 @@ class VirtualServer(Device):
     @staticmethod
     def device_process(class_name, di, queue, kwargs):
         h = logging.handlers.QueueHandler(queue)  # Just the one handler needed
+        kwargs['loop'] = asyncio.new_event_loop()
         root = logging.getLogger()
+        root.handlers = []
         root.addHandler(h)
         device = Device.init_from_file(
             class_name,
