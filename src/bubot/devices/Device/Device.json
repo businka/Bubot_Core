@@ -61,7 +61,7 @@
       "oic.if.baseline"
     ],
     "p": {"bm": 3},
-    "logLevel": "error",
+    "logLevel": "info",
     "udpCoapPort": 0,
     "udpCoapIPv4": false,
     "udpCoapIPv6": true,

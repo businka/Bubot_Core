@@ -64,7 +64,7 @@ class Device(MainLoopMixin):
             try:
                 with open(config_path, encoding='utf-8') as file:
                     config = json.load(file)
-                    kwargs['log'].debug('Device.init_from_file {0}.{1}'.format(class_name, di))
+                    kwargs['log'].info('Device.init_from_file {0}.{1}'.format(class_name, di))
             except FileNotFoundError:
                 kwargs['log'].warning('Device config not found {0}'.format(config_path))
             except Exception as e:

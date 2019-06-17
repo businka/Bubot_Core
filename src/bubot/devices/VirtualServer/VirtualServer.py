@@ -10,6 +10,7 @@ import os
 from sys import path as syspath
 from bubot.ExtException import ExtException
 from bubot.Helper import Helper, ArrayHelper
+import concurrent.futures
 
 
 # _logger = multiprocessing.get_logger()
@@ -44,9 +45,10 @@ class VirtualServer(Device):
         def _get(_queue):
             return _queue.get()
 
+        executor = concurrent.futures.ThreadPoolExecutor()
         while True:
             try:
-                record = await self.loop.run_in_executor(None, _get, self.queue)
+                record = await self.loop.run_in_executor(executor, _get, self.queue)
                 if record is None:  # We send this as a sentinel to tell the listener to quit.
                     break
                 logger = logging.getLogger(record.name)

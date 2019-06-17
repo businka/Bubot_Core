@@ -59,7 +59,7 @@ class TestVirtualServer(unittest.TestCase):
             pass
 
     @async_test
-    async def test_find_local_device(self):
+    async def test_find_drivers(self):
         res = Device.init_from_config().find_drivers()
         this_found = False
         root_found = False

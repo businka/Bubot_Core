@@ -12,7 +12,7 @@ class MainLoopMixin(DeviceCore):
     # _logger = logging.getLogger(__name__)
 
     async def main(self):
-        # await self.info("begin main")
+        self.log.info("begin main")
         self.coap = CoapServer(self)
         await self.coap.run()
 
