@@ -1,0 +1,4 @@
+/dist
+/build
+bubot_Core.egg-info
+__pycache__

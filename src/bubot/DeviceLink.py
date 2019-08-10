@@ -191,7 +191,7 @@ class DeviceLink:
         self.links = {}
         self.data = {}
         self.di = None
-        self.n = None
+        # self.n = None
         self.eps = None
 
     @classmethod
@@ -220,7 +220,7 @@ class DeviceLink:
     def init_from_oic_res(cls, data):
         self = cls()
         self.di = data['di']
-        self.n = data.get('n', '')
+        # self.n = data.get('n', '')
         for link in data['links']:
             data = ResourceLink.init_from_link(link, di=self.di)
             self.links[data.get('href')] = data
@@ -269,15 +269,29 @@ class DeviceLink:
 
     @property
     def name(self):
-        if self.n:
-            return self.n
+        # if self.n:
+        #     return self.n
         try:
-            self.n = self.links['/oic/con'].data['n']
-            return self.n
+            _name = self.links['/oic/con'].data['n']
+            if _name:
+                return _name
+            # return self.n
         except KeyError:
             pass
         try:
-            self.n = self.links['/oic/d'].data['n']
-            return self.n
+            return self.links['/oic/d'].data['n']
+            # return self.n
         except KeyError:
-            pass
+            return ''
+
+    def get(self, param_path, *args):
+        _param_path = param_path.split('.')
+        _data = self.data
+        for elem in _param_path:
+            try:
+                _data = _data[elem]
+            except KeyError:
+                if len(args) > 0:
+                    return args[0]
+                raise KeyError(param_path)
+        return _data
