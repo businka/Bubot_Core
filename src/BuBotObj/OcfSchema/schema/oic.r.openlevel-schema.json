@@ -1,0 +1,65 @@
+{
+  "id": "http://openinterconnect.org/iotdatamodels/schemas/oic.r.switch.binary-schema.json#",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Copyright (c) 2016, 2017 Open Connectivity Foundation, Inc. All rights reserved.",
+  "title": "Binary Switch",
+  "definitions": {
+    "OpenLevel": {
+      "properties": {
+        "rt": {
+          "description": "The Resource Type.",
+          "items": {
+            "maxLength": 64,
+            "type": "string",
+            "enum": [
+              "oic.r.openlevel"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true,
+          "readOnly": true,
+          "type": "array"
+        },
+        "openLevel": {
+          "description": "How open or ajar the entity is.",
+          "type": "integer"
+        },
+        "n": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/n"
+        },
+        "id": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/id"
+        },
+        "range": {
+          "$ref": "https://openconnectivityfoundation.github.io/IoTDataModels/schemas/oic.baseresource.properties-schema.json#/definitions/range_integer"
+        },
+        "step": {
+          "$ref": "https://openconnectivityfoundation.github.io/IoTDataModels/schemas/oic.baseresource.properties-schema.json#/definitions/step_integer"
+        },
+        "if": {
+          "description": "The OCF Interface set supported by this Resource.",
+          "items": {
+            "enum": [
+              "oic.if.a",
+              "oic.if.baseline"
+            ],
+            "type": "string"
+          },
+          "minItems": 2,
+          "uniqueItems": true,
+          "readOnly": true,
+          "type": "array"
+        }
+      },
+      "type": "object",
+      "required": [
+        "openLevel"
+      ]
+    }
+  },
+  "type": "object",
+  "$ref": "#/definitions/OpenLevel",
+  "required": [
+    "OpenLevel"
+  ]
+}
