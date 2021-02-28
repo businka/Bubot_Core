@@ -1,10 +1,10 @@
 from aiohttp import web
-from BuBot.Core.FastStorage.PythonFastStorage import PythonFastStorage as FastStorage
-from BuBot.Core.DataBase.Mongo import Mongo as Storage
-from BuBot.Core.AuthHandler import AuthHandler
-from BuBot.Core.ApiHandler import ApiHandler
-from BuBot.Core.FormHandler import FormHandler
-from BuBot.Core.ReportHandler import ReportHandler
+from Bubot.Core.FastStorage.PythonFastStorage import PythonFastStorage as FastStorage
+from Bubot.Core.DataBase.Mongo import Mongo as Storage
+from Bubot.Core.AuthHandler import AuthHandler
+from Bubot.Core.ApiHandler import ApiHandler
+from Bubot.Core.FormHandler import FormHandler
+from Bubot.Core.ReportHandler import ReportHandler
 
 
 def start():

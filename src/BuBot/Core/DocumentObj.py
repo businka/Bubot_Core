@@ -1,5 +1,5 @@
 from datetime import datetime
-from BuBot.Core.Obj import Obj
+from Bubot.Core.Obj import Obj
 
 
 class DocumentObj(Obj):

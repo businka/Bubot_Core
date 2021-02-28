@@ -1,6 +1,7 @@
 # from aiocoap import Message, NON, Code
-from BuBot.Helpers.Coap.coap import Message, NON, Code
-from BuBot.Core.DeviceLink import ResourceLink
+from Bubot.Helpers.Coap.coap import Message, NON, Code
+from Bubot.Core.DeviceLink import ResourceLink
+from Bubot.Helpers.ExtException import ExtException, dumps_error
 import urllib.parse
 import cbor2
 
@@ -166,7 +167,7 @@ class OcfResponse(OcfMessage):
         # | 5.01 | Not Implemented              | [RFC7252] |
         # | 5.02 | Bad Gateway                  | [RFC7252] |
         # | 5.03 | Service Unavailable          | [RFC7252] |
-        # | 5.04 | Gateway Timeout              | [RFC7252] |
+        # | 5.04 | Gateway ExtTimeoutError              | [RFC7252] |
         # | 5.05 | Proxying Not Supported       | [RFC7252] |
         # +------+------------------------------+-----------+
 
@@ -176,6 +177,10 @@ class OcfResponse(OcfMessage):
 
     @classmethod
     def generate_error(cls, err, req, **kwargs):
+        if isinstance(err, ExtException):
+            _err = err.dumps()
+        else:
+            _err = dumps_error(err)
         self = cls(
             to=req.to,
             fr=req.fr,
@@ -183,7 +188,7 @@ class OcfResponse(OcfMessage):
             token=req.token,
             mid=req.mid,
             rs=Code.UNPROCESSABLE_ENTITY,
-            cn=str(err)
+            cn=_err
         )
         return self
 

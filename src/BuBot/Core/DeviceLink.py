@@ -1,8 +1,8 @@
 import urllib.parse
 import asyncio
-from BuBot.Helpers.Coap.coap import Message
-from BuBot.Helpers.Helper import ArrayHelper
-from BuBot.Helpers.ExtException import ExtException
+from Bubot.Helpers.Coap.coap import Message
+from Bubot.Helpers.Helper import ArrayHelper
+from Bubot.Helpers.ExtException import ExtException
 
 
 # _logger = logging.getLogger(__name__)
@@ -224,6 +224,7 @@ class DeviceLink:
         for link in data['links']:
             data = ResourceLink.init_from_link(link, di=self.di)
             self.links[data.get('href')] = data
+            self.eps = data.data['eps']
         return self
 
     def update_from_oic_res(self, data):
@@ -261,10 +262,11 @@ class DeviceLink:
     @staticmethod
     def get_device_eps(device):
         eps = []
-        for elem in device.coap.endpoint:
-            if elem == 'multicast' or not device.coap.endpoint[elem]:
-                continue
-            eps.append(dict(ep=device.coap.endpoint[elem]['uri']))
+        if device.coap and device.coap.endpoint:
+            for elem in device.coap.endpoint:
+                if elem == 'multicast' or not device.coap.endpoint[elem]:
+                    continue
+                eps.append(dict(ep=device.coap.endpoint[elem]['uri']))
         return eps
 
     @property
@@ -295,3 +297,22 @@ class DeviceLink:
                     return args[0]
                 raise KeyError(param_path)
         return _data
+
+    def to_object_data(self):
+        res = []
+        for href in self.links:
+            data = self.links[href].data
+            if 'rt' not in data or 'if' not in data:
+                raise ExtException('bad resource', detail=f'{href} - rt or if not defined')
+            res.append({
+                'href': href,
+                'rt': self.links[href].data['rt'],
+                'if': self.links[href].data['if'],
+                'n': self.links[href].name
+            })
+        return {
+            '_id': self.di,
+            'n': self.name,
+            'ep': self.eps[0]['ep'] if self.eps else None,
+            'res': res
+        }

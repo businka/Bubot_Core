@@ -1,17 +1,9 @@
 {
-  "id": "http://razgovorov.ru/bubot/schemas/bubot.con-schema.json#",
+  "id": "http://razgovorov.ru/bubot/schemas/bubot.buffer-schema.json#",
   "$schema": "http://json-schema.org/draft-04/schema#",
   "description": "",
   "title": "configuration",
   "definitions": {
-    "bubot.console": {
-      "type": "object",
-      "properties": {
-        "value": {
-          "$ref": "#/definitions/bubot.buffer",
-        }
-      }
-    },
     "bubot.buffer": {
       "type": "array",
       "description": "the Endpoint information of the target Resource",
@@ -31,6 +23,14 @@
             "type": "string",
             "description": "title of buffer data"
           }
+        }
+      }
+    },
+    "bubot.console": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "$ref": "#/definitions/bubot.buffer"
         }
       }
     }

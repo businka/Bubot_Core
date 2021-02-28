@@ -1,10 +1,10 @@
 from bson import ObjectId, DBRef
-from BuBot.Helpers.Helper import Helper
-from BuBot.Core.BuBotHelper import BuBotHelper
-from BuBot.Helpers.ExtException import ExtException
-from BuBot.Helpers.Action import async_action
-from BuBot.Core.ObjForm import ObjForm
-from BuBot.Core.ObjModel import ObjModel
+from Bubot.Helpers.Helper import Helper
+from Bubot.Core.BubotHelper import BubotHelper
+from Bubot.Helpers.ExtException import ExtException, KeyNotFound, HandlerNotFoundError
+from Bubot.Helpers.Action import async_action
+from Bubot.Core.ObjForm import ObjForm
+from Bubot.Core.ObjModel import ObjModel
 
 
 class Obj:
@@ -38,11 +38,11 @@ class Obj:
     async def init_by_ref(cls, store, obj_link, **kwargs):
         try:
             _ref = obj_link['_ref']
-        except KeyError:
-            raise ExtException(9010)
+        except KeyError as err:
+            raise KeyNotFound(detail=err)
         obj_name = _ref.collection
         _id = _ref.id
-        obj_class = BuBotHelper.get_obj_class(obj_name)
+        obj_class = BubotHelper.get_obj_class(obj_name)
         return obj_class(store, **kwargs)
 
     @async_action
@@ -54,11 +54,11 @@ class Obj:
         action = kwargs['_action']
         self.add_projection(kwargs)
         res = action.add_stat(
-            await self.storage.find_one(self.db, self.name, dict(_id=ObjectId(_id)), **kwargs))
+            await self.storage.find_one(self.db, self.name, dict(_id=_id), **kwargs))
         if res:
             self.init_by_data(res)
             return action.set_end(res)
-        raise ExtException(9010)
+        raise KeyNotFound()
 
     def get_link(self, properties=None):
         '''
@@ -114,7 +114,7 @@ class Obj:
         return res
 
     async def delete_one(self, _id=None, _filter=None):
-        _id = ObjectId(_id) if _id else self.obj_id
+        # _id = ObjectId(_id) if _id else self.obj_id
         _filter = _filter if _filter else dict(_id=_id)
         await self.storage.delete_one(self.db, self.name, _filter)
         pass
@@ -159,3 +159,25 @@ class Obj:
     #     if cls._obj_table is None:
     #         cls._obj_table = f'{cls._obj_table_prefix}{cls.get_obj_name()}'
     #     return cls._obj_table
+
+    async def find_by_keys(self, keys):
+        for key in keys:
+            try:
+                return await self.find_by_key(key['name'], key['value'])
+            except KeyError:
+                pass
+        raise KeyError
+
+    async def find_by_key(self, key_name, key_value):
+        res = await self.storage.find_one(self.db, self.name, dict(
+            keys=dict(name=key_name, value=key_value)
+        ))
+        if res:
+            self.init_by_data(res)
+            return res
+        raise KeyError
+        pass
+
+    @property
+    def title(self, lang=None):
+        return self.data['title']

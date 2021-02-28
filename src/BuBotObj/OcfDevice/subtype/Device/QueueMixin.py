@@ -1,5 +1,5 @@
 import asyncio
-from BuBot.Helpers.ExtException import ExtException
+from Bubot.Helpers.ExtException import ExtException
 
 
 # _logger = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ class QueueMixin:
             except ExtException as e:
                 result.set_exception(e)
             except Exception as e:
-                result.set_exception(ExtException(e, action='queue_worker'))
+                result.set_exception(ExtException(parent=e, action='queue_worker'))
             finally:
                 queue.task_done()
 
@@ -29,6 +29,6 @@ class QueueMixin:
             queue.put_nowait((task, result))
             return await result
         except ExtException as e:
-            raise ExtException(e) from None
+            raise ExtException(parent=e) from None
         except Exception as e:
-            raise ExtException(e, action='QueueMixin.execute_in_queue')
+            raise ExtException(parent=e, action='QueueMixin.execute_in_queue')

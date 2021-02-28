@@ -1,4 +1,4 @@
-from BuBotObj.OcfDevice.subtype.Device.Device import Device
+from BubotObj.OcfDevice.subtype.Device.Device import Device
 from .__init__ import __version__ as device_version
 import asyncio
 
@@ -17,13 +17,10 @@ class EchoDevice(Device):
         self.log.info('i: {}'.format(i))
         await asyncio.sleep(1)
 
-    def get_install_actions(self):
+    @classmethod
+    def get_install_actions(cls):
         result = [
-            dict(
-                id='search_devices',
-                icon='search',
-                title='search OcfDriver'
-            )
+            cls.get_install_search_action()
         ]
         result.extend(super().get_install_actions())
         return result
@@ -36,13 +33,17 @@ class EchoDevice(Device):
     async def find_devices(self, **kwargs):
         notify = kwargs.get('notify')
         if notify:
-            await notify({'message': 'Ищем...'})
+            await notify({'message': f'Ищем {self.__class__.__name__}...'})
         result = []
         for i in range(2):
-            await asyncio.sleep(2)
+            await asyncio.sleep(1)
             if notify:
-                await notify({'message': f'Найдено {i + 1}'})
-            # config = Helper.update_dict({}, self.data)
-            # config = Helper.update_dict(config, {'/oic/d': {'di': None}})
-            # result.append(config)
+                await notify({'message': f'Найдено {self.__class__.__name__}: {i + 1}'})
+            tmp_device = EchoDevice.init_from_config({})
+            result.append(dict(
+                id=tmp_device.get_device_id(),
+                name=tmp_device.get_device_name(),
+                links=tmp_device.get_discover_res(),
+                _actions=Device.get_install_actions()
+            ))
         return result

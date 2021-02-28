@@ -1,4 +1,4 @@
-from BuBotObj.OcfDevice.subtype.Device.Device import Device
+from BubotObj.OcfDevice.subtype.Device.Device import Device
 from datetime import datetime
 from .__init__ import __version__ as device_version
 import asyncio
@@ -22,7 +22,7 @@ class Console(Device):
         result = [
             dict(
                 id='search_devices',
-                icon='search',
+                icon='mdi-radar',
                 title='search OcfDriver'
             )
         ]

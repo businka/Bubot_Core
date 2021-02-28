@@ -1,13 +1,13 @@
 import multiprocessing
-from BuBot.Core.DeviceLink import ResourceLink
+from Bubot.Core.DeviceLink import ResourceLink
 import queue
-from BuBotObj.OcfDevice.subtype.Device.Device import Device
-from BuBotObj.OcfDevice.subtype.VirtualServer import __version__ as device_version
+from BubotObj.OcfDevice.subtype.Device.Device import Device
+from BubotObj.OcfDevice.subtype.VirtualServer import __version__ as device_version
 import logging
 import logging.handlers
 import asyncio
-from BuBot.Helpers.ExtException import ExtException
-from BuBot.Helpers.Helper import ArrayHelper
+from Bubot.Helpers.ExtException import KeyNotFound
+from Bubot.Helpers.Helper import ArrayHelper
 import concurrent.futures
 
 
@@ -61,9 +61,13 @@ class VirtualServer(Device):
 
     async def on_pending(self):
         links = self.get_param('/oic/con', 'running_devices')
-        for link in links:
-            await self.action_run_device(link)
+        if links:
+            for link in links:
+                device = await self.action_run_device(link)
+                if device:
+                    link['n'] = device.get_device_name()
         await super().on_pending()
+        self.save_config()
 
     async def on_cancelled(self):
         for di in self._running_devices.keys():
@@ -90,24 +94,34 @@ class VirtualServer(Device):
         #     self._running_devices[link['di']][1].cancel()
         # await super().on_stopped()
 
-    async def post_devices(self, message):
+    async def on_update_oic_con(self, message):
+        # if 'running_devices' in result:
+        #     new_links =
+
+    # async def post_devices(self, message):
 
         links = self.get_param(*self.run_dev)
-        new_links = message.cn.get('running_devices', [])
+        new_links = message.cn.pop('running_devices', [])
 
         # index_current_link = Helper.index_list(current_link, 'di')
         index_list = ArrayHelper.index_list(new_links, 'di')
+        changed_links = False
         for link in reversed(links):
             if link['di'] not in index_list:
+                changed_links = True
                 await self.action_del_device(link['di'])
 
         index_list = ArrayHelper.index_list(links, 'di')
         for link in reversed(new_links):
             if 'di' not in link or link['di'] not in index_list:
+                changed_links = True
                 await self.action_add_device(link)
         # изменять существующие записи нельзя
-        self.set_param('/oic/con', 'running_devices', links)
-        pass
+        self.set_param(*self.run_dev, links)
+        result = self.update_param(message.to.href, None, message.cn)
+        if changed_links:
+            result['running_devices'] = self.get_param(*self.run_dev)
+        return result
 
     async def action_add_device(self, link):
         await self.action_run_device(link)
@@ -122,6 +136,7 @@ class VirtualServer(Device):
         for i, link in enumerate(links):
             if link.get('di') == di:
                 await self.action_stop_device(di)
+
                 del links[i]
                 self.set_param(*self.run_dev, links)
                 self.save_config()
@@ -133,7 +148,7 @@ class VirtualServer(Device):
         try:
             class_name = link['dmno']
         except KeyError:
-            raise ExtException(7001, detail='dmno', action='action_run_device') from None
+            raise KeyNotFound(detail='dmno', action='action_run_device') from None
         if di and di in self._running_devices:
             raise Exception('device is already running')
         if class_name == 'VirtualServer':
@@ -144,6 +159,7 @@ class VirtualServer(Device):
             )
             process.start()
             self._running_devices[link['di']] = process
+            return None
 
         else:
             device = Device.init_from_file(
@@ -157,10 +173,14 @@ class VirtualServer(Device):
             task = self.loop.create_task(device.main())
             device.task = task
             self._running_devices[link['di']] = device
+            return device
 
     async def action_stop_device(self, di):
-        self._running_devices[di][1].cancel()
-        await self._running_devices[di][1]
+        try:
+            self._running_devices[di].task.cancel()
+            await self._running_devices[di].task
+        except asyncio.CancelledError:
+            pass
 
     @staticmethod
     def device_process(class_name, di, queue, kwargs):

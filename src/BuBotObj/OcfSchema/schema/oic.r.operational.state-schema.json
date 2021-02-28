@@ -11,17 +11,20 @@
           "type": "array",
           "readOnly": true,
           "description": "array of the possible operational states.",
+          "hidden": true,
           "items": {
             "type": "string"
           }
         },
         "currentMachineState":  {
           "type": "string",
+          "readOnly": true,
           "description": "Current state of operation of the device."
         },
         "jobStates":            {
           "type": "array",
           "readOnly": true,
+          "hidden": true,
           "description": "array of the possible job states.",
           "items": {
             "type": "string"
@@ -29,6 +32,7 @@
         },
         "currentJobState":      {
           "type": "string",
+          "readOnly": true,
           "description": "Currently active jobState"
         },
         "runningTime":          {

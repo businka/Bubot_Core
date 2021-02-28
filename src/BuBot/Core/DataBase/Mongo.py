@@ -1,6 +1,6 @@
 from motor import motor_asyncio
 from urllib.parse import quote_plus
-from BuBot.Helpers.Action import async_action
+from Bubot.Helpers.Action import async_action
 
 
 class Mongo:
@@ -78,7 +78,7 @@ class Mongo:
             filter=kwargs.get('filter', None),
             projection=kwargs.get('projection', None),
             skip=kwargs.get('skip', 0),
-            limit=kwargs.get('limit', 0)
+            limit=kwargs.get('limit', 1000)
         )
         sort = kwargs.get('sort')
         if sort:
@@ -86,6 +86,31 @@ class Mongo:
         result = await cursor.to_list(length=1000)
         await cursor.close()
         return result
+
+    @async_action
+    async def pipeline(self, db, table, pipeline, **kwargs):
+        projection = kwargs.get('projection')
+        filter = kwargs.get('filter')
+        skip = kwargs.get('skip', 0)
+        sort = kwargs.get('sort')
+        limit = kwargs.get('limit', 1000)
+        _pipeline = []
+        _pipeline += pipeline
+        if filter:
+            _pipeline.append({'$match': filter})
+        if projection:
+            _pipeline.append({'$project': projection})
+        if sort:
+            _pipeline.append({'$sort': sort})
+        if skip:
+            _pipeline.append({'$skip': skip})
+        if limit:
+            _pipeline.append({'$limit': limit})
+
+        cursor = self.client[db][table].aggregate(_pipeline)
+        result = await cursor.to_list(length=1000)
+        return result
+
 
     async def find_one_and_update(self, db, table, filter, data):
         return await self.client[db][table].find_one_and_update(filter, data)

@@ -1,5 +1,5 @@
 from aiohttp import web
-from BuBot.Helpers.Helper import Helper
+from Bubot.Helpers.Helper import Helper
 
 
 class ReportHandler(web.View):

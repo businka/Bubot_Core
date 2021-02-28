@@ -4,10 +4,10 @@ TODO Проверка смены IP адреса и автоматическая
 """
 
 from .MainLoopMixin import MainLoopMixin
-from BuBot.Helpers.ExtException import ExtException
+from Bubot.Helpers.ExtException import ExtException, ExtTimeoutError
 # from .QueueMixin import QueueMixin
-from BuBot.Core.OcfMessage import OcfRequest
-from BuBot.Helpers.Helper import Helper
+from Bubot.Core.OcfMessage import OcfRequest
+from Bubot.Helpers.Helper import Helper
 from .__init__ import __version__ as device_version
 from os import path
 import os
@@ -31,7 +31,6 @@ class Device(MainLoopMixin):
     def __init__(self, **kwargs):
         MainLoopMixin.__init__(self, **kwargs)
         self.loop = kwargs.get('loop', asyncio.get_event_loop())
-        self.path = os.path.abspath(kwargs.get('path', './'))
 
     def run(self):
         self.loop = asyncio.get_event_loop()
@@ -50,7 +49,7 @@ class Device(MainLoopMixin):
 
     @classmethod
     def init_from_file(cls, **kwargs):
-        kwargs['path'] = kwargs.get('path', './')
+        kwargs['path'] = os.path.abspath(kwargs.get('path', './'))
         kwargs['log'] = kwargs['log'] if kwargs.get('log') else logging.getLogger()
         class_name = kwargs.get('class_name', cls.__name__)
         di = kwargs.get('di')
@@ -58,7 +57,7 @@ class Device(MainLoopMixin):
         if di is None:
             di = cls.find_first_config('{}'.format(kwargs['path']), class_name)
         if di:
-            config_path = path.normpath('{0}{1}.{2}.json'.format(kwargs['path'], class_name, di))
+            config_path = path.normpath('{0}/{1}.{2}.json'.format(kwargs['path'], class_name, di))
             try:
                 with open(config_path, encoding='utf-8') as file:
                     config = json.load(file)
@@ -107,7 +106,7 @@ class Device(MainLoopMixin):
             self.data = self.get_default_config(self.__class__, Device, cache)
             if config:
                 Helper.update_dict(self.data, config)
-            if self.get_device_id() is None:
+            if not self.get_device_id():
                 self.set_device_id(kwargs.get('di'))
 
             # self.log = Logger(
@@ -146,9 +145,7 @@ class Device(MainLoopMixin):
             pass
 
         try:
-            with open(
-                    f'{self.path}{self.__class__.__name__}.{self.get_device_id()}.json',
-                    'w', encoding='utf-8') as file:
+            with open(self.get_config_path(), 'w', encoding='utf-8') as file:
                 json.dump(data[1], file, ensure_ascii=False, indent=2)
         except FileNotFoundError:
             return {}
@@ -172,15 +169,14 @@ class Device(MainLoopMixin):
             coap_msg, remote = msg.encode_to_coap()
             result = await self.coap.send_request(coap_msg, remote)
             return result
-        except TimeoutError as e:
-            raise ExtException(9001, action='request',
-                               dump=dict(op=operation, to=to, data=data, kwargs=kwargs)) from None
-        except ExtException as e:
-            raise ExtException(e,
+        except TimeoutError:
+            raise ExtTimeoutError(action='request', dump=dict(op=operation, to=to, data=data, kwargs=kwargs)) from None
+        except ExtException as err:
+            raise ExtException(parent=err,
                                action='{}.request()'.format(self.__class__.__name__),
                                dump=dict(op=operation, to=to, data=data, kwargs=kwargs)) from None
-        except Exception as e:
-            raise ExtException(e,
+        except Exception as err:
+            raise ExtException(parent=err,
                                action='{}.request()'.format(self.__class__.__name__),
                                dump=dict(op=operation, to=to, data=data, kwargs=kwargs)) from None
 
@@ -200,14 +196,14 @@ class Device(MainLoopMixin):
             if callback is None:
                 del self.coap.answer[token]
         except TimeoutError as e:
-            raise ExtException(9001, action='request',
-                               dump=dict(op='observe', to=to)) from None
+            raise ExtTimeoutError(action='request',
+                                  dump=dict(op='observe', to=to)) from None
         except ExtException as e:
-            raise ExtException(e,
+            raise ExtException(parent=e,
                                action='{}.request()'.format(self.__class__.__name__),
                                dump=dict(op='observe', to=to)) from None
         except Exception as e:
-            raise ExtException(e,
+            raise ExtException(parent=e,
                                action='{}.request()'.format(self.__class__.__name__),
                                dump=dict(op='observe', to=to)) from None
 
@@ -261,4 +257,3 @@ class Device(MainLoopMixin):
                         if ref == link.href:
                             return links[di].links[ref]
         return None
-

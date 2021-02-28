@@ -1,5 +1,5 @@
-from BuBotObj.OcfDevice.subtype.Device.Device import Device
-from BuBot.Helpers.ExtException import ExtException
+from BubotObj.OcfDevice.subtype.Device.Device import Device
+from Bubot.Helpers.ExtException import ExtException
 from sys import path as syspath
 import os
 
@@ -8,7 +8,7 @@ def find_drivers(**kwargs):
     result = {}
     log = kwargs.get('log')
     for path1 in syspath:
-        device_dir = os.path.normpath('{}/BuBotObj/OcfDevice/subtype'.format(path1))
+        device_dir = os.path.normpath('{}/BubotObj/OcfDevice/subtype'.format(path1))
         if os.path.isdir(device_dir):
             device_list = os.listdir(device_dir)
             for device_name in device_list:
@@ -49,7 +49,7 @@ def find_drivers(**kwargs):
 def find_schemas(**kwargs):
     result = []
     for path1 in syspath:
-        schemas_dir = os.path.normpath('{}/BuBotObj/OcfSchema/schema'.format(path1))
+        schemas_dir = os.path.normpath('{}/BubotObj/OcfSchema/schema'.format(path1))
         if os.path.isdir(schemas_dir) and schemas_dir not in result:
             result.append(schemas_dir)
 

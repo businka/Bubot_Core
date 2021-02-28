@@ -1,12 +1,13 @@
-from BuBot.Helpers.Helper import Helper
-from BuBot.Helpers.ExtException import ExtException
+from Bubot.Helpers.Helper import Helper
+from Bubot.Helpers.ExtException import ExtException, KeyNotFound, ExtTimeoutError
 import asyncio
-from BuBot.Core.OcfMessage import OcfResponse, OcfRequest
-from BuBot.Core.BuBotHelper import BuBotHelper
+from Bubot.Core.OcfMessage import OcfResponse, OcfRequest
+from Bubot.Core.BubotHelper import BubotHelper
 from uuid import uuid4
 import logging
 import random
-from BuBot.Core.DeviceLink import DeviceLink, ResourceLink
+from Bubot.Core.DeviceLink import DeviceLink, ResourceLink
+import os.path
 
 
 # self.logger = logging.getLogger('DeviceCore')
@@ -23,10 +24,17 @@ class DeviceCore:
         self._link = None
         self.loop = None
         self.task = None
+        self.path = os.path.abspath(kwargs.get('path', './'))
 
     def get_device_id(self):
         return self.data['/oic/d'].get('di')
         # return self.data['/oic/d'].get('piid')
+
+    def get_device_name(self):
+        try:
+            return self.data['/oic/d'].get('n')
+        except Exception:
+            return self.__class__.__name__
 
     def set_device_id(self, device_id=None):
         if device_id is None:
@@ -38,10 +46,9 @@ class DeviceCore:
         try:
             _res = self.data[uri]
         except KeyError:
-            raise ExtException(
-                7003,
+            raise KeyNotFound(
                 action='OcfDevice.get_param',
-                detail='uri:{0}{1}'.format(self.__class__.__name__, uri)
+                detail=f'{uri} ({self.__class__.__name__})'
             ) from None
         if not args or args[0] is None:
             return _res
@@ -51,10 +58,9 @@ class DeviceCore:
             try:
                 return args[1]
             except IndexError:
-                raise ExtException(
-                    7003,
+                raise KeyNotFound(
                     action='OcfDevice.get_param',
-                    detail='uri:{0}{1} {2}'.format(self.__class__.__name__, uri, args[0])
+                    detail=f'{args[0]} ({self.__class__.__name__}{uri})'
                 ) from None
 
     def set_param(self, resource, name, new_value, **kwargs):
@@ -68,7 +74,7 @@ class DeviceCore:
                 if kwargs.get('save_config', False):
                     self.save_config()
         except Exception as e:
-            raise ExtException(7000, detail=str(e), dump=dict(
+            raise ExtException(detail=str(e), dump=dict(
                 resource=resource,
                 name=name,
                 value=new_value
@@ -86,9 +92,22 @@ class DeviceCore:
             elif isinstance(old_value, list):
                 self.log.warning("NOT SUPPORTED OPERATIONS!!!")
                 self.data[resource][name] = changes
+
             if kwargs.get('save_config', False):
                 self.save_config()
         return changes
+
+    def on_update_oic_con(self, message):
+        changes = self.update_param(message.to.href, None, message.cn)
+        if 'log_level' in changes:
+            self.log.setLevel(getattr(logging, self.get_param('/oic/con', 'logLevel', 'error').upper()))
+        return changes
+
+    def get_config_path(self):
+        return os.path.join(self.path, f'{self.__class__.__name__}.{self.get_device_id()}.json')
+
+    def delete_config(self):
+        os.remove(self.get_config_path())
 
     def save_config(self):
         raise NotImplemented()
@@ -108,7 +127,8 @@ class DeviceCore:
     def get_link(self, href=None):
         if self._link is None:
             eps = []
-
+            if not self.coap:
+                raise KeyNotFound(detail='COAP socket not found')
             for elem in self.coap.endpoint:
                 if elem == 'multicast' or not self.coap.endpoint[elem]:
                     continue
@@ -214,13 +234,52 @@ class DeviceCore:
         except asyncio.TimeoutError:
             self.task.cancel()
 
-    def get_install_actions(self):
+    def get_discover_res(self):
+        result = {}
+        for href in self.data:
+            try:
+                if self.data[href]['p']['bm'] == 0:
+                    continue
+                result[href] = self.data[href]
+            except:
+                result[href] = self.data[href]
+        return result
+
+    @classmethod
+    def get_install_search_action(cls):
+        return dict(
+            name='CallDataSourceForSelectedItems',
+            icon='mdi-radar',
+            title='search OcfDriver',
+            data={
+                "method": "find_devices",
+                "operation": {
+                    "title": "Find devices",
+                    "cancelable": True,
+                    "show": True,
+                    "formUid": "OcfDriver/FoundDevices"
+                },
+                "dataSource": {
+                    "type": "Vuex",
+                    "storeName": "LongOperations",
+                    "dispatchName": "run",
+                    "keyProperty": "id",
+                    "objName": "OcfDriver"
+                }
+            }
+        )
+
+    @classmethod
+    def get_install_actions(cls):
         return [
-            dict(
-                id='add_device',
-                icon='add_circle',
-                title='add device'
-            )
+            # dict(
+            #     name='CallDataSourceForSelectedItems',
+            #     icon='mdi-plus-circle-outline',
+            #     title='add devices',
+            #     data=dict(
+            #         method='add_devices'
+            #     )
+            # )
         ]
 
     def add_listener(self, href, link, token):
@@ -275,14 +334,14 @@ class DeviceCore:
                 ))
                 await self.coap.send_answer(msg)
             except TimeoutError as e:
-                raise ExtException(9001, action='notify',
-                                   dump=dict(op='observe', to=to)) from None
+                raise Exception(9001, action='notify',
+                                dump=dict(op='observe', to=to)) from None
             except ExtException as e:
-                raise ExtException(e,
+                raise ExtException(parent=e,
                                    action='{}.notify()'.format(self.__class__.__name__),
                                    dump=dict(op='observe', to=to)) from None
             except Exception as e:
-                raise ExtException(e,
+                raise ExtException(parent=e,
                                    action='{}.notify()'.format(self.__class__.__name__),
                                    dump=dict(op='observe', to=to)) from None
 
@@ -291,4 +350,4 @@ class DeviceCore:
 
     @classmethod
     def get_device_class(cls, class_name):
-        return BuBotHelper.get_subtype_class('OcfDevice', class_name, folder=True)
+        return BubotHelper.get_subtype_class('OcfDevice', class_name, folder=True)

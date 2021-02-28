@@ -33,3 +33,4 @@ class ObjForm:
     def add_projection(cls, obj_handler, form_name, obj):
         self = cls.get_form(obj_handler.__class__, form_name)
         obj['projection'] = self.get_projection()
+

@@ -1,6 +1,6 @@
 {
   "/oic/d": {
-    "n": "EchoDevice"
+    "n": "Echo device"
   },
   "/oic/mnt": {
     "i": 0,

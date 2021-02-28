@@ -27,6 +27,7 @@
         "logLevel": {
           "type": "string",
           "enum": [
+            "",
             "info",
             "debug",
             "warning",

@@ -29,7 +29,8 @@
               "default": "hosts"
             }
           ],
-        "description": "The relation of the target URI referenced by the link to the context URI"
+        "description": "The relation of the target URI referenced by the link to the context URI",
+        "description_ru": "Связь целевого URI, на который ссылается ссылка, с контекстным URI"
         },
         "rt": {
           "type": "array",
@@ -73,7 +74,8 @@
         "title": {
           "type": "string",
           "maxLength": 64,
-          "description": "A title for the link relation. Can be used by the UI to provide a context."
+          "description": "A title for the link relation. Can be used by the UI to provide a context.",
+          "description_ru": "Название отношения ссылки. Может использоваться пользовательским интерфейсом для предоставления контекста."
         },
         "anchor": {
           "type": "string",
