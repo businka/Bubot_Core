@@ -24,7 +24,6 @@ setuptools.setup(
         "Operating System :: OS Independent",
         "Development Status :: 3 - Alpha",
         "Framework :: AsyncIO",
-        "License :: OSI Approved :: MIT License"
     ],
     python_requires='>=3.7',
     zip_safe=False,
