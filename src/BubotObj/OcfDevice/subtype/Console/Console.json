@@ -1,0 +1,12 @@
+{
+  "/oic/d": {
+    "n": "Console"
+  },
+  "/oic/mnt": {
+    "DateTime": ""
+  },
+  "/console": {
+    "rt": ["bubot.buffer"],
+    "DateTime": ""
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "/oic/d": {
+    "n": "VirtualServer"
+  },
+  "/oic/con": {
+    "rt": ["bubot.VirtualServer.con"],
+    "running_devices": []
+  },
+  "/oic/mnt": {
+    "drivers": {}
+  }
+}

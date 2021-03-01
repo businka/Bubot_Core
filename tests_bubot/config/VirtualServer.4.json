@@ -1,0 +1,15 @@
+{
+  "/oic/d": {
+    "di": "4"
+  },
+  "/oic/con": {
+    "udpCoapPort": 11114,
+    "logLevel": "debug",
+    "running_devices": [
+      {
+        "di": "2",
+        "dmno": "EchoDevice"
+      }
+    ]
+  }
+}
