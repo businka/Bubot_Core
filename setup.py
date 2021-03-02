@@ -28,7 +28,7 @@ setuptools.setup(
     python_requires='>=3.7',
     zip_safe=False,
     install_requires=[
-        'cbor2',
+        'cbor2>5',
         'Bubot_Helpers'
     ]
 )
