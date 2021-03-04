@@ -30,5 +30,12 @@ setuptools.setup(
     install_requires=[
         'cbor2>5',
         'Bubot_Helpers'
-    ]
+    ],
+    entry_points={
+        'console_scripts':
+            [
+                'bubot = Bubot.Core:main',
+                'Bubot = Bubot.Core:main'
+            ]
+    }
 )

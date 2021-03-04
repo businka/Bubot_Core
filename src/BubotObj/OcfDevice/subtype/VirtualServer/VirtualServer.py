@@ -36,7 +36,7 @@ class VirtualServer(Device):
         self.task = self.loop.create_task(self.main())
 
         if not self.loop.is_running():
-            self.loop.run_forever()
+            self.loop.run_forever()  # todo добавиь обработку Ctrl + C
         self.log.debug('end')
         pass
 
@@ -98,7 +98,7 @@ class VirtualServer(Device):
         # if 'running_devices' in result:
         #     new_links =
 
-    # async def post_devices(self, message):
+        # async def post_devices(self, message):
 
         links = self.get_param(*self.run_dev)
         new_links = message.cn.pop('running_devices', [])
