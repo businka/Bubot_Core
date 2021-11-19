@@ -4,14 +4,18 @@ from os import path
 
 
 async def wait_run_device(device):
-    device_task = device.loop.create_task(device.main())
+    device.task = device.loop.create_task(device.main())
+
     while device.get_param('/oic/mnt', 'currentMachineState') != 'idle':
         try:
-            device_task.result()
+            device.task.result()
         except asyncio.InvalidStateError:
             pass
+        except Exception as err:
+            await asyncio.sleep(0.01)
+            raise err
         await asyncio.sleep(0.1)
-    return device_task
+    return device.task
 
 
 async def wait_run_device2(device):

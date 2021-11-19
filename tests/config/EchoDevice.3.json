@@ -1,0 +1,18 @@
+{
+  "/oic/d": {
+    "di": "3",
+    "piid": "3"
+  },
+  "/oic/con": {
+    "logLevel": "debug",
+    "udpCoapPort": 11111
+  },
+  "/oic/sec/doxm": {
+    "deviceuuid": "3"
+  },
+  "/oic/sec/pstat": {
+    "dos": {
+      "s": 0
+    }
+  }
+}

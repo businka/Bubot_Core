@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "https://www.openconnectivity.org/ocf-apis/security/schemas/oic.sec.doxmtype.json#",
+  "title": "Device Owner Transfer Method Types",
+  "definitions": {
+    "oic.sec.doxmtype": {
+      "type": "object",
+      "description": "The device owner transfer methods that may be selected at device on-boarding",
+      "properties": {
+        "oxm": {
+          "type": "integer",
+          "description": "Each value indicates a specific Owner Transfer method",
+          "detail-desc": [  "0 - Numeric OTM identifier for the Just-Works method (oic.sec.doxm.jw)",
+                            "1 - Numeric OTM identifier for the random PIN method (oic.sec.doxm.rdp)",
+                            "2 - Numeric OTM identifier for the manufacturer certificate method (oic.sec.doxm.mfgcert)",
+                            "3 - Numeric OTM identifier for the dcap method (oic.sec.doxm.dcap)" ]
+        }
+      }
+    }
+  },
+  "type": "object",
+  "allOf": [
+    { "$ref": "#/definitions/oic.sec.doxmtype" }
+  ],
+  "required": [ "oxm" ]
+}

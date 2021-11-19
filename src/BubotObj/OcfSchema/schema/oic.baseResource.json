@@ -7,7 +7,7 @@
     "oic.r.baseresource": {
       "allOf": [
         {
-          "$ref": "oic.core-schema.json#/definitions/oic.core"
+          "$ref": "oic.core.json#/definitions/oic.core"
         },
         {
           "type": "object",

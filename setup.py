@@ -22,10 +22,9 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
-        "Development Status :: 3 - Alpha",
         "Framework :: AsyncIO",
     ],
-    python_requires='>=3.7',
+    python_requires='>=3.8',
     zip_safe=False,
     install_requires=[
         'cbor2>5',

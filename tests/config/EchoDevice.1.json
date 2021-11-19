@@ -1,9 +1,18 @@
 {
   "/oic/d": {
-    "di": "1"
+    "di": "",
+    "piid": "1"
   },
   "/oic/con": {
-    "udpCoapPort": 11111,
-    "logLevel": "debug"
+    "udpCoapPort": 61933,
+    "udpCoapSslPort": 61934
+  },
+  "/oic/sec/doxm": {
+    "deviceuuid": "1"
+  },
+  "/oic/sec/pstat": {
+    "dos": {
+      "s": 0
+    }
   }
 }

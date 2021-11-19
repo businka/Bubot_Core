@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-v4/schema#",
+  "id": "http://openconnectivityfoundation.github.io/core/schemas/oic.wk.res.json#",
+  "definitions": {
+    "oic.res-baseline": {
+      "type": "object",
+      "properties": {
+        "rt": {
+          "type": "array",
+          "items" : {
+              "type" : "string",
+              "maxLength": 64
+            },
+          "minItems" : 1,
+          "readOnly": true,
+          "description": "Resource Type of the Resource"
+        },
+        "if": {
+          "type": "array",
+          "items": {
+              "type" : "string",
+              "enum" : ["oic.if.baseline", "oic.if.ll"]
+            },
+          "minItems": 1,
+          "readOnly": true,
+          "description": "The interface set supported by this resource"
+        },
+        "n": {
+          "type": "string",
+          "maxLength": 64,
+          "readOnly": true,
+          "description": "Human friendly name"
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "$ref": "http://openconnectivityfoundation.github.io/core/schemas/oic.collection.json#/definitions/oic.oic-link"
+          }
+        }
+      },
+      "required": ["rt", "if", "links"]
+    }
+  },
+  "description": "The list of resources expressed as Links",
+  "type": "array",
+  "items": {
+    "$ref": "#/definitions/oic.res-baseline"
+  }
+}

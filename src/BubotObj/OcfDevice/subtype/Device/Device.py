@@ -3,7 +3,8 @@ TODO Проверка смены IP адреса и автоматическая
 
 """
 
-from .MainLoopMixin import MainLoopMixin
+from typing import TypeVar, Type
+from BubotObj.OcfDevice.subtype.Device.MainLoopMixin import MainLoopMixin
 from Bubot.Helpers.ExtException import ExtException, ExtTimeoutError
 # from .QueueMixin import QueueMixin
 from Bubot.Core.OcfMessage import OcfRequest
@@ -15,9 +16,10 @@ import json
 import asyncio
 import logging
 import re
-
+from uuid import uuid4
 
 # _logger = logging.getLogger('OcfDevice')
+tDevice = TypeVar('tDevice', bound='Device')
 
 
 class Device(MainLoopMixin):
@@ -36,6 +38,14 @@ class Device(MainLoopMixin):
         self.loop = asyncio.get_event_loop()
         self.task = self.loop.create_task(self.main())
         self.loop.run_forever()
+
+    async def stop(self):
+        await self.transport_layer.stop()
+        try:
+            self.task.cancel()
+            await self.task
+        except asyncio.CancelledError:
+            pass
 
     @classmethod
     def find_first_config(cls, config_path, class_name):
@@ -80,7 +90,6 @@ class Device(MainLoopMixin):
 
     @classmethod
     def init_from_config(cls, config=None, **kwargs):
-        cache = kwargs.get('cache', cls.cache)
         class_name = cls.__name__
         try:
             if config:
@@ -89,8 +98,8 @@ class Device(MainLoopMixin):
             pass
         class_name = kwargs.get('class_name', class_name)
         try:
-            self = cls.get_device_class(class_name)
-            self = self(**kwargs)
+            _handler = cls.get_device_class(class_name)
+            self: Type[tDevice] = _handler(**kwargs)
         except Exception as err:
             raise ExtException(
                 'Bad driver',
@@ -102,26 +111,30 @@ class Device(MainLoopMixin):
                     kwargs=kwargs
                 )
             )
-        try:
-            self.data = self.get_default_config(self.__class__, Device, cache)
-            if config:
-                Helper.update_dict(self.data, config)
-            if not self.get_device_id():
-                self.set_device_id(kwargs.get('di'))
+        return self.init(config, **kwargs)
 
-            # self.log = Logger(
-            #     self,
-            #     level=self.get_param('/oic/con', 'logLevel', 'error'),
-            #     name='{0}:{1}'.format(self.__class__.__name__, self.get_device_id()[-5:]),
-            #     log=kwargs.get('log')
-            # )
+    def init(self, config=None, **kwargs):
+        try:
+            cache = kwargs.get('cache', self.cache)
+            _config = self.get_default_config(self.__class__, Device, cache)
+            if config:
+                Helper.update_dict(_config, config)
+            self.resource_layer.init_from_config(_config)
+            if not self.get_param('/oic/d', 'piid', None):
+                self.set_param('/oic/d', 'piid', str(uuid4()), save_config=True)
+
+            di = self.get_device_id()
+            if not self.get_device_id():
+                di = kwargs.get('di')
+            self.set_device_id(di)
+            self.change_provisioning_state()
             self.log = logging.getLogger('{0}:{1}'.format(self.__class__.__name__, self.get_device_id()[-5:]))
             self.log.setLevel(getattr(logging, self.get_param('/oic/con', 'logLevel', 'error').upper()))
             return self
         except Exception as e:
             raise ExtException(
                 'Bad driver config',
-                detail=class_name,
+                detail=self.__class__.__name__,
                 action='OcfDevice.init_from_config',
                 dump=dict(
                     config=config,
@@ -151,7 +164,11 @@ class Device(MainLoopMixin):
             return {}
         return data
 
+    # deprecated
     async def request(self, operation, to, data=None, **kwargs):
+        return await self.send_request(operation, to, data, **kwargs)
+
+    async def send_request(self, operation, to, data=None, **kwargs):
         try:
             msg = OcfRequest(
                 to=to,
@@ -162,8 +179,8 @@ class Device(MainLoopMixin):
                 # operation=operation,
                 # data=data,
                 # code=kwargs.pop('code', 1),
-                token=self.coap.token,
-                mid=self.coap.mid,
+                # token=self.coap.token,
+                # mid=self.coap.mid,
                 **kwargs
             )
             coap_msg, remote = msg.encode_to_coap()
@@ -207,7 +224,7 @@ class Device(MainLoopMixin):
                                action='{}.request()'.format(self.__class__.__name__),
                                dump=dict(op='observe', to=to)) from None
 
-    async def discovery_resource(self, **kwargs):
+    async def discovery_unowned_devices(self, **kwargs):
         try:
             token = self.coap.token
             result = {}
@@ -245,15 +262,3 @@ class Device(MainLoopMixin):
         except Exception as e:
             raise ExtException(e)
 
-    async def find_resource_by_link(self, link):
-        self.log.debug('find resource by di {0} href {1}'.format(link.di, link.href))
-
-        links = await self.discovery_resource(
-            query=dict(di=[link.di], href=[link.href]))
-        if isinstance(links, dict):
-            for di in links:
-                if di == link.di:
-                    for ref in links[di].links:
-                        if ref == link.href:
-                            return links[di].links[ref]
-        return None

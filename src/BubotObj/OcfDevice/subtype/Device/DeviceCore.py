@@ -1,13 +1,14 @@
 from Bubot.Helpers.Helper import Helper
-from Bubot.Helpers.ExtException import ExtException, KeyNotFound, ExtTimeoutError
+from Bubot.Helpers.ExtException import ExtException, KeyNotFound
 import asyncio
 from Bubot.Core.OcfMessage import OcfResponse, OcfRequest
 from Bubot.Core.BubotHelper import BubotHelper
 from uuid import uuid4
 import logging
-import random
 from Bubot.Core.DeviceLink import DeviceLink, ResourceLink
 import os.path
+from Bubot.Ocf.ResourceLayer import ResourceLayer
+from Bubot.Ocf.TransporLayer import TransportLayer
 
 
 # self.logger = logging.getLogger('DeviceCore')
@@ -16,9 +17,11 @@ import os.path
 class DeviceCore:
 
     def __init__(self, **kwargs):
+        self.res = {}
+        self.transport_layer = TransportLayer(self)
+        self.resource_layer = ResourceLayer(self)
+
         self.log = None
-        self.resource = {}
-        self.data = {}
         self.coap = None
         self._resource_changed = {}
         self._link = None
@@ -26,46 +29,52 @@ class DeviceCore:
         self.task = None
         self.path = os.path.abspath(kwargs.get('path', './'))
 
+    @property
+    def data(self):
+        result = {}
+        for href in self.res:
+            result[href] = self.res[href].data
+        return result
+
     def get_device_id(self):
-        return self.data['/oic/d'].get('di')
-        # return self.data['/oic/d'].get('piid')
+        return self.res['/oic/d'].get_attr('di', None)
 
     def get_device_name(self):
         try:
-            return self.data['/oic/d'].get('n')
+            return self.res['/oic/d'].get_attr('n')
         except Exception:
             return self.__class__.__name__
 
     def set_device_id(self, device_id=None):
         if device_id is None:
             device_id = str(uuid4())
-        self.data['/oic/d']['di'] = device_id
-        # self.data['/oic/d']['piid'] = device_id
+        self.res['/oic/d'].set_attr('di', device_id)
+        self.res['/oic/sec/doxm'].set_attr('deviceuuid', device_id)
 
-    def get_param(self, uri, *args):
+    def get_param(self, href, *args):
         try:
-            _res = self.data[uri]
+            _res = self.res[href].data
         except KeyError:
             raise KeyNotFound(
                 action='OcfDevice.get_param',
-                detail=f'{uri} ({self.__class__.__name__})'
+                detail=f'{href} ({self.__class__.__name__})'
             ) from None
         if not args or args[0] is None:
             return _res
         try:
-            return _res[args[0]]
+            return self.res[href].get_attr(*args)
         except KeyError:
             try:
                 return args[1]
             except IndexError:
                 raise KeyNotFound(
                     action='OcfDevice.get_param',
-                    detail=f'{args[0]} ({self.__class__.__name__}{uri})'
+                    detail=f'{args[0]} ({self.__class__.__name__}{href})'
                 ) from None
 
     def set_param(self, resource, name, new_value, **kwargs):
         try:
-            old_value = self.get_param(resource, name, new_value)
+            old_value = self.get_param(resource, name, None)
             difference, changes = Helper.compare(old_value, new_value)
             if difference:
                 self._resource_changed[resource] = True
@@ -127,29 +136,39 @@ class DeviceCore:
     def get_link(self, href=None):
         if self._link is None:
             eps = []
-            if not self.coap:
+            if not self.transport_layer.coap:
                 raise KeyNotFound(detail='COAP socket not found')
-            for elem in self.coap.endpoint:
-                if elem == 'multicast' or not self.coap.endpoint[elem]:
-                    continue
-                eps.append(dict(ep=self.coap.endpoint[elem]['uri']))
+            # for elem in self.coap.endpoint:
+            #     if elem == 'multicast' or not self.coap.endpoint[elem]:
+            #         continue
+            #     eps.append(dict(ep=self.coap.endpoint[elem]['uri']))
             self._link = dict(
                 anchor='ocf://{}'.format(self.get_device_id()),
-                eps=eps
+                eps=self.transport_layer.get_eps()
             )
         if href and href in self.data:
             return dict(
                 anchor=self._link['anchor'],
                 eps=self._link['eps'],
                 href=href
-
             )
         else:
             return self._link
 
+    def change_provisioning_state(self, new_state=None):
+        provisioning_state = self.get_param('/oic/sec/pstat')
+        if not provisioning_state['dos']:  # начальная инициализация
+            provisioning_state['dos'] = {
+                "s": 0,
+            }
+            # self.set_device_id(str(uuid4()))
+            self.res['/oic/sec/doxm'].set_attr('devowneruuid', "00000000-0000-0000-0000-000000000000")
+            self.res['/oic/sec/doxm'].set_attr('rowneruuid', "00000000-0000-0000-0000-000000000000")
+
     async def on_get_request(self, message):
         # interface = message.uri_query['if'][0] if 'if' in message.uri_query else 'oic.if.baseline'
-        props = 'on_{0}{1}'.format(message.op, message.to.href.replace('/', '_'))
+        self.log.debug(f'on_{message.op} {message.to.href}')
+        props = f'on_{message.op}{message.to.href.replace("/", "_")}'
         if message.obs is not None:  # observe request
             if message.obs == 1:  # cancel observer
                 self.del_listener(message.to.href, message.fr.uid)
@@ -162,6 +181,7 @@ class DeviceCore:
 
     async def on_post_request(self, message):
         # interface = message.uri_query['if'][0] if 'if' in message.uri_query else 'oic.if.baseline'
+        self.log.debug(f'on_{message.op} {message.to.href}')
         props = 'on_{0}{1}'.format(message.op, message.to.href.replace('/', '_'))
         if hasattr(self, props):
             logging.debug(props)
@@ -169,53 +189,20 @@ class DeviceCore:
         logging.debug('on_post_request')
         return self.update_param(message.to.href, None, message.cn)
 
-    async def on_retrieve_oic_res(self, message):
-        device = DeviceLink.init_from_device(self)
-        links = []
-        for link in device.links:
-            if device.links[link].discoverable:
-                suited = True
-                if message.query:
-                    for key in message.query:
-                        if not suited:
-                            break
-                        try:
-                            value = getattr(device.links[link], key)
-                            if isinstance(value, list):
-                                for elem in message.query[key]:
-                                    if elem not in value:
-                                        suited = False
-                                        break
-                            elif value not in message.query[key]:
-                                suited = False
-                        except AttributeError:
-                            suited = False
-                if suited:
-                    links.append(device.links[link].data)
-        self.log.debug('discovery {0} links'.format(len(links)))
-        await asyncio.sleep(random.random())
-        if links:
-            return [{
-                'di': device.di,
-                'n': device.name,
-                'links': links
-            }]
-        raise asyncio.CancelledError
-
-    async def on_response_oic_res(self, message, answer):
-        # self.log.debug('begin from {}'.format(message.to.uid))
-        async with answer['lock']:
-            if answer['result'] is None:
-                answer['result'] = {}
-            if message.is_successful():
-                if message.cn:
-                    for device in message.cn:
-                        if device['di'] in answer['result']:
-                            answer['result'][device['di']].update_from_oic_res(device)
-                        else:
-                            answer['result'][device['di']] = DeviceLink.init_from_oic_res(device)
-            else:
-                self.log.error('{0}'.format(message.cn))
+    # async def on_response_oic_res(self, message, answer):
+    #     # self.log.debug('begin from {}'.format(message.to.uid))
+    #     async with answer['lock']:
+    #         if answer['result'] is None:
+    #             answer['result'] = {}
+    #         if message.is_successful():
+    #             if message.cn:
+    #                 for device in message.cn:
+    #                     if device['di'] in answer['result']:
+    #                         answer['result'][device['di']].update_from_oic_res(device)
+    #                     else:
+    #                         answer['result'][device['di']] = DeviceLink.init_from_oic_res(device)
+    #         else:
+    #             self.log.error('{0}'.format(message.cn))
         # self.log.debug('end from {}'.format(message.to.uid))
 
     async def on_update_oic_mnt(self, message):

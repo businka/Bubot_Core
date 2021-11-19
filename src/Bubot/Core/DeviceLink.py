@@ -1,6 +1,6 @@
 import urllib.parse
 import asyncio
-from Bubot.Helpers.Coap.coap import Message
+from Bubot.Core.Coap.coap import Message
 from Bubot.Helpers.Helper import ArrayHelper
 from Bubot.Helpers.ExtException import ExtException
 
@@ -223,6 +223,17 @@ class DeviceLink:
         # self.n = data.get('n', '')
         for link in data['links']:
             data = ResourceLink.init_from_link(link, di=self.di)
+            self.links[data.get('href')] = data
+            self.eps = data.data['eps']
+        return self
+
+    @classmethod
+    def init_from_doxm_msg(cls, msg):
+        self = cls()
+        data = msg.decode_payload()
+        self.di = data['deviceuuid']
+        for link in data['links']:
+            data = ResourceLink.init_from_link(data, di=self.di)
             self.links[data.get('href')] = data
             self.eps = data.data['eps']
         return self

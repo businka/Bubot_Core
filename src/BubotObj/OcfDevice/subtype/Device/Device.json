@@ -6,8 +6,7 @@
     "if": [
       "oic.if.ll",
       "oic.if.baseline"
-    ],
-    "p": {"bm": 0}
+    ]
   },
   "/oic/p": {
     "rt": [
@@ -16,7 +15,6 @@
     "if": [
       "oic.if.baseline"
     ],
-    "p": {"bm": 1},
     "n": "Platform",
     "mnpv": ""
   },
@@ -26,9 +24,11 @@
       "oic.wk.d"
     ],
     "if": [
-      "oic.if.baseline"
+      "oic.if.baseline",
+      "oic.if.r"
     ],
-    "p": {"bm": 1}
+    "dmv": "ocf.res.1.0.0",
+    "icv": "ocf.1.0.0"
   },
   "/oic/mnt": {
     "n": "Maintenance",
@@ -39,7 +39,6 @@
     "if": [
       "oic.if.baseline"
     ],
-    "p": {"bm": 3},
     "machineStates": [
       "pending",
       "idle",
@@ -59,14 +58,60 @@
     "if": [
       "oic.if.baseline"
     ],
-    "p": {"bm": 3},
     "logLevel": "info",
     "udpCoapPort": 0,
+    "udpCoapSslPort": 0,
     "udpCoapIPv4": true,
-    "udpCoapIPv6": false,
-    "udpCoapIPv4Ssl": false,
-    "udpCoapIPv6Ssl": false,
+    "udpCoapIPv6": true,
+    "udpCoapIPv4Ssl": true,
+    "udpCoapIPv6Ssl": true,
     "listening": [],
     "observed": []
+  },
+  "/oic/sec/doxm": {
+    "rt": [
+      "oic.r.doxm"
+    ],
+    "if": [
+      "oic.if.rw",
+      "oic.if.baseline"
+    ],
+    "oxms": [
+      0
+    ],
+    "oxmsel": 0,
+    "sct": 1,
+    "owned": false,
+    "devowneruuid": "00000000-0000-0000-0000-000000000000",
+    "deviceuuid": "",
+    "rowneruuid": "00000000-0000-0000-0000-000000000000"
+  },
+  "/oic/sec/pstat": {
+    "rt": [
+      "oic.r.pstat"
+    ],
+    "if": [
+      "oic.if.rw",
+      "oic.if.baseline"
+    ],
+    "dos": {},
+    "isop": false,
+    "cm": 0,
+    "tm": 0,
+    "om": 4,
+    "sm": 4,
+    "rowneruuid": "00000000-0000-0000-0000-000000000000"
+  },
+  "/oic/sec/cred": {
+    "rt": [
+      "oic.r.cred"
+    ],
+    "if": [
+      "oic.if.rw",
+      "oic.if.baseline"
+    ],
+
+    "creds": [],
+    "rowneruuid": "00000000-0000-0000-0000-000000000000"
   }
 }

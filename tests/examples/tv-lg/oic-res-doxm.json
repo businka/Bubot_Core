@@ -1,0 +1,21 @@
+[
+  {
+    "di": "ab4fd279-dac2-5545-89de-f988d1024048",
+    "links": [
+      {
+        "href": "/oic/sec/doxm",
+        "rt": [
+          "oic.r.doxm"
+        ],
+        "if": [
+          "oic.if.baseline"
+        ],
+        "p": {
+          "bm": 1,
+          "sec": true,
+          "port": 45555
+        }
+      }
+    ]
+  }
+]

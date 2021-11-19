@@ -1,0 +1,16 @@
+"aclist2": [
+  {
+    "subject": {"conntype": "anon-clear"},
+    "resources": [
+      { "wc": "*" }
+    ],
+    "permission": 31
+  },
+  {
+    "subject": {"conntype": "auth-crypt" },
+    "resources": [
+      { "wc": "*" }
+    ],
+    "permission": 31
+  }
+]

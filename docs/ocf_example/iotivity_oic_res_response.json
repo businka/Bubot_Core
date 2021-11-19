@@ -1,0 +1,423 @@
+[
+  {
+    "anchor": "ocf://849ea6ed-50ff-4d56-43ab-2708ab09b50d",
+    "href": "/oic/p",
+    "rt": [
+      "oic.wk.p"
+    ],
+    "if": [
+      "oic.if.r",
+      "oic.if.baseline"
+    ],
+    "p": {
+      "bm": 1
+    },
+    "eps": [
+      {
+        "ep": "coap://[fe80::240a:dd92:e22a:c2c4]:50200",
+        "lat": 240
+      },
+      {
+        "ep": "coaps://[fe80::240a:dd92:e22a:c2c4]:50201",
+        "lat": 240
+      },
+      {
+        "ep": "coap+tcp://[fe80::240a:dd92:e22a:c2c4]:58011",
+        "lat": 240
+      },
+      {
+        "ep": "coaps+tcp://[fe80::240a:dd92:e22a:c2c4]:58012",
+        "lat": 240
+      }
+    ]
+  },
+  {
+    "rel": [
+      "self"
+    ],
+    "anchor": "ocf://849ea6ed-50ff-4d56-43ab-2708ab09b50d",
+    "href": "/oic/res",
+    "rt": [
+      "oic.wk.res"
+    ],
+    "if": [
+      "oic.if.ll",
+      "oic.if.baseline"
+    ],
+    "p": {
+      "bm": 1
+    },
+    "eps": [
+      {
+        "ep": "coap://[fe80::240a:dd92:e22a:c2c4]:50200",
+        "lat": 240
+      },
+      {
+        "ep": "coaps://[fe80::240a:dd92:e22a:c2c4]:50201",
+        "lat": 240
+      },
+      {
+        "ep": "coap+tcp://[fe80::240a:dd92:e22a:c2c4]:58011",
+        "lat": 240
+      },
+      {
+        "ep": "coaps+tcp://[fe80::240a:dd92:e22a:c2c4]:58012",
+        "lat": 240
+      }
+    ]
+  },
+  {
+    "anchor": "ocf://849ea6ed-50ff-4d56-43ab-2708ab09b50d",
+    "href": "/oic/d",
+    "rt": [
+      "oic.d.light",
+      "oic.wk.d"
+    ],
+    "if": [
+      "oic.if.r",
+      "oic.if.baseline"
+    ],
+    "p": {
+      "bm": 1
+    },
+    "eps": [
+      {
+        "ep": "coap://[fe80::240a:dd92:e22a:c2c4]:50200",
+        "lat": 240
+      },
+      {
+        "ep": "coaps://[fe80::240a:dd92:e22a:c2c4]:50201",
+        "lat": 240
+      },
+      {
+        "ep": "coap+tcp://[fe80::240a:dd92:e22a:c2c4]:58011",
+        "lat": 240
+      },
+      {
+        "ep": "coaps+tcp://[fe80::240a:dd92:e22a:c2c4]:58012",
+        "lat": 240
+      }
+    ]
+  },
+  {
+    "anchor": "ocf://849ea6ed-50ff-4d56-43ab-2708ab09b50d",
+    "href": "/oc/wk/introspection",
+    "rt": [
+      "oic.wk.introspection"
+    ],
+    "if": [
+      "oic.if.r",
+      "oic.if.baseline"
+    ],
+    "p": {
+      "bm": 1
+    },
+    "eps": [
+      {
+        "ep": "coaps://[fe80::240a:dd92:e22a:c2c4]:50201",
+        "lat": 240
+      },
+      {
+        "ep": "coaps+tcp://[fe80::240a:dd92:e22a:c2c4]:58012",
+        "lat": 240
+      }
+    ]
+  },
+  {
+    "anchor": "ocf://849ea6ed-50ff-4d56-43ab-2708ab09b50d",
+    "href": "/oic/sec/doxm",
+    "rt": [
+      "oic.r.doxm"
+    ],
+    "if": [
+      "oic.if.rw",
+      "oic.if.baseline"
+    ],
+    "p": {
+      "bm": 1
+    },
+    "eps": [
+      {
+        "ep": "coap://[fe80::240a:dd92:e22a:c2c4]:50200",
+        "lat": 240
+      },
+      {
+        "ep": "coaps://[fe80::240a:dd92:e22a:c2c4]:50201",
+        "lat": 240
+      },
+      {
+        "ep": "coap+tcp://[fe80::240a:dd92:e22a:c2c4]:58011",
+        "lat": 240
+      },
+      {
+        "ep": "coaps+tcp://[fe80::240a:dd92:e22a:c2c4]:58012",
+        "lat": 240
+      }
+    ]
+  },
+  {
+    "anchor": "ocf://849ea6ed-50ff-4d56-43ab-2708ab09b50d",
+    "href": "/oic/sec/pstat",
+    "rt": [
+      "oic.r.pstat"
+    ],
+    "if": [
+      "oic.if.rw",
+      "oic.if.baseline"
+    ],
+    "p": {
+      "bm": 3
+    },
+    "eps": [
+      {
+        "ep": "coap://[fe80::240a:dd92:e22a:c2c4]:50200",
+        "lat": 240
+      },
+      {
+        "ep": "coaps://[fe80::240a:dd92:e22a:c2c4]:50201",
+        "lat": 240
+      },
+      {
+        "ep": "coap+tcp://[fe80::240a:dd92:e22a:c2c4]:58011",
+        "lat": 240
+      },
+      {
+        "ep": "coaps+tcp://[fe80::240a:dd92:e22a:c2c4]:58012",
+        "lat": 240
+      }
+    ]
+  },
+  {
+    "anchor": "ocf://849ea6ed-50ff-4d56-43ab-2708ab09b50d",
+    "href": "/oic/sec/acl2",
+    "rt": [
+      "oic.r.acl2"
+    ],
+    "if": [
+      "oic.if.rw",
+      "oic.if.baseline"
+    ],
+    "p": {
+      "bm": 1
+    },
+    "eps": [
+      {
+        "ep": "coaps://[fe80::240a:dd92:e22a:c2c4]:50201",
+        "lat": 240
+      },
+      {
+        "ep": "coaps+tcp://[fe80::240a:dd92:e22a:c2c4]:58012",
+        "lat": 240
+      }
+    ]
+  },
+  {
+    "anchor": "ocf://849ea6ed-50ff-4d56-43ab-2708ab09b50d",
+    "href": "/oic/sec/ael",
+    "rt": [
+      "oic.r.ael"
+    ],
+    "if": [
+      "oic.if.rw",
+      "oic.if.baseline"
+    ],
+    "p": {
+      "bm": 1
+    },
+    "eps": [
+      {
+        "ep": "coap://[fe80::240a:dd92:e22a:c2c4]:50200",
+        "lat": 240
+      },
+      {
+        "ep": "coaps://[fe80::240a:dd92:e22a:c2c4]:50201",
+        "lat": 240
+      },
+      {
+        "ep": "coap+tcp://[fe80::240a:dd92:e22a:c2c4]:58011",
+        "lat": 240
+      },
+      {
+        "ep": "coaps+tcp://[fe80::240a:dd92:e22a:c2c4]:58012",
+        "lat": 240
+      }
+    ]
+  },
+  {
+    "anchor": "ocf://849ea6ed-50ff-4d56-43ab-2708ab09b50d",
+    "href": "/oic/sec/cred",
+    "rt": [
+      "oic.r.cred"
+    ],
+    "if": [
+      "oic.if.rw",
+      "oic.if.baseline"
+    ],
+    "p": {
+      "bm": 1
+    },
+    "eps": [
+      {
+        "ep": "coaps://[fe80::240a:dd92:e22a:c2c4]:50201",
+        "lat": 240
+      },
+      {
+        "ep": "coaps+tcp://[fe80::240a:dd92:e22a:c2c4]:58012",
+        "lat": 240
+      }
+    ]
+  },
+  {
+    "anchor": "ocf://849ea6ed-50ff-4d56-43ab-2708ab09b50d",
+    "href": "/oic/sec/sp",
+    "rt": [
+      "oic.r.sp"
+    ],
+    "if": [
+      "oic.if.rw",
+      "oic.if.baseline"
+    ],
+    "p": {
+      "bm": 1
+    },
+    "eps": [
+      {
+        "ep": "coaps://[fe80::240a:dd92:e22a:c2c4]:50201",
+        "lat": 240
+      },
+      {
+        "ep": "coaps+tcp://[fe80::240a:dd92:e22a:c2c4]:58012",
+        "lat": 240
+      }
+    ]
+  },
+  {
+    "anchor": "ocf://849ea6ed-50ff-4d56-43ab-2708ab09b50d",
+    "href": "/oic/sec/csr",
+    "rt": [
+      "oic.r.csr"
+    ],
+    "if": [
+      "oic.if.rw",
+      "oic.if.baseline"
+    ],
+    "p": {
+      "bm": 1
+    },
+    "eps": [
+      {
+        "ep": "coaps://[fe80::240a:dd92:e22a:c2c4]:50201",
+        "lat": 240
+      },
+      {
+        "ep": "coaps+tcp://[fe80::240a:dd92:e22a:c2c4]:58012",
+        "lat": 240
+      }
+    ]
+  },
+  {
+    "anchor": "ocf://849ea6ed-50ff-4d56-43ab-2708ab09b50d",
+    "href": "/oic/sec/roles",
+    "rt": [
+      "oic.r.roles"
+    ],
+    "if": [
+      "oic.if.rw",
+      "oic.if.baseline"
+    ],
+    "p": {
+      "bm": 1
+    },
+    "eps": [
+      {
+        "ep": "coaps://[fe80::240a:dd92:e22a:c2c4]:50201",
+        "lat": 240
+      },
+      {
+        "ep": "coaps+tcp://[fe80::240a:dd92:e22a:c2c4]:58012",
+        "lat": 240
+      }
+    ]
+  },
+  {
+    "anchor": "ocf://849ea6ed-50ff-4d56-43ab-2708ab09b50d",
+    "href": "/oic/sec/sdi",
+    "rt": [
+      "oic.r.sdi"
+    ],
+    "if": [
+      "oic.if.rw",
+      "oic.if.baseline"
+    ],
+    "p": {
+      "bm": 1
+    },
+    "eps": [
+      {
+        "ep": "coap://[fe80::240a:dd92:e22a:c2c4]:50200",
+        "lat": 240
+      },
+      {
+        "ep": "coaps://[fe80::240a:dd92:e22a:c2c4]:50201",
+        "lat": 240
+      },
+      {
+        "ep": "coap+tcp://[fe80::240a:dd92:e22a:c2c4]:58011",
+        "lat": 240
+      },
+      {
+        "ep": "coaps+tcp://[fe80::240a:dd92:e22a:c2c4]:58012",
+        "lat": 240
+      }
+    ]
+  },
+  {
+    "anchor": "ocf://849ea6ed-50ff-4d56-43ab-2708ab09b50d",
+    "href": "/CoapCloudConfResURI",
+    "rt": [
+      "oic.r.coapcloudconf"
+    ],
+    "if": [
+      "oic.if.rw",
+      "oic.if.baseline"
+    ],
+    "p": {
+      "bm": 3
+    },
+    "eps": [
+      {
+        "ep": "coaps://[fe80::240a:dd92:e22a:c2c4]:50201",
+        "lat": 240
+      },
+      {
+        "ep": "coaps+tcp://[fe80::240a:dd92:e22a:c2c4]:58012",
+        "lat": 240
+      }
+    ]
+  },
+  {
+    "anchor": "ocf://849ea6ed-50ff-4d56-43ab-2708ab09b50d",
+    "href": "/a/light",
+    "rt": [
+      "core.light",
+      "core.brightlight"
+    ],
+    "if": [
+      "oic.if.rw",
+      "oic.if.baseline"
+    ],
+    "p": {
+      "bm": 3
+    },
+    "eps": [
+      {
+        "ep": "coaps://[fe80::240a:dd92:e22a:c2c4]:50201",
+        "lat": 240
+      },
+      {
+        "ep": "coaps+tcp://[fe80::240a:dd92:e22a:c2c4]:58012",
+        "lat": 240
+      }
+    ]
+  }
+]

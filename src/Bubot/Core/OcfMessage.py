@@ -1,5 +1,9 @@
 # from aiocoap import Message, NON, Code
-from Bubot.Helpers.Coap.coap import Message, NON, Code
+# from Bubot.Core.Coap.coap import Message, NON, Code
+from Bubot_CoAP.messages.request import Request
+from Bubot_CoAP.messages.numbers import NON, Code
+from Bubot_CoAP.messages.option import Option
+from Bubot_CoAP import defines
 from Bubot.Core.DeviceLink import ResourceLink
 from Bubot.Helpers.ExtException import ExtException, dumps_error
 import urllib.parse
@@ -15,8 +19,8 @@ class OcfMessage:
         self.cn = kwargs.get('cn', {})  # Content
         # self.uri_path = kwargs.get('uri_path')
         self.query = kwargs.get('query', {})
-        self.token = kwargs.get('token', b'')
-        self.mid = kwargs.get('mid', 0)
+        self.token = kwargs.get('token')
+        self.mid = kwargs.get('mid')
         # self.data = kwargs.get('data', {})
         self.raw_msg = None
         # self.code = kwargs.get('code', NON)
@@ -62,33 +66,59 @@ class OcfRequest(OcfMessage):
         # self.observe = None
 
     def encode_to_coap(self):
-        params = dict(
-            mtype=NON,
-            mid=self.mid,
-            code=self.code,
-            token=self.token,
-            uri_host=self.to.anchor,
-            uri_query=self.encode_query(self.query),
-            uri_path=self.to.href[1:].split('/'),
-            content_format=60,
-            accept=60,
-            observe=self.obs,
-            payload=cbor2.dumps(self.cn) if self.cn else b''
-        )
-        msg2 = Message(**params)
 
-        try:
-            parsed = urllib.parse.urlparse(self.to.get_endpoint(), allow_fragments=False)
-            address = (parsed.hostname, parsed.port)
-        except KeyError:
-            address = None
-        return msg2, address
+        # try:
+        #     parsed = urllib.parse.urlparse(self.to.get_endpoint(), allow_fragments=False)
+        #     address = (parsed.hostname, parsed.port)
+        # except KeyError:
+        #     address = None
+        # return msg2, address
+
+        request = Request()
+        request.type = NON
+        # request.token = generate_random_token(2)
+        request.destination = destination
+        # request.destination = (sender, 5683)
+        request.multicast = self.multicast
+        request.source = (sender, None)
+        request.code = self.code
+        request.uri_path = self.to.href
+
+        option = Option()
+        option.number = defines.OptionRegistry.CONTENT_TYPE.number
+        option.value = 10000
+        request.add_option(option)
+
+        option = Option()
+        option.number = defines.OptionRegistry.URI_QUERY.number
+        option.value = self.encode_query(self.query)   # todo  разобраться что тут надо
+        request.add_option(option)
+
+        # params = dict(
+        #     mtype=NON,
+        #     mid=self.mid,
+        #     code=self.code,
+        #     token=self.token,
+        #     uri_host=self.to.anchor,
+        #     uri_query=self.encode_query(self.query),
+        #     uri_path=self.to.href[1:].split('/'),
+        #     # application/vnd.ocf+cbor
+        #     # http://www.iana.org/assignments/core-parameters/core-parameters.xhtml#content-formats
+        #     content_format=10000,
+        #     accept=10000,
+        #     observe=self.obs,
+        #     payload=cbor2.dumps(self.cn) if self.cn else b''
+        # )
+        # msg2 = Message(**params)
+
+
 
     @classmethod
     def decode_from_coap(cls, msg, multicast=False):
         # message = Message.decode(raw_data, remote)
         self = cls(
-            fr=ResourceLink.init_from_uri('coap://[{0}]:{1}'.format(msg.remote[0], msg.remote[1])),  # message.opt.uri_path, message.opt.uri_port))]
+            fr=ResourceLink.init_from_uri('coap://[{0}]:{1}'.format(msg.remote[0], msg.remote[1])),
+            # message.opt.uri_path, message.opt.uri_port))]
             to=ResourceLink.init_from_msg(msg),
             code=int(msg.code),
             op=cls.map_coap_code_to_crudn(msg.code.name),
@@ -167,7 +197,7 @@ class OcfResponse(OcfMessage):
         # | 5.01 | Not Implemented              | [RFC7252] |
         # | 5.02 | Bad Gateway                  | [RFC7252] |
         # | 5.03 | Service Unavailable          | [RFC7252] |
-        # | 5.04 | Gateway ExtTimeoutError              | [RFC7252] |
+        # | 5.04 | Gateway ExtTimeoutError      | [RFC7252] |
         # | 5.05 | Proxying Not Supported       | [RFC7252] |
         # +------+------------------------------+-----------+
 
@@ -221,8 +251,8 @@ class OcfResponse(OcfMessage):
             uri_query=self.encode_query(self.query),
             uri_host=self.to.anchor,
             uri_path=self.to.href[1:].split('/'),
-            content_format=60,
-            accept=60
+            content_format=10000,
+            accept=10000
             # iotivity_addresses=b'\xc0'
         )
         # message = self.raw_msg

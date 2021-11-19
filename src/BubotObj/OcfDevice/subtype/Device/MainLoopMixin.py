@@ -1,6 +1,6 @@
 import asyncio
 import time
-from Bubot.Helpers.Coap.CoapServer import CoapServer
+
 from BubotObj.OcfDevice.subtype.Device.DeviceCore import DeviceCore
 from Bubot.Helpers.ExtException import ExtException
 import random
@@ -12,8 +12,8 @@ class MainLoopMixin(DeviceCore):
     async def main(self):
         try:
             self.log.info("begin main")
-            self.coap = CoapServer(self)
-            await self.coap.run()
+            # self.coap = CoapServer(self)
+            await self.transport_layer.start()
 
             update_time = self.get_param('/oic/con', 'updateTime', 30)
             await asyncio.sleep(random.random())
@@ -60,7 +60,7 @@ class MainLoopMixin(DeviceCore):
         pass
 
     async def on_cancelled(self):
-        self.coap.close()
+        await self.coap.close()
         self.set_param('/oic/mnt', 'currentMachineState', '')
         raise asyncio.CancelledError()
 

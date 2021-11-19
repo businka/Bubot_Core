@@ -1,9 +1,12 @@
 {
   "/oic/d": {
-    "di": "2"
+    "di": "2",
+    "piid": "83326ad8-503c-4d7c-ae82-4c5a35b634b2"
   },
   "/oic/con": {
+    "logLevel": "debug",
     "udpCoapPort": 11112,
-    "logLevel": "debug"
+    "udpCoapIPv6": false,
+    "udpCoapIPv6Ssl": false
   }
 }
