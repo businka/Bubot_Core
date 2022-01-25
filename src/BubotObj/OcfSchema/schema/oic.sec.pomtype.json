@@ -15,7 +15,7 @@
                             "2 - Server-directed utilzing a single provisioning service",
                             "4 - Client-directed provisioning",
                             "8 - Unused",
-                            "16 - Unused",
+                            "16 - Unused",0
                             "32 - Unused",
                             "64 - Unused",
                             "128 - Unused" ]

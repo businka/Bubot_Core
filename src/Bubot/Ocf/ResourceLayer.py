@@ -1,6 +1,10 @@
 from Bubot.OcfResource.OcfResource import OcfResource
 from Bubot.OcfResource.OicWkRes import OicWkRes
 from Bubot.OcfResource.OicRDoxm import OicRDoxm
+from Bubot.OcfResource.OicRPstat import OicRPstat
+from Bubot.OcfResource.OicRCred import OicRCred
+from Bubot.OcfResource.OicRAcl2 import OicRAcl2
+from Bubot.OcfResource.OicRSdi import OicRSdi
 
 
 class ResourceLayer:
@@ -8,7 +12,11 @@ class ResourceLayer:
         self.device = device
         self._handlers = {
             '/oic/res': OicWkRes,
-            '/oic/sec/doxm': OicRDoxm
+            '/oic/sec/doxm': OicRDoxm,
+            '/oic/sec/pstat': OicRPstat,
+            '/oic/sec/cred': OicRCred,
+            '/oic/sec/acl2': OicRAcl2,
+            '/oic/sec/sdi': OicRSdi
         }
         pass
 

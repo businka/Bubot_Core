@@ -14,15 +14,16 @@ from Bubot_CoAP.messages.numbers import NON, Code
 logging.basicConfig()
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
+logger = logging.getLogger('Bubot_CoAP')
+logger.setLevel(logging.INFO)
+logger = logging.getLogger('aio_dtls')
+logger.setLevel(logging.DEBUG)
+
 
 
 class TestDevice(IsolatedAsyncioTestCase):
 
     def setUp(self):
-        logging.basicConfig()
-        # _log = logging.getLogger('Bubot_CoAP.layers.message_layer')
-        _log = logging.getLogger('Bubot_CoAP')
-        _log.setLevel(logging.DEBUG)
         self.config_path = '{}/config/'.format(path.dirname(__file__))
         # self.device = Device.init_from_config()
 
