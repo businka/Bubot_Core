@@ -25,4 +25,5 @@ class OicRDoxm(OcfResource):
 
     async def render_POST_advanced(self, request, response):
         response.code = Codes.CHANGED.number
+        self.debug('post', request)
         return self, response

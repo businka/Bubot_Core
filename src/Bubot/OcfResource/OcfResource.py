@@ -73,3 +73,7 @@ class OcfResource(Resource):
         self.device.log.debug(
             f'{self.__class__.__name__} get {self._href} {request.query} from {request.source} to {request.destination} ')
         return self
+
+    def debug(self, method, request):
+        self.device.log.debug(
+            f'{self.__class__.__name__} {method} {self._href} {request.query} {request.decode_payload()} from {request.source} {request.destination}')

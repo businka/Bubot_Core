@@ -1,22 +1,13 @@
-from server import Server
-from urllib.parse import urlparse
-from typing import TypeVar, Type
-from Bubot.Helpers.Helper import ArrayHelper
-from Bubot.Helpers.ExtException import ExtException, ExtTimeoutError
-from datetime import datetime
-from Bubot.Ocf.OcfMessage import OcfMessage
-from Bubot.Helpers.Helper import Helper
-from os import path
-import os
-import json
 import asyncio
-import logging
-import re
 from socket import AF_INET, AF_INET6
-from Bubot_CoAP.messages.request import Request
-from Bubot_CoAP.messages.option import Option
-from Bubot_CoAP.messages.numbers import NON, Code
+from urllib.parse import urlparse
+
+from Bubot.Helpers.ExtException import ExtException, ExtTimeoutError
 from Bubot_CoAP import defines
+from Bubot_CoAP.messages.numbers import NON, Code
+from Bubot_CoAP.messages.option import Option
+from Bubot_CoAP.messages.request import Request
+from Bubot_CoAP.server import Server
 
 
 class TransportLayer:
@@ -335,41 +326,51 @@ class TransportLayer:
         ep = _tmp[list(_tmp.keys())[0]]
         ep.sock.sendto(data, to[scheme])
 
-    async def send_message(self, operation, to, data=None, **kwargs):
+    def _prepare_request(self, operation, to, data=None, *, secure=False, multicast=False, query=None, **kwargs):
+        # secure = kwargs.get('secure', False)
+        # multicast = kwargs.get('multicast', False)
+        scheme = 'coaps' if secure else 'coap'
+        family = to['family']
+
+        request = Request()
+        request.type = NON
+        request.scheme = scheme
+        request.multicast = multicast
+        request.family = family
+        request.source = (to['net_interface'], None)
+
+        if multicast:
+            request.destination = (self.coap_discovery[family][0], self.coap_discovery_port)
+        else:
+            request.destination = to[scheme]
+
+        request.code = self.map_crudn_to_coap_code(operation)
+        request.uri_path = to.get('href', '')
+
+        option = Option()
+        option.number = defines.OptionRegistry.CONTENT_TYPE.number
+        option.value = 10000
+        request.add_option(option)
+
+        # request.accept = 10000
+
+        # query = kwargs.get('query')
+        if query:
+            request.query = query
+
+        if data:
+            request.encode_payload(data)
+        return request
+
+    def get_endpoint(self, to, *, secure=False, scheme=None):
+        request = self._prepare_request('get', to, data=None, secure=secure)
+        endpoint = self.coap.endpoint_layer.find_sending_endpoint(request)
+        return endpoint
+
+    async def send_message(self, operation, to, data=None, *, secure=False, multicast=False, query=None, **kwargs):
         try:
-
-            secure = kwargs.get('secure', False)
-            multicast = kwargs.get('multicast', False)
-            scheme = 'coaps' if secure else 'coap'
-            family = to['family']
-
-            request = Request()
-            request.type = NON
-            request.scheme = scheme
-            request.multicast = multicast
-            request.family = family
-            request.source = (to['net_interface'], None)
-
-            if multicast:
-                request.destination = (self.coap_discovery[family][0], self.coap_discovery_port)
-            else:
-                request.destination = to[scheme]
-
-            request.code = self.map_crudn_to_coap_code(operation)
-            request.uri_path = to['href']
-
-            option = Option()
-            option.number = defines.OptionRegistry.CONTENT_TYPE.number
-            option.value = 10000
-            request.add_option(option)
-
-            query = kwargs.get('query')
-            if query:
-                request.query = query
-
-            if data:
-                request.encode_payload(data)
-
+            request = self._prepare_request(operation, to,
+                                            data=data, secure=secure, multicast=multicast, query=query, **kwargs)
             response = await self.coap.send_message(request, **kwargs)
 
             return response

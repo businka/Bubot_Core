@@ -113,5 +113,23 @@
 
     "creds": [],
     "rowneruuid": "00000000-0000-0000-0000-000000000000"
+  },
+  "/oic/sec/acl2": {
+    "rt": [
+      "oic.r.acl2"
+    ],
+    "if": [
+      "oic.if.rw",
+      "oic.if.baseline"
+    ]
+  },
+  "/oic/sec/sdi": {
+    "rt": [
+      "oic.r.sdi"
+    ],
+    "if": [
+      "oic.if.rw",
+      "oic.if.baseline"
+    ]
   }
 }
