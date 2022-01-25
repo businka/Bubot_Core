@@ -1,14 +1,13 @@
-IoT python framework based on OCF specification
+#Bubot Core
+IoT python framework based on OCF specification.
+
+Package contains basic primitives.
 
 
+##Licensing
 
-
-Licensing
----------
-
-bubot_Core is published under the Apache License 2.0, see LICENSE_ for details.
+This published under the MIT License, see [LICENSE](LICENSE) for details.
 
 
 Copyright (c) 2019 Mikhail Razgovorov 
 
-.. _LICENSE: LICENSE
