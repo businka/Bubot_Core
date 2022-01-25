@@ -1,0 +1,14 @@
+{
+  "/oic/d": {
+    "di": "10000000-0000-0000-0000-000000000001",
+    "piid": "736d7df3-55e2-47ee-830a-f6b75d6c7ba7"
+  },
+  "/oic/con": {
+    "logLevel": "debug",
+    "udpCoapIPv4": "192.168.1.13",
+    "udpCoapPort": 10001,
+    "udpCoapSslPort": 10101,
+    "udpCoapIPv6": null,
+    "udpCoapIPv6Ssl": null
+  }
+}

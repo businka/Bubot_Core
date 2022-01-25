@@ -1,10 +1,10 @@
-from setuptools import setup, find_namespace_packages
+import setuptools
 from src.BubotObj.OcfDevice.subtype.Device import __version__
 
-with open("README.md", "r") as fh:
+with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
-setup(
+setuptools.setup(
     name='Bubot_Core',
     version=__version__,
     author="Razgovorov Mikhail",
@@ -17,18 +17,24 @@ setup(
     package_data={
         '': ['*.md', '*.json'],
     },
-    packages=find_namespace_packages(where='src'),
+    packages=setuptools.find_namespace_packages(where='src'),
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
-        "Development Status :: 3 - Alpha"
         "Framework :: AsyncIO",
-        "Framework :: Bubot",
     ],
     python_requires='>=3.8',
     zip_safe=False,
     install_requires=[
+        'cbor2>5',
         'Bubot_Helpers'
-    ]
+    ],
+    entry_points={
+        'console_scripts':
+            [
+                'bubot = Bubot.Core:main',
+                'Bubot = Bubot.Core:main'
+            ]
+    }
 )

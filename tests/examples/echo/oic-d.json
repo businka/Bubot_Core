@@ -1,0 +1,16 @@
+{
+  "n": "Echo device",
+  "rt": [
+    "oic.wk.d"
+  ],
+  "if": [
+    "oic.if.baseline",
+    "oic.if.r"
+  ],
+  "dmv": "ocf.res.1.0.0",
+  "icv": "ocf.1.0.0",
+  "dmno": "EchoDevice",
+  "sv": "0.0.2",
+  "di": "10000000-0000-0000-0000-000000000001",
+  "piid": "736d7df3-55e2-47ee-830a-f6b75d6c7ba7"
+}

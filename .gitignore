@@ -1,4 +1,7 @@
+.idea
+__pycache__
+node_modules
+/venv
 /dist
 /build
-bubot_Core.egg-info
-__pycache__
+*.egg-info
