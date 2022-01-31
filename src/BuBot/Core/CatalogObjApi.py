@@ -1,6 +1,4 @@
-from Bubot.Core.ObjForm import ObjForm
-import asyncio
-from Bubot.Helpers.Action import async_action
+from Bubot.Helpers.ActionDecorator import async_action
 from BubotObj.OcfDevice.subtype.WebServer.ApiHelper import DeviceApi
 
 

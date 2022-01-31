@@ -1,8 +1,9 @@
-import urllib.parse
 import asyncio
+import urllib.parse
+
 from Bubot.Core.Coap.coap import Message
-from Bubot.Helpers.Helper import ArrayHelper
 from Bubot.Helpers.ExtException import ExtException
+from Bubot.Helpers.Helper import ArrayHelper
 
 
 # _logger = logging.getLogger(__name__)
@@ -210,11 +211,11 @@ class DeviceLink:
     def get_resource_by_uri(cls, resources, uri):
         link = ResourceLink.init_from_uri(uri)
         if not link.di:
-            raise ExtException('bad schema id, need ocf')
+            raise ExtException(message='bad schema id, need ocf')
         try:
             return resources[link.di].links[link.href]
         except KeyError:
-            raise ExtException('resource not found', detail=uri)
+            raise ExtException(message='resource not found', detail=uri)
 
     @classmethod
     def init_from_oic_res(cls, data):
@@ -314,7 +315,7 @@ class DeviceLink:
         for href in self.links:
             data = self.links[href].data
             if 'rt' not in data or 'if' not in data:
-                raise ExtException('bad resource', detail=f'{href} - rt or if not defined')
+                raise ExtException(message='bad resource', detail=f'{href} - rt or if not defined')
             res.append({
                 'href': href,
                 'rt': self.links[href].data['rt'],

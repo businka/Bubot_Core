@@ -10,10 +10,10 @@
 correspond to IANA registries."""
 
 from . import constants, types, codes
-from .constants import *
-from .types import *
 from .codes import *
+from .constants import *
 from .optionnumbers import OptionNumber
+from .types import *
 
 __all__ = constants.__all__ + types.__all__ + codes.__all__ + ['OptionNumber']
 
@@ -23,9 +23,9 @@ media_types = {0: 'text/plain',
                42: 'application/octet-stream',
                47: 'application/exi',
                50: 'application/json',
-               51: 'application/json-patch+json', # draft-ietf-core-etch-04
-               52: 'application/merge-patch+json', # draft-ietf-core-etch-04
+               51: 'application/json-patch+json',  # draft-ietf-core-etch-04
+               52: 'application/merge-patch+json',  # draft-ietf-core-etch-04
                }
 """A map from CoAP-assigned integral codes to Internet media type descriptions."""
 
-media_types_rev = {v:k for k, v in media_types.items()}
+media_types_rev = {v: k for k, v in media_types.items()}

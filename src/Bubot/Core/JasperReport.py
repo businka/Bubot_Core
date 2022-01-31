@@ -1,6 +1,7 @@
-from py4j.java_gateway import JavaGateway, CallbackServerParameters, GatewayParameters
 import json
 import uuid
+
+from py4j.java_gateway import JavaGateway, GatewayParameters
 
 
 class JasperReport:

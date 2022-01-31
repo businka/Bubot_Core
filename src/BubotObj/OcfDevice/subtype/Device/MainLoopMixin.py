@@ -1,9 +1,9 @@
 import asyncio
+import random
 import time
 
-from BubotObj.OcfDevice.subtype.Device.DeviceCore import DeviceCore
 from Bubot.Helpers.ExtException import ExtException
-import random
+from BubotObj.OcfDevice.subtype.Device.DeviceCore import DeviceCore
 
 
 class MainLoopMixin(DeviceCore):

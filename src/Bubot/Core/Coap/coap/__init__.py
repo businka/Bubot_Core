@@ -35,5 +35,5 @@ On the server side, a resource tree gets built from
 time.
 """
 
-from .numbers import *
 from .message import Message
+from .numbers import *

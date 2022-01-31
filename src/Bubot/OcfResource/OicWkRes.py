@@ -1,6 +1,6 @@
+from Bubot.Helpers.ExtException import KeyNotFound
 from Bubot.OcfResource.OcfResource import OcfResource
 from Bubot_CoAP.defines import Codes
-from Bubot.Helpers.ExtException import KeyNotFound
 
 
 class OicWkRes(OcfResource):
@@ -40,7 +40,8 @@ class OicWkRes(OcfResource):
                             suited = False
                 if suited:
                     links.append(self.device.res[href].get_link(request.destination))
-        self.device.log.debug(f'discovery {len(links)} links, get {self._href} {request.query} from {request.source} {request.destination}')
+        self.device.log.debug(
+            f'discovery {len(links)} links, get {self._href} {request.query} from {request.source} {request.destination}')
         if links:
             response.code = Codes.CONTENT.number
             response.content_type = self.actual_content_type

@@ -10,8 +10,8 @@
 Exception definitions for txThings CoAP library.
 """
 
-import warnings
 import abc
+import warnings
 
 from .numbers import codes
 

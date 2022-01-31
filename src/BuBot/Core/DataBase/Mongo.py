@@ -1,6 +1,8 @@
-from motor import motor_asyncio
 from urllib.parse import quote_plus
-from Bubot.Helpers.Action import async_action
+
+from motor import motor_asyncio
+
+from Bubot.Helpers.ActionDecorator import async_action
 
 
 class Mongo:
@@ -110,7 +112,6 @@ class Mongo:
         cursor = self.client[db][table].aggregate(_pipeline)
         result = await cursor.to_list(length=1000)
         return result
-
 
     async def find_one_and_update(self, db, table, filter, data):
         return await self.client[db][table].find_one_and_update(filter, data)

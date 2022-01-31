@@ -7,7 +7,6 @@ from unittest import IsolatedAsyncioTestCase
 from Bubot.Core.TestHelper import wait_run_device
 # from Bubot.Core.Coap.CoapServer2 import CoapServer
 from BubotObj.OcfDevice.subtype.Device.Device import Device
-from aio_dtls.tls.helper import Helper
 
 logging.basicConfig()
 logger = logging.getLogger()
@@ -61,7 +60,6 @@ class TestDevice(IsolatedAsyncioTestCase):
         if self.target is None:
             raise Exception('iotivity not found. please run SimpleServer')
         a = 1
-
 
         logger = logging.getLogger('aio_dtls.protocol_dtls')
         logger.setLevel(logging.DEBUG)
@@ -163,18 +161,26 @@ class TestDevice(IsolatedAsyncioTestCase):
         from uuid import UUID
         connection = endpoint.sock.connection_manager.get_connection(to['coaps'])
 
+        identity_hint = UUID(obt_uuid).bytes
         psk = Helper.generate_owner_psk(
-            connection, 'oic.sec.doxm.jw'.encode(), UUID(server_uuid).bytes, UUID(obt_uuid).bytes)
+            connection, 'oic.sec.doxm.jw'.encode(), UUID(server_uuid).bytes, identity_hint)
 
-        await endpoint.send_alert()
+        print('device uuid', UUID(obt_uuid).bytes.hex(" "))
+        print('psk', psk.hex(" "))
+
+        # await endpoint.send_alert()
         response = await self.device.transport_layer.send_message(
             'post',
             to,
             {'owned': True},
             secure=True,
             timeout=10000,
-            cipher=['TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA256'],
-            new_connection=True
+            identity_hint=UUID(obt_uuid).bytes,
+            new_connection=dict(
+                ciphers=['TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA256'],
+                psk=psk,
+                identity_hint=identity_hint
+            )
         )
         # import json
         # a = json.dumps(oic_res)
@@ -233,9 +239,9 @@ class TestDevice(IsolatedAsyncioTestCase):
         from aio_dtls.const.cipher_suites import CipherSuites as EnumCipherSuites
         from aio_dtls import math
         connection = Connection(("1", 1))
-        connection.security_params.client_random = b'a\xf06\xc71\xd4/\x01s\xe0_\xcf\xb2o\xa5\xd3\xe4\xb6\xa0\x99\x9d\xecYj\x8e\xcd\xb0_)\n|\xbb'
-        connection.security_params.server_random = b'a\xf06\xc7D?\x89\xdf\xa4\xc5;\xd3\\\xdd\x8f\xcc\x8a\x19#\x03\xa7S\x848\xed?\x19\xa0b\xc6\x0b"'
-        connection.security_params.master_secret = bytearray(b'N\xedK\x07\xaao\x8d\xe2l\xb4.i\x85X\xb0\xf6\xa4\x9d$*\xef\xe5\x85z<\xe7\xa2*\x13\xac\xd8\x917\x04K\xac\xc3\x9f\xdc(\xe4\xe5\xd8\xe4\x93Oe/')
+        connection.security_params.master_secret = b'\xe2\x99Bv(\xa2\xed\x07\x86\x91\xc6\xfd#\xa2e\xc0\xcf#\rb\xd76\xcap\xf2\xbd\x1f\xaa\x93\xe8*\xb8i\x1a!l\x86]<\xc8\xc1\xd0\xeb#r\x90\x08\x97'
+        connection.security_params.client_random = b'a\xf3\n\xfa\xf6/F\xca\xc2\xf3\xed\x9b\x18\x7f&\xbf\xca?:\xddU\x10tjC\xde%25\xdah\xf0'
+        connection.security_params.server_random = b'a\xf3\n\xfa3\xc0\xa6\x01\xf8 \xa9\x8c\x03\xc4bF\xd0\x0b\xa3\x11\x89\xa2-Z\x9a\x08\xcb.\xd2/\xa5\xeb'
         connection.security_params.cipher = EnumCipherSuites['TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA256']
         server_uuid = b'\x10\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01'
         obt_uuid = b'\x08\xe7\x92\xf0\xa7\x05D-d~\xdd\xf0\x98\x112~'
@@ -259,7 +265,7 @@ class TestDevice(IsolatedAsyncioTestCase):
         psk = math.p_hash(
             connection.digestmod,
             connection.security_params.master_secret,
-            "key expansion".encode()+connection.security_params.client_random + connection.security_params.server_random,
+            "key expansion".encode() + connection.security_params.client_random + connection.security_params.server_random,
             96
         )
 
@@ -273,8 +279,9 @@ class TestDevice(IsolatedAsyncioTestCase):
             ], 96
         )
 
-
-        self.assertEqual('6C C7 97 FA 1B 90 B9 2A F4 FC 38 C1 57 C6 A8 DE 18 A0 1C 61 BA 71 08 01 1F 90 EC E0 7F E7 73 BB FE 99 09 FA 5E FE E8 4B 1A 6E DB D2 D0 D2 CB 85 69 17 9A 9F 4D 72 44 45 ED AC C7 11 CB 70 EF 9B B5 39 0C 94 EC 90 42 D6 F9 2E 20 0B F3 F8 2A 3E 51 29 00 9C CD 2D F0 58 B3 90 85 5B B4 ED DB B0', psk.hex(" ").upper())
+        self.assertEqual(
+            '6C C7 97 FA 1B 90 B9 2A F4 FC 38 C1 57 C6 A8 DE 18 A0 1C 61 BA 71 08 01 1F 90 EC E0 7F E7 73 BB FE 99 09 FA 5E FE E8 4B 1A 6E DB D2 D0 D2 CB 85 69 17 9A 9F 4D 72 44 45 ED AC C7 11 CB 70 EF 9B B5 39 0C 94 EC 90 42 D6 F9 2E 20 0B F3 F8 2A 3E 51 29 00 9C CD 2D F0 58 B3 90 85 5B B4 ED DB B0',
+            psk.hex(" ").upper())
 
         self.assertEqual('64 5F 31 FE B8 E4 60 AE 8E 91 DA FA 29 BC D0 22', psk)
 
@@ -283,7 +290,6 @@ class TestDevice(IsolatedAsyncioTestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
 
 log = '''
 <oc_tls_prf:1583>: msg hmac update:

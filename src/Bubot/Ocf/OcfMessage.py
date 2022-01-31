@@ -1,6 +1,3 @@
-import socket
-
-
 class OcfMessage:
     def __init__(self):
         self.source = None

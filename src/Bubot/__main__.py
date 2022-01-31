@@ -1,7 +1,8 @@
 import argparse
+import logging
 
 from Bubot.Helpers.ExtException import HandlerNotFoundError
-import logging
+
 # from Bubot.Core import main
 
 parser = argparse.ArgumentParser(description='IoT framework based on OCF specification')
@@ -25,4 +26,3 @@ try:
 except HandlerNotFoundError:
     print(f'Error: class_name {args.class_name} not found. run "bubot -h" for help')
 device.run()
-

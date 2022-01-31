@@ -15,8 +15,8 @@ The option numbers come with methods that can be used to evaluate their
 properties, see the `OptionNumber` class for details.
 """
 
-from ..util import ExtensibleIntEnum
 from .. import optiontypes
+from ..util import ExtensibleIntEnum
 
 
 # =============================================================================

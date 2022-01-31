@@ -1,5 +1,5 @@
-from os.path import dirname, normpath, isdir, isfile
 from json import load
+from os.path import dirname, normpath, isfile
 
 
 class ObjModel:

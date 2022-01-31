@@ -11,9 +11,9 @@
 Note that these are not particular to aiocoap, but are used at different places
 in aiocoap and thus shared here."""
 
-import sys
-import logging
 import asyncio
+import logging
+import sys
 
 
 class AsyncCLIDaemon:

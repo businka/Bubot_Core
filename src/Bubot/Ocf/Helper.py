@@ -1,9 +1,11 @@
-from BubotObj.OcfDevice.subtype.Device.Device import Device
-from Bubot.Helpers.ExtException import ExtException
-from sys import path as syspath
 import os
+from sys import path as syspath
+
+from Bubot.Helpers.ActionDecorator import action
+from BubotObj.OcfDevice.subtype.Device.Device import Device
 
 
+@action
 def find_drivers(**kwargs):
     result = {}
     log = kwargs.get('log')
@@ -17,9 +19,9 @@ def find_drivers(**kwargs):
                     continue
                 try:
                     driver = Device.init_from_config(class_name=device_name)
-                except ExtException as err:
+                except Exception as err:
                     if log:
-                        log.error(err)
+                        log.error(f'Init from config {device_name}: {err}')
                     continue
                 if driver.template:
                     continue
@@ -54,4 +56,3 @@ def find_schemas(**kwargs):
             result.append(schemas_dir)
 
     return result
-

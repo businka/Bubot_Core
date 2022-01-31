@@ -16,8 +16,8 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 logger = logging.getLogger('Bubot_CoAP')
 logger.setLevel(logging.INFO)
-logger = logging.getLogger('aio_dtls')
-logger.setLevel(logging.DEBUG)
+# logger = logging.getLogger('aio_dtls')
+# logger.setLevel(logging.DEBUG)
 
 
 

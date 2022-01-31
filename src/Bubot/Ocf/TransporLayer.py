@@ -1,6 +1,7 @@
 import asyncio
 from socket import AF_INET, AF_INET6
 from urllib.parse import urlparse
+from uuid import UUID
 
 from Bubot.Helpers.ExtException import ExtException, ExtTimeoutError
 from Bubot_CoAP import defines
@@ -63,8 +64,12 @@ class TransportLayer:
                                                        multicast_addresses=self.coap_discovery[AF_INET],
                                                        multicast_port=self.coap_discovery_port,
                                                        keyfile=keyfile,
-                                                       certfile=certfile
-                                                       )
+                                                       certfile=certfile,
+                                                       socket_props=dict(
+                                                           identity_hint=UUID(self.device.get_device_id()).bytes,
+                                                           psk=None,
+                                                           ciphers=None
+                                                       ))
                     if not unicast_ssl_port:
                         unicast_ssl_port = res[0].address[1]
                         self.device.set_param('/oic/con', 'udpCoapSslPort', unicast_ssl_port)

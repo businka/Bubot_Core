@@ -1,6 +1,7 @@
+import asyncio
+
 from BubotObj.OcfDevice.subtype.Device.Device import Device
 from .__init__ import __version__ as device_version
-import asyncio
 
 
 # _logger = logging.getLogger(__name__)

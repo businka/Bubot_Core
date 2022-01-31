@@ -6,9 +6,9 @@
 # aiocoap is free software, this file is published under the MIT license as
 # described in the accompanying LICENSE file.
 
-import urllib.parse
-import struct
 import copy
+import struct
+import urllib.parse
 
 from . import error
 from .numbers import *

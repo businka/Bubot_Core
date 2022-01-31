@@ -3,20 +3,21 @@ TODO Проверка смены IP адреса и автоматическая
 
 """
 
+import asyncio
+import json
+import logging
+import os
+import re
+from os import path
 from typing import TypeVar, Type
-from BubotObj.OcfDevice.subtype.Device.MainLoopMixin import MainLoopMixin
-from Bubot.Helpers.ExtException import ExtException, ExtTimeoutError
+from uuid import uuid4
+
 # from .QueueMixin import QueueMixin
 from Bubot.Core.OcfMessage import OcfRequest
+from Bubot.Helpers.ExtException import ExtException, ExtTimeoutError
 from Bubot.Helpers.Helper import Helper
+from BubotObj.OcfDevice.subtype.Device.MainLoopMixin import MainLoopMixin
 from .__init__ import __version__ as device_version
-from os import path
-import os
-import json
-import asyncio
-import logging
-import re
-from uuid import uuid4
 
 # _logger = logging.getLogger('OcfDevice')
 tDevice = TypeVar('tDevice', bound='Device')
@@ -261,4 +262,3 @@ class Device(MainLoopMixin):
             raise Exception(e)
         except Exception as e:
             raise ExtException(e)
-

@@ -6,8 +6,8 @@
 # aiocoap is free software, this file is published under the MIT license as
 # described in the accompanying LICENSE file.
 
-from itertools import chain
 import struct
+from itertools import chain
 
 from .numbers import *
 

@@ -79,7 +79,7 @@ EXCHANGE_LIFETIME = MAX_TRANSMIT_SPAN + MAX_RTT
 acknowledgement is no longer expected, i.e. message layer information about the
 message exchange can be purged"""
 
-DEFAULT_BLOCK_SIZE_EXP = 6 # maximum block size 1024
+DEFAULT_BLOCK_SIZE_EXP = 6  # maximum block size 1024
 """Default size exponent for blockwise transfers."""
 
 EMPTY_ACK_DELAY = 0.1

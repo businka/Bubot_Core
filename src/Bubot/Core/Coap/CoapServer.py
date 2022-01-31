@@ -1,10 +1,10 @@
-import socket
 import asyncio
+import socket
 import struct
-from Bubot.Core.Coap.CoapProtocol import CoapProtocol
-from Bubot.Helpers.ExtException import ExtTimeoutError, CancelOperation
 from random import randrange
 
+from Bubot.Core.Coap.CoapProtocol import CoapProtocol
+from Bubot.Helpers.ExtException import ExtTimeoutError, CancelOperation
 
 
 class CoapServer:

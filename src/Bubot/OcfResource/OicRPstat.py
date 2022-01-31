@@ -16,4 +16,3 @@ class OicRPstat(OcfResource):
         self.debug('post', request)
         response.code = Codes.CHANGED.number
         return self, response
-

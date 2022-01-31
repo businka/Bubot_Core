@@ -1,5 +1,5 @@
-from Bubot.Helpers.Helper import Helper
 from Bubot.Helpers.ExtException import ExtException, HandlerNotFoundError
+from Bubot.Helpers.Helper import Helper
 
 
 class BubotHelper:

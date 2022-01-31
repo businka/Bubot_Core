@@ -18,10 +18,10 @@
           "description": "udp device port"
         },
         "udpCoapIPv4": {
-          "type": "boolean"
+          "type": "string"
         },
         "udpCoapIPv6": {
-          "type": "boolean"
+          "type": "string"
         },
         "udpCoapIPv4Ssl": {
           "type": "boolean"

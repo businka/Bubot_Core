@@ -1,8 +1,5 @@
 # import sys
-import logging
 from multiprocessing import Lock
-import multiprocessing
-
 
 
 class Logger:

@@ -61,10 +61,10 @@
     "logLevel": "info",
     "udpCoapPort": 0,
     "udpCoapSslPort": 0,
-    "udpCoapIPv4": true,
-    "udpCoapIPv6": true,
+    "udpCoapIPv4": "",
+    "udpCoapIPv6": null,
     "udpCoapIPv4Ssl": true,
-    "udpCoapIPv6Ssl": true,
+    "udpCoapIPv6Ssl": null,
     "listening": [],
     "observed": []
   },

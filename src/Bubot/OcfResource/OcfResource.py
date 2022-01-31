@@ -1,4 +1,4 @@
-from Bubot.Helpers.ExtException import ExtException, KeyNotFound
+from Bubot.Helpers.ExtException import KeyNotFound
 from Bubot_CoAP.resources.resource import Resource
 
 

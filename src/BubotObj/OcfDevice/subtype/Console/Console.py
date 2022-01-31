@@ -1,7 +1,8 @@
-from BubotObj.OcfDevice.subtype.Device.Device import Device
-from datetime import datetime
-from .__init__ import __version__ as device_version
 import asyncio
+from datetime import datetime
+
+from BubotObj.OcfDevice.subtype.Device.Device import Device
+from .__init__ import __version__ as device_version
 
 
 # _logger = logging.getLogger(__name__)

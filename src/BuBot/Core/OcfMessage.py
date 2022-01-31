@@ -1,13 +1,15 @@
 # from aiocoap import Message, NON, Code
 # from Bubot.Core.Coap.coap import Message, NON, Code
-from Bubot_CoAP.messages.request import Request
-from Bubot_CoAP.messages.numbers import NON, Code
-from Bubot_CoAP.messages.option import Option
-from Bubot_CoAP import defines
+import urllib.parse
+
+import cbor2
+
 from Bubot.Core.DeviceLink import ResourceLink
 from Bubot.Helpers.ExtException import ExtException, dumps_error
-import urllib.parse
-import cbor2
+from Bubot_CoAP import defines
+from Bubot_CoAP.messages.numbers import NON, Code
+from Bubot_CoAP.messages.option import Option
+from Bubot_CoAP.messages.request import Request
 
 
 class OcfMessage:
@@ -91,7 +93,7 @@ class OcfRequest(OcfMessage):
 
         option = Option()
         option.number = defines.OptionRegistry.URI_QUERY.number
-        option.value = self.encode_query(self.query)   # todo  разобраться что тут надо
+        option.value = self.encode_query(self.query)  # todo  разобраться что тут надо
         request.add_option(option)
 
         # params = dict(
@@ -110,8 +112,6 @@ class OcfRequest(OcfMessage):
         #     payload=cbor2.dumps(self.cn) if self.cn else b''
         # )
         # msg2 = Message(**params)
-
-
 
     @classmethod
     def decode_from_coap(cls, msg, multicast=False):

@@ -1,12 +1,13 @@
-from Bubot.Helpers.Helper import Helper
-from Bubot.Helpers.ExtException import ExtException, KeyNotFound
 import asyncio
-from Bubot.Core.OcfMessage import OcfResponse, OcfRequest
-from Bubot.Core.BubotHelper import BubotHelper
-from uuid import uuid4
 import logging
-from Bubot.Core.DeviceLink import DeviceLink, ResourceLink
 import os.path
+from uuid import uuid4
+
+from Bubot.Core.BubotHelper import BubotHelper
+from Bubot.Core.DeviceLink import ResourceLink
+from Bubot.Core.OcfMessage import OcfResponse, OcfRequest
+from Bubot.Helpers.ExtException import ExtException, KeyNotFound
+from Bubot.Helpers.Helper import Helper
 from Bubot.Ocf.ResourceLayer import ResourceLayer
 from Bubot.Ocf.TransporLayer import TransportLayer
 
@@ -203,7 +204,7 @@ class DeviceCore:
     #                         answer['result'][device['di']] = DeviceLink.init_from_oic_res(device)
     #         else:
     #             self.log.error('{0}'.format(message.cn))
-        # self.log.debug('end from {}'.format(message.to.uid))
+    # self.log.debug('end from {}'.format(message.to.uid))
 
     async def on_update_oic_mnt(self, message):
         result = self.update_param(message.to.href, None, message.cn)

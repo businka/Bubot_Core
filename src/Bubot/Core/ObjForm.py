@@ -1,5 +1,5 @@
-from os.path import dirname, normpath, isdir, isfile
 from json import load
+from os.path import dirname, normpath, isfile
 
 
 class ObjForm:
@@ -33,4 +33,3 @@ class ObjForm:
     def add_projection(cls, obj_handler, form_name, obj):
         self = cls.get_form(obj_handler.__class__, form_name)
         obj['projection'] = self.get_projection()
-
