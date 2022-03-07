@@ -28,7 +28,7 @@ setuptools.setup(
     zip_safe=False,
     install_requires=[
         'cbor2>5',
-        'Bubot_Helpers'
+        'Bubot_Helpers>=1.0.4'
     ],
     entry_points={
         'console_scripts':
