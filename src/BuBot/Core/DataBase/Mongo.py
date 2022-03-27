@@ -1,8 +1,7 @@
 from urllib.parse import quote_plus
 
-from motor import motor_asyncio
-
 from Bubot.Helpers.ActionDecorator import async_action
+from motor import motor_asyncio
 
 
 class Mongo:
@@ -76,13 +75,19 @@ class Mongo:
 
     @async_action
     async def query(self, db, table, **kwargs):
+        filter = kwargs.get('filter', None)
+        if filter is not None:
+            full_text_search = filter.pop('_search', None)
+            if full_text_search:
+                filter['$text'] = {'$search': full_text_search}
+
         cursor = self.client[db][table].find(
             filter=kwargs.get('filter', None),
             projection=kwargs.get('projection', None),
             skip=kwargs.get('skip', 0),
             limit=kwargs.get('limit', 1000)
         )
-        sort = kwargs.get('sort')
+        sort = kwargs.get('sort', None)
         if sort:
             cursor.sort(sort)
         result = await cursor.to_list(length=1000)

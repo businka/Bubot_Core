@@ -1,4 +1,4 @@
-class PythonFastStorage:
+class SimpleFastStorage:
     def __init__(self):
         self.storage = {}
 

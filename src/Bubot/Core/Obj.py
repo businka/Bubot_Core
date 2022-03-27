@@ -1,25 +1,25 @@
+from Bubot.Helpers.ActionDecorator import async_action
+from Bubot.Helpers.ExtException import KeyNotFound
+from Bubot.Helpers.Helper import Helper
 from bson import DBRef
 
 from Bubot.Core.BubotHelper import BubotHelper
 from Bubot.Core.ObjForm import ObjForm
 from Bubot.Core.ObjModel import ObjModel
-from Bubot.Helpers.ActionDecorator import async_action
-from Bubot.Helpers.ExtException import KeyNotFound
-from Bubot.Helpers.Helper import Helper
 
 
 class Obj:
-    file = __file__
+    file = __file__  # должен быть в каждом файле наследники для чтения форм
     extension = False
     name = None
+    key_property = '_id'
 
-    def __init__(self, storage, **kwargs):
+    def __init__(self, storage, *, account_id=None, lang=None, data=None, **kwargs):
         self.storage = storage
-        self.account_id = kwargs.get('account_id')
-        self.lang = kwargs.get('lang')
-        self.form_id = kwargs.get('form')
+        self.account_id = account_id
+        self.lang = lang
         self.data = None
-        data = kwargs.get('data')
+        data = data
         if data:
             self.init_by_data(data)
         self.debug = False
@@ -51,9 +51,11 @@ class Obj:
         return await self.find_by_id(obj_link['_ref'].id, **kwargs)
 
     @async_action
-    async def find_by_id(self, _id, **kwargs):
+    async def find_by_id(self, _id, *, _form="Item", projection=None, **kwargs):
         action = kwargs['_action']
-        self.add_projection(kwargs)
+        if not _id:
+            raise KeyNotFound(detail='_id')
+        self.add_projection(_form, kwargs)
         res = action.add_stat(
             await self.storage.find_one(self.db, self.name, dict(_id=_id), **kwargs))
         if res:
@@ -94,7 +96,12 @@ class Obj:
 
     @async_action
     async def query(self, **kwargs):
+        kwargs = await self.query_set_default_params(**kwargs)
         return await self.storage.query(self.db, self.name, **kwargs)
+
+    @async_action
+    async def query_set_default_params(self, **kwargs):
+        return kwargs
 
     async def count(self, **kwargs):
         return await self.storage.count(self.db, self.name, **kwargs)
@@ -132,9 +139,9 @@ class Obj:
     def get_form(cls, form_name):
         return ObjForm.get_form(cls, form_name)
 
-    def add_projection(self, dest_obj):
-        if self.form_id:
-            return ObjForm.add_projection(self, self.form_id, dest_obj)
+    def add_projection(self, form_id, dest_obj):
+        if form_id:
+            return ObjForm.add_projection(self, form_id, dest_obj)
 
     # @classmethod
     # def get_obj_type(cls):

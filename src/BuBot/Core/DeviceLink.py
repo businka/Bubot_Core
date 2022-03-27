@@ -1,7 +1,7 @@
 import asyncio
 import urllib.parse
 
-from Bubot.Core.Coap.coap import Message
+# from Bubot.Core.Coap.coap import Message
 from Bubot.Helpers.ExtException import ExtException
 from Bubot.Helpers.Helper import ArrayHelper
 
@@ -21,8 +21,8 @@ class ResourceLink:
             return cls.init_from_uri(value)
         if isinstance(value, dict):
             return cls.init_from_link(value)
-        if isinstance(value, Message):
-            return cls.init_from_msg(value)
+        # if isinstance(value, Message):
+        #     return cls.init_from_msg(value)
         if isinstance(value, ResourceLink):
             return value
         return None
@@ -240,7 +240,7 @@ class DeviceLink:
         return self
 
     def update_from_oic_res(self, data):
-        raise NotImplemented()
+        raise NotImplementedError()
 
     async def retrieve(self, sender_device, link):
         _data = self.links[link].retrieve(sender_device)

@@ -8,7 +8,7 @@ class ObjForm:
 
     @classmethod
     def get_form(cls, obj_handler, form_name):
-        form_path = normpath(f'{dirname(obj_handler.file)}/form/{form_name}.form.json')
+        form_path = normpath(f'{dirname(obj_handler.file)}/forms/{form_name}.form.json')
         if not isfile(form_path):
             if not obj_handler.extension:
                 return None
@@ -19,17 +19,22 @@ class ObjForm:
         with open(form_path, 'r', encoding='utf-8') as file:
             return cls(data=load(file))
 
-    def get_projection(self):
-        fields = self.data.get('fields')
-        if not fields:
-            return {'_id': 1, 'title': 1}
+    def get_projection(self, default):
+        if 'projection' not in self.data:
+            return default
+        projection = self.data['projection']
+        if not projection:
+            return projection
         res = {}
-        for elem in fields:
-            if fields[elem]:
+        for elem in projection:
+            if projection[elem]:
                 res[elem] = True
         return res
 
     @classmethod
     def add_projection(cls, obj_handler, form_name, obj):
         self = cls.get_form(obj_handler.__class__, form_name)
-        obj['projection'] = self.get_projection()
+        if self:
+            obj['projection'] = self.get_projection({obj_handler.key_property: 1})
+        else:
+            obj['projection'] = {obj_handler.key_property: 1}

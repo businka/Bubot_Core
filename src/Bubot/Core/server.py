@@ -4,7 +4,7 @@ from Bubot.Core.FormHandler import FormHandler
 from aiohttp import web
 
 from Bubot.Core.DataBase.Mongo import Mongo as Storage
-from Bubot.Core.FastStorage.PythonFastStorage import PythonFastStorage as FastStorage
+from Bubot.Core.FastStorage.Simle import PythonFastStorage as FastStorage
 from Bubot.Core.ReportHandler import ReportHandler
 
 

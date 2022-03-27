@@ -120,7 +120,7 @@ class DeviceCore:
         os.remove(self.get_config_path())
 
     def save_config(self):
-        raise NotImplemented()
+        raise NotImplementedError()
         # listener = self.listener.get(name, [])
         # task = []
         # for device in listener:
@@ -334,7 +334,10 @@ class DeviceCore:
                                    dump=dict(op='observe', to=to)) from None
 
     async def find_devices(self, **kwargs):
-        raise NotImplemented()
+        raise NotImplementedError()
+
+    def add_route(self, app):
+        raise NotImplementedError()
 
     @classmethod
     def get_device_class(cls, class_name):
