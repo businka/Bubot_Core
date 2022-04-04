@@ -10,7 +10,7 @@ from Bubot.Helpers.ExtException import KeyNotFound
 from Bubot.Helpers.Helper import ArrayHelper
 from BubotObj.OcfDevice.subtype.Device.Device import Device
 from BubotObj.OcfDevice.subtype.VirtualServer import __version__ as device_version
-
+from Bubot.Helpers.ExtException import ExtException
 
 # _logger = multiprocessing.get_logger()
 
@@ -64,9 +64,12 @@ class VirtualServer(Device):
         links = self.get_param('/oic/con', 'running_devices')
         if links:
             for link in links:
-                device = await self.action_run_device(link)
-                if device:
-                    link['n'] = device.get_device_name()
+                try:
+                    device = await self.action_run_device(link)
+                    if device:
+                        link['n'] = device.get_device_name()
+                except Exception as err:
+                    raise ExtException(message='Not run device', detail=f'{link.get("n")} - {str(err)}', parent=err)
         await super().on_pending()
         self.save_config()
 

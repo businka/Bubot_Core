@@ -103,7 +103,7 @@ class Device(MainLoopMixin):
             self: Type[tDevice] = _handler(**kwargs)
         except Exception as err:
             raise ExtException(
-                'Bad driver',
+                message='Bad driver',
                 detail=class_name,
                 action='OcfDevice.init_from_config',
                 parent=err,
@@ -134,7 +134,7 @@ class Device(MainLoopMixin):
             return self
         except Exception as e:
             raise ExtException(
-                'Bad driver config',
+                message='Bad driver config',
                 detail=self.__class__.__name__,
                 action='OcfDevice.init_from_config',
                 dump=dict(
