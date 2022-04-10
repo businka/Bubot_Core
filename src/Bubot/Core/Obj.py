@@ -1,11 +1,11 @@
-from Bubot.Helpers.ActionDecorator import async_action
-from Bubot.Helpers.ExtException import KeyNotFound
-from Bubot.Helpers.Helper import Helper
 from bson import DBRef
 
 from Bubot.Core.BubotHelper import BubotHelper
 from Bubot.Core.ObjForm import ObjForm
 from Bubot.Core.ObjModel import ObjModel
+from Bubot.Helpers.ActionDecorator import async_action
+from Bubot.Helpers.ExtException import KeyNotFound
+from Bubot.Helpers.Helper import Helper
 
 
 class Obj:
@@ -51,7 +51,7 @@ class Obj:
         return await self.find_by_id(obj_link['_ref'].id, **kwargs)
 
     @async_action
-    async def find_by_id(self, _id, *, _form="Item", projection=None, **kwargs):
+    async def find_by_id(self, _id, *, _form="Item", **kwargs):
         action = kwargs['_action']
         if not _id:
             raise KeyNotFound(detail='_id')
@@ -60,18 +60,20 @@ class Obj:
             await self.storage.find_one(self.db, self.name, dict(_id=_id), **kwargs))
         if res:
             self.init_by_data(res)
-            return action.set_end(res)
+            return res
         raise KeyNotFound()
 
-    def get_link(self, properties=None):
+    def get_link(self, *, properties=None, add_obj_type=False):
         '''
 
+        :param add_obj_type: признак необходимости добавлять тип объекта
         :param properties: список свойств объекта которые нужно включить в ссылку
         :return: объект ссылки
         '''
 
         result = {
-            "_ref": DBRef(self.name, self.obj_id)
+            # "_ref": DBRef(self.name, self.obj_id)
+            "_id": self.obj_id
         }
         for elem in self.data:  # добаляем заголовок на всех языках
             if elem[:5] == 'title':
@@ -109,7 +111,6 @@ class Obj:
     @async_action
     async def update(self, data=None, **kwargs):
         return await self.storage.update(self.db, self.name, data if data else self.data, **kwargs)
-        pass
 
     @async_action
     async def push(self, field, item):

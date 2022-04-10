@@ -1,7 +1,8 @@
 from urllib.parse import quote_plus
 
-from Bubot.Helpers.ActionDecorator import async_action
 from motor import motor_asyncio
+
+from Bubot.Helpers.ActionDecorator import async_action
 
 
 class Mongo:
@@ -118,5 +119,5 @@ class Mongo:
         result = await cursor.to_list(length=1000)
         return result
 
-    async def find_one_and_update(self, db, table, filter, data):
-        return await self.client[db][table].find_one_and_update(filter, data)
+    async def find_one_and_update(self, db, table, filter, data, **kwargs):
+        return await self.client[db][table].find_one_and_update(filter, {'$set': data}, **kwargs)
