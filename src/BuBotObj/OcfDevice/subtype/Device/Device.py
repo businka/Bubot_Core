@@ -122,7 +122,7 @@ class Device(MainLoopMixin):
                 Helper.update_dict(_config, config)
             self.resource_layer.init_from_config(_config)
             if not self.get_param('/oic/d', 'piid', None):
-                self.set_param('/oic/d', 'piid', str(uuid4()), save_config=True)
+                self.set_param('/oic/d', 'piid', str(uuid4()), save_config=kwargs.get('save_config', True))
 
             di = self.get_device_id()
             if not self.get_device_id():

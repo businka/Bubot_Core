@@ -18,7 +18,7 @@ def find_drivers(**kwargs):
                 if not os.path.isfile(device_path):
                     continue
                 try:
-                    driver = Device.init_from_config(class_name=device_name)
+                    driver = Device.init_from_config(class_name=device_name, save_config=False)
                 except Exception as err:
                     if log:
                         log.error(f'Init from config {device_name}: {err}')

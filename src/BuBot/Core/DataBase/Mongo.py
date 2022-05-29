@@ -1,7 +1,9 @@
 from urllib.parse import quote_plus
 
-from Bubot.Helpers.ActionDecorator import async_action
 from motor import motor_asyncio
+
+from Bubot.Helpers.ActionDecorator import async_action
+from Bubot.Helpers.ExtException import ExtException
 
 
 class Mongo:
@@ -35,9 +37,12 @@ class Mongo:
         return None
 
     @async_action
-    async def update(self, db, table, data, create=True, **kwargs):
-        if data.get('_id'):
-            res = await self.client[db][table].update_one(dict(_id=data['_id']), {'$set': data}, upsert=create)
+    async def update(self, db, table, data, create=True, *, where=None, _action=None, **kwargs):
+        if data.get('_id') or where:
+            _where = where if where else dict(_id=data['_id'])
+            res = await self.client[db][table].update_one(
+                _where,
+                {'$set': data}, upsert=create, **kwargs)
         else:
             if create:
                 res = await self.client[db][table].insert_one(data)
@@ -46,65 +51,64 @@ class Mongo:
                 raise KeyError
         return res
 
-    @async_action
     async def push(self, db, table, uid, field, item, **kwargs):
         res = await self.client[db][table].update_one({'_id': uid}, {'$push': {field: item}}, upsert=False)
         return res
 
-    @async_action
     async def pull(self, db, table, uid, field, item, **kwargs):
-        kwargs.pop('_action')
         res = await self.client[db][table].update_one({'_id': uid}, {'$pull': {field: item}}, upsert=False)
         return res
 
-    @async_action
-    async def find_one(self, db, table, _filter, **kwargs):
-        kwargs.pop('_action')
-        return await self.client[db][table].find_one(_filter, **kwargs)
+    async def find_one(self, db, table, where, **kwargs):
+        return await self.client[db][table].find_one(where, **kwargs)
 
-    async def delete_one(self, db, table, _filter):
-        return await self.client[db][table].delete_one(_filter)
+    async def delete_one(self, db, table, where):
+        return await self.client[db][table].delete_one(where)
 
-    async def delete_many(self, db, table, _filter):
-        return await self.client[db][table].delete_many(_filter)
+    async def delete_many(self, db, table, where):
+        return await self.client[db][table].delete_many(where)
 
     async def count(self, db, table, **kwargs):
         return await self.client[db][table].count_documents(
-            kwargs.get('filter', {})
+            kwargs.get('where', {})
         )
 
-    @async_action
-    async def query(self, db, table, **kwargs):
-        filter = kwargs.get('filter', None)
-        if filter is not None:
-            full_text_search = filter.pop('_search', None)
+    @staticmethod
+    def check_db_and_table(db, table, action):
+        if not db:
+            raise ExtException(message='db not defined', action=action)
+        if not table:
+            raise ExtException(message='table not defined', action=action)
+
+    async def query(self, db, table, *, where=None, projection=None, skip=0, limit=1000, order=None, _action=None,
+                    **kwargs):
+        self.check_db_and_table(db, table, _action)
+        if where is not None:
+            full_text_search = where.pop('_search', None)
             if full_text_search:
-                filter['$text'] = {'$search': full_text_search}
+                where['$text'] = {'$search': full_text_search}
 
         cursor = self.client[db][table].find(
-            filter=kwargs.get('filter', None),
-            projection=kwargs.get('projection', None),
-            skip=kwargs.get('skip', 0),
-            limit=kwargs.get('limit', 1000)
+            filter=where,
+            projection=projection,
+            skip=skip,
+            limit=limit
         )
-        sort = kwargs.get('sort', None)
-        if sort:
-            cursor.sort(sort)
+        order = order
+        if order:
+            cursor.sort(order)
         result = await cursor.to_list(length=1000)
         await cursor.close()
         return result
 
-    @async_action
-    async def pipeline(self, db, table, pipeline, **kwargs):
-        projection = kwargs.get('projection')
-        filter = kwargs.get('filter')
-        skip = kwargs.get('skip', 0)
-        sort = kwargs.get('sort')
-        limit = kwargs.get('limit', 1000)
+    async def pipeline(self, db, table, pipeline, *, projection=None, where=None, skip=0, sort=None, limit=1000,
+                       **kwargs):
         _pipeline = []
+        if where:
+            _pipeline.append({'$match': where})
+
         _pipeline += pipeline
-        if filter:
-            _pipeline.append({'$match': filter})
+
         if projection:
             _pipeline.append({'$project': projection})
         if sort:
@@ -115,8 +119,8 @@ class Mongo:
             _pipeline.append({'$limit': limit})
 
         cursor = self.client[db][table].aggregate(_pipeline)
-        result = await cursor.to_list(length=1000)
+        result = await cursor.to_list(length=limit)
         return result
 
-    async def find_one_and_update(self, db, table, filter, data):
-        return await self.client[db][table].find_one_and_update(filter, data)
+    async def find_one_and_update(self, db, table, where, data, **kwargs):
+        return await self.client[db][table].find_one_and_update(where, {'$set': data}, **kwargs)

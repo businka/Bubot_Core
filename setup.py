@@ -28,7 +28,7 @@ setuptools.setup(
     zip_safe=False,
     install_requires=[
         'cbor2>5',
-        'Bubot_Helpers>=0.0.4'
+        'Bubot_Helpers>=0.0.5'
         'Bubot_CoAP>=1.0.4'
     ],
     entry_points={
