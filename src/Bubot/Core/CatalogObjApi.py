@@ -68,17 +68,17 @@ class CatalogObjApi(DeviceApi):
 
     def prepare_query_filter(self, data):
         page = data.pop('page', None)
-        filter = {}
+        where = {}
         limit = min(self.query_limit, int(data.pop('limit', self.query_limit)))
         if limit == -1:
             limit = None
         for key in data:
             try:
-                filter[key] = self.filter_fields[key](filter, key, data[key])
+                where[key] = self.filter_fields[key](where, key, data[key])
             except:
-                filter[key] = data[key]
+                where[key] = data[key]
         result = {
-            'filter': filter
+            'where': where
         }
 
         if limit:

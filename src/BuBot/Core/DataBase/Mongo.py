@@ -94,7 +94,6 @@ class Mongo:
             skip=skip,
             limit=limit
         )
-        order = order
         if order:
             cursor.sort(order)
         result = await cursor.to_list(length=1000)

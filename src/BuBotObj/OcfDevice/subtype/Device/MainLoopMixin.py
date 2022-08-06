@@ -25,7 +25,7 @@ class MainLoopMixin(DeviceCore):
                 method = f'on_{status}'
                 try:
                     await getattr(self, method)()
-                    await asyncio.sleep(0.01)
+                    await asyncio.sleep(0)
                 except asyncio.CancelledError:
                     if self.get_param('/oic/mnt', 'currentMachineState', 'pending'):
                         self.set_param('/oic/mnt', 'currentMachineState', 'cancelled')

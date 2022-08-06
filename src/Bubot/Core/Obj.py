@@ -8,70 +8,6 @@ from Bubot.Helpers.Helper import Helper
 from Bubot.Core.BubotHelper import BubotHelper
 
 
-api_obj = {
-    "ЗаказПокупателя": {
-        "title": "Заказ покупателя",
-        "priority_type": 8,
-        "keys": [
-            {
-                "key": "Документ",
-                "fields": [
-                    {
-                        "label": "Дата",
-                        "path": "Дата",
-                        "format": "date"
-                    },
-                    {
-                        "label": "Номер",
-                        "path": "Номер"
-                    },
-                    {
-                        "label": "Организация",
-                        "path": "НашаОрганизация",
-                        "object": "НашаОрганизация"
-                    },
-                    {
-                        "label": "Контрагент",
-                        "path": "Контрагент",
-                        "object": "Контрагент"
-                    }
-                ]
-            }
-        ],
-        "check_filling": ["Дата"],
-        "subobjects": [
-            "Статус",
-            "ТаблДок.Номенклатура",
-            "Контрагент",
-            "НашаОрганизация"
-        ]
-    },
-    "СтатусЗаказаПокупателя": {
-        "title": "Статус заказа покупателя",
-        "priority_type": 1,
-        "keys": [],
-        "check_filling": ["Название"],
-        "subobjects": []
-    },
-    "Номенклатура": {
-        "title": "Номенклатура",
-        "priority_type": 4,
-        "keys": [
-            {
-                'key': 'code',
-                'fields': [{'label': 'Код', 'path': 'Код'}]
-            },
-            {
-                'key': 'vendor_code',
-                'fields': [{'label': 'Артикул', 'path': 'Артикул'}]
-            }
-        ],
-        "check_filling": ["Код", "Артикул"],
-        "subobjects": []
-    }
-}
-
-
 class Obj:
     file = __file__  # должен быть в каждом файле наследники для чтения форм
     extension = False
@@ -194,7 +130,7 @@ class Obj:
         try:
             data['_id']
         except KeyError:
-            if self.uuid_id:
+            if self.uuid_id and not kwargs.get('where'):
                 data['_id'] = str(uuid4())
         return await self.storage.update(self.db, self.name, data, **kwargs)
 
@@ -279,85 +215,6 @@ class Obj:
     @property
     def title(self, lang=None):
         return self.data['title']
-
-    @classmethod
-    async def get_obj_meta(cls, obj_type):
-        return api_obj[obj_type]
-
-    @classmethod
-    def get_obj_keys(cls, obj_data, *, connection_index='', external_system_uid=None, obj_meta_keys=None,
-                     obj_type_is=None, obj_type=None, obj_id=None, obj_title=None, fill_id_from_data=False):
-        if obj_meta_keys is None:
-            raise KeyNotFound(message='object keys field not defined', detail=cls.__name__)
-        if fill_id_from_data:
-            try:
-                obj_type_is = obj_data[f'ТипИС{connection_index}']
-                obj_type = obj_data['Тип']
-                obj_id = obj_data[f'ИдИС{connection_index}']
-                obj_title = obj_data['Название']
-            except KeyError as err:
-                raise KeyNotFound(detail=err, dump={'obj_data': obj_data}, action='get_obj_keys')
-        keys = []
-        for key in obj_meta_keys:
-            try:
-                key_name = key['key']
-                fields = key['fields']
-            except KeyError:
-                continue
-            obj_key = dict(
-                system=external_system_uid,
-                type=obj_type,
-                type_is=obj_type_is,
-                title=obj_title,
-                uid=obj_id,
-                key=key_name
-            )
-            not_null = False
-            for index in range(5):
-                try:
-                    field = fields[index]
-                except IndexError:
-                    obj_key[f'val{index}'] = None
-                    continue
-
-                value = obj_data.get(field['path'])  # todo: добавить разбор пути
-                if value:
-                    not_null = True
-                format_value = field.get('format')
-                if format_value:
-                    if format_value == 'date':
-                        value = value.strftime('%Y-%m-%d')
-                else:
-                    if value:
-                        value = str(value)
-                obj_key[f'val{index}'] = value
-            if not_null:
-                keys.append(obj_key)
-        return keys
-
-    @classmethod
-    def get_sub_obj(cls, obj, subobjects_path):
-        def _get(_current, _path):
-            for i, elem in enumerate(_path):
-                if isinstance(_current[-1][elem], list):
-                    for elem1 in _current[-1][elem]:
-                        _current.append(elem1)
-                        _get(_current, _path[i + 1:])
-                        _current.pop(-1)
-                else:
-                    _current[-1] = _current[-1][elem]
-            result.append((sub_obj_path, current[-1]))
-
-        result = []
-        for sub_obj_path in subobjects_path:
-            _path = sub_obj_path.split('.')
-
-            current = [obj]
-            try:
-                _get(current, _path)
-            except KeyError:
-                continue
-        return result
 
     def __bool__(self):
         return bool(self.data)
