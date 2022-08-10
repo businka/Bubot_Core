@@ -14,7 +14,7 @@ from uuid import uuid4
 
 # from .QueueMixin import QueueMixin
 from Bubot.Core.OcfMessage import OcfRequest
-from Bubot.Helpers.ExtException import ExtException, ExtTimeoutError
+from Bubot.Helpers.ExtException import ExtException, ExtTimeoutError, NotFound
 from Bubot.Helpers.Helper import Helper
 from BubotObj.OcfDevice.subtype.Device.MainLoopMixin import MainLoopMixin
 from .__init__ import __version__ as device_version
@@ -76,8 +76,8 @@ class Device(MainLoopMixin):
             except FileNotFoundError:
                 kwargs['log'].warning('OcfDevice config not found {0}'.format(config_path))
             except Exception as e:
-                raise ExtException(
-                    7004,
+                raise NotFound(
+                    message='Config OcfDevice not found',
                     detail='{0} {1}'.format(str(e), config_path),
                     action='OcfDevice.init_from_config',
                     dump=dict(
@@ -122,7 +122,7 @@ class Device(MainLoopMixin):
                 Helper.update_dict(_config, config)
             self.resource_layer.init_from_config(_config)
             if not self.get_param('/oic/d', 'piid', None):
-                self.set_param('/oic/d', 'piid', str(uuid4()), save_config=kwargs.get('save_config', True))
+                self.set_param('/oic/d', 'piid', str(uuid4()))
 
             di = self.get_device_id()
             if not self.get_device_id():

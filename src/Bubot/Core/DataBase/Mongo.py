@@ -13,7 +13,7 @@ class Mongo:
     pass
 
     @classmethod
-    def connect(cls, device, **kwargs):
+    def connect(cls, device=None, **kwargs):
         user = kwargs.get('user')
         if user:
             uri = "mongodb://{user}:{password}@{host}:{port}".format(

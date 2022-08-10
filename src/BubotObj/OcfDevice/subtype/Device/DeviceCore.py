@@ -73,7 +73,7 @@ class DeviceCore:
                     detail=f'{args[0]} ({self.__class__.__name__}{href})'
                 ) from None
 
-    def set_param(self, resource, name, new_value, **kwargs):
+    def set_param(self, resource, name, new_value, *, save_config=False, **kwargs):
         try:
             old_value = self.get_param(resource, name, None)
             difference, changes = Helper.compare(old_value, new_value)
@@ -81,7 +81,7 @@ class DeviceCore:
                 self._resource_changed[resource] = True
                 self.data[resource][name] = new_value
 
-                if kwargs.get('save_config', False):
+                if save_config:
                     self.save_config()
         except Exception as e:
             raise ExtException(detail=str(e), dump=dict(
