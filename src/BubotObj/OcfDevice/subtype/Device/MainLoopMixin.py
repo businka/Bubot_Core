@@ -15,11 +15,11 @@ class MainLoopMixin(DeviceCore):
             # self.coap = CoapServer(self)
             await self.transport_layer.start()
 
-            update_time = self.get_param('/oic/con', 'updateTime', 30)
             await asyncio.sleep(random.random())
 
             while True:
                 last_run = time.time()
+                update_time = self.get_param('/oic/con', 'updateTime', 30)
                 self.set_param('/oic/mnt', 'lastRun', last_run)
                 status = self.get_param('/oic/mnt', 'currentMachineState', 'pending')
                 method = f'on_{status}'
@@ -45,16 +45,19 @@ class MainLoopMixin(DeviceCore):
                     pass
 
                 await self.check_changes()
-                elapsed_time = time.time() - last_run
-                sleep_time = max(0.01, max(update_time - elapsed_time, 0))
-                await asyncio.sleep(sleep_time)
+                current_status = self.get_param('/oic/mnt', 'currentMachineState')
+                if current_status == status:  # Если статус не изменился, то следующий статус согласно настройка FPS
+                    elapsed_time = time.time() - last_run
+                    sleep_time = max(0.01, max(update_time - elapsed_time, 0))
+                    await asyncio.sleep(sleep_time)
         except ExtException as err:
-            self.log.error(f"end main {err}")
+            self.log.error(str(err))
             raise
-        pass
+        finally:
+            self.log.info("end main")
 
     async def on_pending(self):
-        self.set_param('/oic/mnt', 'currentMachineState', 'idle')
+        self.set_param('/oic/mnt', 'currentMachineState', 'idle', save_config=True)
 
     async def on_idle(self):
         pass

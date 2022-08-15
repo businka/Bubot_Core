@@ -57,21 +57,21 @@ class Obj:
     @async_action
     async def find_by_id(self, _id, *, _form="Item", _action=None, **kwargs):
         if not _id:
-            raise KeyNotFound(message=f'Object id not defined', detail=f'{self.name}')
+            raise KeyNotFound(message=f'Object id not defined', detail=f'{self.obj_name}')
         res = _action.add_stat(await self.find_one({"_id": _id}, _form=_form, **kwargs))
         if res:
             self.init_by_data(res)
             return res
-        raise KeyNotFound(message=f'Object not found', detail=f'{self.name} (id: {_id})')
+        raise KeyNotFound(message=f'Object not found', detail=f'{self.obj_name} (id: {_id})')
 
     @async_action
     async def find_one(self, where, *, _form="Item", _action=None, **kwargs):
         self.add_projection(_form, kwargs)
-        res = await self.storage.find_one(self.db, self.name, where, **kwargs)
+        res = await self.storage.find_one(self.db, self.obj_name, where, **kwargs)
         if res:
             self.init_by_data(res)
             return res
-        raise KeyNotFound(message=f'Object not found', detail=f'{self.name}', dump=where, action=_action)
+        raise KeyNotFound(message=f'Object not found', detail=f'{self.obj_name}', dump=where, action=_action)
 
     def get_link(self, *, properties=None, add_obj_type=False):
         '''
@@ -81,7 +81,7 @@ class Obj:
         '''
 
         result = {
-            # "_ref": DBRef(self.name, self.obj_id)
+            # "_ref": DBRef(self.obj_name, self.obj_id)
             "_id": self.obj_id
         }
         for elem in self.data:  # добаляем заголовок на всех языках
@@ -112,7 +112,7 @@ class Obj:
     @async_action
     async def query(self, **kwargs):
         kwargs = await self.query_set_default_params(**kwargs)
-        return await self.storage.query(self.db, self.name, **kwargs)
+        return await self.storage.query(self.db, self.obj_name, **kwargs)
 
     async def query_set_default_params(self, **kwargs):
         return kwargs
@@ -121,7 +121,7 @@ class Obj:
         return data
 
     async def count(self, **kwargs):
-        return await self.storage.count(self.db, self.name, **kwargs)
+        return await self.storage.count(self.db, self.obj_name, **kwargs)
 
     @async_action
     async def update(self, data=None, **kwargs):
@@ -132,33 +132,33 @@ class Obj:
         except KeyError:
             if self.uuid_id and not kwargs.get('where'):
                 data['_id'] = str(uuid4())
-        return await self.storage.update(self.db, self.name, data, **kwargs)
+        return await self.storage.update(self.db, self.obj_name, data, **kwargs)
 
     @async_action
     async def push(self, field, item, *, _action=None):
-        res = await self.storage.push(self.db, self.name, self.obj_id, field, item)
+        res = await self.storage.push(self.db, self.obj_name, self.obj_id, field, item)
         return res
 
     @async_action
     async def pull(self, field, item, *, _action=None):
-        res = await self.storage.pull(self.db, self.name, self.obj_id, field, item)
+        res = await self.storage.pull(self.db, self.obj_name, self.obj_id, field, item)
         return res
 
     @async_action
     async def delete_one(self, _id=None, *, where=None, _action=None):  # todo удаление из починенных таблиц
         where = where if where else dict(_id=_id)
-        await self.storage.delete_one(self.db, self.name, where)
+        await self.storage.delete_one(self.db, self.obj_name, where)
         pass
 
     @async_action
     async def delete_many(self, where, *, _action=None):
-        await self.storage.delete_many(self.db, self.name, where)
+        await self.storage.delete_many(self.db, self.obj_name, where)
         pass
 
     async def create(self, data=None):
         data = data if data else self.data
         await self.set_default_params(data)
-        await self.storage.createupdate(self.db, self.name, self.data)
+        await self.storage.createupdate(self.db, self.obj_name, self.data)
         pass
 
     @classmethod
@@ -203,7 +203,7 @@ class Obj:
         raise KeyError
 
     async def find_by_key(self, key_name, key_value):
-        res = await self.storage.find_one(self.db, self.name, dict(
+        res = await self.storage.find_one(self.db, self.obj_name, dict(
             keys=dict(name=key_name, value=key_value)
         ))
         if res:
@@ -219,7 +219,9 @@ class Obj:
     def __bool__(self):
         return bool(self.data)
 
-    def init_subtype(self, subtype):
+    def init_subtype(self, subtype=None):
+        if subtype is None:
+            subtype = self.subtype
         if not subtype:
             return self
         current_class = self.__class__.__name__
