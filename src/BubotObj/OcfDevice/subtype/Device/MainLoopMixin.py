@@ -51,9 +51,10 @@ class MainLoopMixin(DeviceCore):
                     sleep_time = max(0.01, max(update_time - elapsed_time, 0))
                     await asyncio.sleep(sleep_time)
         except ExtException as err:
-            self.log.error(f"end main {err}")
+            self.log.error(str(err))
             raise
-        pass
+        finally:
+            self.log.info("end main")
 
     async def on_pending(self):
         self.set_param('/oic/mnt', 'currentMachineState', 'idle', save_config=True)
