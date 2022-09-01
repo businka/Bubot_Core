@@ -1,4 +1,4 @@
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, urlparse
 
 from motor import motor_asyncio
 
@@ -14,18 +14,30 @@ class Mongo:
 
     @classmethod
     def connect(cls, device=None, **kwargs):
-        user = kwargs.get('user')
-        if user:
+        if device is None:
+            username = kwargs.get('username')
+            password = kwargs.get('password')
+            host = kwargs.get('host', 'localhost')
+            port = kwargs.get('port', 27017)
+        else:
+
+            url = urlparse(device.get_param('/oic/con', 'storage_url', 'tcp://localhost:27017'))
+            username = url.username
+            password = url.password
+            host = url.hostname
+            port = url.port
+
+        if username:
             uri = "mongodb://{user}:{password}@{host}:{port}".format(
-                user=quote_plus(user),
-                password=quote_plus(kwargs.get('password')),
-                host=kwargs.get('host', 'localhost'),
-                port=kwargs.get('port', 27017)
+                user=quote_plus(username),
+                password=quote_plus(password),
+                host=host,
+                port=port
             )
         else:
             uri = "mongodb://{host}:{port}".format(
-                host=kwargs.get('host', 'localhost'),
-                port=kwargs.get('port', 27017)
+                host=host,
+                port=port
             )
         client = motor_asyncio.AsyncIOMotorClient(uri)
         return cls(client=client)

@@ -1,11 +1,11 @@
 from uuid import uuid4
 
+from Bubot.Core.BubotHelper import BubotHelper
 from Bubot.Core.ObjForm import ObjForm
 from Bubot.Core.ObjModel import ObjModel
 from Bubot.Helpers.ActionDecorator import async_action
 from Bubot.Helpers.ExtException import KeyNotFound
 from Bubot.Helpers.Helper import Helper
-from Bubot.Core.BubotHelper import BubotHelper
 
 
 class Obj:
@@ -110,7 +110,8 @@ class Obj:
         return self.account_id
 
     @async_action
-    async def query(self, **kwargs):
+    async def query(self, *, _form="List", **kwargs):
+        self.add_projection(_form, kwargs)
         kwargs = await self.query_set_default_params(**kwargs)
         return await self.storage.query(self.db, self.obj_name, **kwargs)
 
@@ -146,6 +147,7 @@ class Obj:
 
     @async_action
     async def delete_one(self, _id=None, *, where=None, _action=None):  # todo удаление из починенных таблиц
+        _id = self.obj_id if _id is None else _id
         where = where if where else dict(_id=_id)
         await self.storage.delete_one(self.db, self.obj_name, where)
         pass
