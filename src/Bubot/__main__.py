@@ -2,6 +2,7 @@ import argparse
 import logging
 
 from Bubot.Helpers.ExtException import HandlerNotFoundError
+from BubotObj.OcfDevice.subtype.Device.Device import Device
 
 # from Bubot.Core import main
 
@@ -23,6 +24,7 @@ logging.basicConfig(
 )
 try:
     device = Device.init_from_file(di=args.di, path=args.path, class_name=args.class_name)
+    device.run()
 except HandlerNotFoundError:
     print(f'Error: class_name {args.class_name} not found. run "bubot -h" for help')
-device.run()
+
