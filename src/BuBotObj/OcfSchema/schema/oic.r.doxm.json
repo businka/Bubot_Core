@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "https://www.openconnectivity.org/ocf-apis/security/schemas/oic.r.doxm.json#",
+  "title": "Device Owner Transfer Method information",
+  "definitions": {
+    "oic.r.doxm": {
+      "type": "object",
+      "properties": {
+        "oxms":  {
+          "type": "array",
+          "readOnly": true,
+          "description": "List of supported owner transfer methods",
+          "items": {
+            "$ref": "oic.sec.doxmtype.json#/definitions/oic.sec.doxmtype/properties/oxm"
+          }
+        },
+        "oxmsel":   {
+          "description": "The selected owner transfer method used during on-boarding",
+          "$ref": "oic.sec.doxmtype.json#/definitions/oic.sec.doxmtype/properties/oxm"
+        },
+        "sct": {
+          "readOnly": true,
+          "description": "Bitmask encoding of supported credential types",
+          "$ref": "oic.sec.credtype.json#/definitions/oic.sec.credtype/properties/bitmask"
+        },
+        "owned":   {
+          "type": "boolean",
+          "description": "Ownership status flag"
+        },
+        "deviceuuid": {
+          "description": "The uuid formatted identity of the device",
+          "$ref": "oic.types.json#/definitions/uuid"
+        },
+        "deviceid":   {
+          "type": "object",
+          "description": "Post on-boarded device identier",
+          "$ref": "oic.sec.didtype.json#/definitions/oic.sec.didtype"
+        },
+        "devowneruuid": {
+          "$ref": "oic.types.json#/definitions/uuid"
+        },
+        "devowner":   {
+          "anyOf": [
+            {
+              "type": "object",
+              "description": "Entries in oic.sec.svc resource that own this resource",
+              "$ref": "oic.sec.svctype.json#/definitions/oic.sec.svctype"
+            },
+            {
+              "type": "object",
+              "$ref": "oic.sec.didtype.json#/definitions/oic.sec.host"
+            }
+          ]
+        },
+        "rowneruuid": {
+          "$ref": "oic.types.json#/definitions/uuid"
+        },
+        "rowner": {
+          "anyOf": [
+            {
+              "type": "object",
+              "description": "Entries in oic.sec.svc resource that own this resource",
+              "$ref": "oic.sec.svctype.json#/definitions/oic.sec.svctype"
+            },
+            {
+              "type": "object",
+              "$ref": "oic.sec.didtype.json#/definitions/oic.sec.host"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "type": "object",
+  "allOf": [
+    { "$ref": "oic.core.json#/definitions/oic.core" },
+    { "$ref": "#/definitions/oic.r.doxm" }
+  ],
+  "required": [ "oxms", "oxmsel", "sct", "owned", "deviceuuid", "devowneruuid", "rowneruuid" ]
+}

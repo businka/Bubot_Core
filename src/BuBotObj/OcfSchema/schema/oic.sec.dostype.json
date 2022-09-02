@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "https://www.openconnectivity.org/ocf-apis/security/schemas/oic.sec.dostype.json#",
+  "title": "Device On-boarding States",
+  "definitions": {
+    "oic.sec.dostype": {
+      "description": "Device operation state machine",
+      "properties" : {
+        "s": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3,
+          "description": "The value can be either 0, 1, 2 or 3",
+          "detail-desc": [  "0 - RESET - Device reset state",
+                            "1 - RFOTM - Ready for device owner transfer method state",
+                            "2 - RFPRO - Ready for device provisioning state",
+                            "3 - RFNOP - Ready for device normal operation state" ]
+        },
+        "p": {
+          "type": "boolean",
+          "default": true,
+          "description": "'p' is TRUE when the 's' state is pending until all necessary changes to device resources are complete."
+        }
+      },
+      "required": [ "s", "p" ]
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "id": "http://razgovorov.ru/bubot/schemas/bubot.mnt.json#",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "",
+  "title": "configuration",
+  "definitions": {
+    "bubot.mnt": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "maxLength": 255,
+          "readonly": true,
+          "default": "",
+          "description": "last message"
+        },
+        "lastRun": {
+          "type": "number",
+          "readonly": true,
+          "description": "last update"
+        }
+      }
+    }
+  },
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "oic.core.json#/definitions/oic.core"
+    },
+    {
+      "$ref": "#/definitions/bubot.mnt"
+    }
+  ]
+}
