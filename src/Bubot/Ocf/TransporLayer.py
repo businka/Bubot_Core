@@ -30,7 +30,8 @@ class TransportLayer:
         # server.add_resource('/oic/sec/doxm', BasicResource('test', server))
 
     async def stop(self):
-        await self.coap.close()
+        if self.coap:
+            await self.coap.close()
 
     async def start_coap(self):
         try:
@@ -66,7 +67,7 @@ class TransportLayer:
                                                        keyfile=keyfile,
                                                        certfile=certfile,
                                                        socket_props=dict(
-                                                           identity_hint=UUID(self.device.get_device_id()).bytes,
+                                                           identity_hint=UUID(self.device.get_device_id()).bytes,  # todo device init - check id is uuid
                                                            psk=None,
                                                            ciphers=None
                                                        ))

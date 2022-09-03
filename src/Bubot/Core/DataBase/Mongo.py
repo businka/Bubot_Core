@@ -1,9 +1,10 @@
 from urllib.parse import quote_plus, urlparse
 
 from motor import motor_asyncio
+from pymongo.errors import ServerSelectionTimeoutError
 
 from Bubot.Helpers.ActionDecorator import async_action
-from Bubot.Helpers.ExtException import ExtException
+from Bubot.Helpers.ExtException import ExtException, ExtTimeoutError
 
 
 class Mongo:
@@ -13,34 +14,20 @@ class Mongo:
     pass
 
     @classmethod
-    def connect(cls, device=None, **kwargs):
-        if device is None:
-            username = kwargs.get('username')
-            password = kwargs.get('password')
-            host = kwargs.get('host', 'localhost')
-            port = kwargs.get('port', 27017)
-        else:
-
-            url = urlparse(device.get_param('/oic/con', 'storage_url', 'tcp://localhost:27017'))
-            username = url.username
-            password = url.password
-            host = url.hostname
-            port = url.port
-
-        if username:
-            uri = "mongodb://{user}:{password}@{host}:{port}".format(
-                user=quote_plus(username),
-                password=quote_plus(password),
-                host=host,
-                port=port
-            )
-        else:
-            uri = "mongodb://{host}:{port}".format(
-                host=host,
-                port=port
-            )
-        client = motor_asyncio.AsyncIOMotorClient(uri)
+    async def connect(cls, device=None, *, url='mongodb://localhost:27017', **kwargs):
+        if device:
+            url = device.get_param('/oic/con', 'storage_url', 'mongodb://localhost:27017')
+        try:
+            client = motor_asyncio.AsyncIOMotorClient(url, serverSelectionTimeoutMS=5000)
+            res = await client.server_info()
+        except ServerSelectionTimeoutError as err:
+            raise ExtTimeoutError(message='Mongo connection timeout', parent=err)
+        except Exception as err:
+            raise ExtException(parent=err, message='Storage not connected')
         return cls(client=client)
+
+    async def close(self):
+        self.client.close()
 
     async def find_data_base(self, name):
         data_bases = await self.client.list_database_names()

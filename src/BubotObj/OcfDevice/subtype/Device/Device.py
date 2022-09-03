@@ -43,8 +43,9 @@ class Device(MainLoopMixin):
     async def stop(self):
         await self.transport_layer.stop()
         try:
-            self.task.cancel()
-            await self.task
+            if self.task:
+                self.task.cancel()
+                await self.task
         except asyncio.CancelledError:
             pass
 
