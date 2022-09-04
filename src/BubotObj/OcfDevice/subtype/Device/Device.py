@@ -53,9 +53,9 @@ class Device(MainLoopMixin):
         di = kwargs.get('di')
         config = {}
         if di is None:
-            di = cls.find_first_config('{}'.format(kwargs['path']), class_name)
+            di = cls.find_first_config(cls.get_config_dir(path=kwargs['path']), class_name)
         if di:
-            config_path = path.normpath('{0}/{1}.{2}.json'.format(kwargs['path'], class_name, di))
+            config_path = cls.get_config_path(path=kwargs['path'], device_class_name=class_name, device_id=di)
             try:
                 with open(config_path, encoding='utf-8') as file:
                     config = json.load(file)
@@ -141,7 +141,10 @@ class Device(MainLoopMixin):
             data[1].pop('/oic/mnt')
         except KeyError:
             pass
-
+        try:
+            os.mkdir(self.get_config_dir(device=self))
+        except FileExistsError:
+            pass
         try:
             with open(self.get_config_path(), 'w', encoding='utf-8') as file:
                 json.dump(data[1], file, ensure_ascii=False, indent=2)

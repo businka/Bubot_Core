@@ -61,12 +61,7 @@ class MainLoopMixin(DeviceCore):
                         self.log.info("cancelled main")
                         return
                         # raise asyncio.CancelledError
-                except ExtException as err:
-                    self.log.error(ExtException(detail=method, parent=err))
-                    self.set_param('/oic/mnt', 'currentMachineState', 'stopped')
-                    self.set_param('/oic/mnt', 'message', str(err))
-                    pass
-                except Exception as err:
+                except (ExtException, Exception) as err:
                     self.log.error(ExtException(detail=method, parent=err))
                     self.set_param('/oic/mnt', 'currentMachineState', 'stopped')
                     self.set_param('/oic/mnt', 'message', str(err))

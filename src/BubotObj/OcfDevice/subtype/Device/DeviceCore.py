@@ -113,8 +113,21 @@ class DeviceCore:
             self.log.setLevel(getattr(logging, self.get_param('/oic/con', 'logLevel', 'error').upper()))
         return changes
 
-    def get_config_path(self):
-        return os.path.join(self.path, f'{self.__class__.__name__}.{self.get_device_id()}.json')
+    @classmethod
+    def get_config_dir(cls, *, path='./', device=None):
+        if device:
+            return os.path.join(device.path, 'ocf')
+        else:
+            return os.path.join(path, 'ocf')
+
+    @classmethod
+    def get_config_path(cls, *, path='./', device_class_name='UnknownDevice', device_id='XXX', device=None):
+        if device:
+            return os.path.normpath(os.path.join(cls.get_config_dir(device=device, path=path),
+                                                 f'{device.__class__.__name__}.{device.get_device_id()}.json'))
+        else:
+            return os.path.normpath(
+                os.path.join(cls.get_config_dir(device=device, path=path), f'{device_class_name}.{device_id}.json'))
 
     def delete_config(self):
         os.remove(self.get_config_path())
