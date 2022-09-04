@@ -112,12 +112,9 @@ class Device(MainLoopMixin):
                 self.set_param('/oic/d', 'piid', str(uuid4()))
 
             di = self.get_device_id()
-            if not self.get_device_id():
+            if not di:
                 di = kwargs.get('di')
-            self.set_device_id(di)
-            self.change_provisioning_state()
-            self.log = logging.getLogger('{0}:{1}'.format(self.__class__.__name__, self.get_device_id()[-5:]))
-            self.log.setLevel(getattr(logging, self.get_param('/oic/con', 'logLevel', 'error').upper()))
+                self.set_device_id(di)
             return self
         except Exception as e:
             raise ExtException(

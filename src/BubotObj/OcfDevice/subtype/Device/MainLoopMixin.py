@@ -1,6 +1,8 @@
 import asyncio
 import random
 import time
+import logging
+from uuid import uuid4
 
 from Bubot.Helpers.ExtException import ExtException
 from BubotObj.OcfDevice.subtype.Device.DeviceCore import DeviceCore
@@ -10,11 +12,11 @@ class MainLoopMixin(DeviceCore):
     # _logger = logging.getLogger(__name__)
 
     def run(self):
-        self.log.info("run")
         self.loop = asyncio.get_event_loop()
         self.task = self.loop.create_task(self.main())
         self.loop.run_until_complete(self.task)
-        self.log.info("end")
+        if self.log:
+            self.log.info("shutdown")
 
     async def stop(self):
         try:
@@ -26,6 +28,14 @@ class MainLoopMixin(DeviceCore):
 
     async def main(self):
         try:
+            self.change_provisioning_state()
+            di = self.get_device_id()
+            if not di:
+                di = str(uuid4())
+                self.set_device_id(di)
+            self.log = logging.getLogger('{0}:{1}'.format(self.__class__.__name__, di[-5:]))
+            self.log.setLevel(getattr(logging, self.get_param('/oic/con', 'logLevel', 'error').upper()))
+
             self.log.info("begin main")
             await self.transport_layer.start()
             await asyncio.sleep(random.random())
