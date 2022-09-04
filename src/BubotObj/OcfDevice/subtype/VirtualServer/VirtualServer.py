@@ -25,21 +25,9 @@ class VirtualServer(Device):
         self._running_devices = {}
         self.loop = None
         self.task = None
+        self.task_logger = None
         self.queue = None
         Device.__init__(self, **kwargs)
-
-    def run(self):
-        self.log.debug('begin')
-        if multiprocessing.current_process().name == 'MainProcess':
-            self.queue = multiprocessing.Queue(-1)
-            self.task = self.loop.create_task(self.logger())
-
-        self.task = self.loop.create_task(self.main())
-
-        if not self.loop.is_running():
-            self.loop.run_forever()  # todo добавиь обработку Ctrl + C
-        self.log.debug('end')
-        pass
 
     async def logger(self):
         def _get(_queue):
@@ -55,12 +43,19 @@ class VirtualServer(Device):
                 logger.handle(record)  # No level or filter logic applied - just do it!
             except queue.Empty:
                 await asyncio.sleep(0.5)
+            except asyncio.CancelledError:
+                return
             except Exception as e:
                 import sys, traceback
                 print('Whoops! Problem:', file=sys.stderr)
                 traceback.print_exc(file=sys.stderr)
+            executor.shutdown()
 
     async def on_pending(self):
+        if multiprocessing.current_process().name == 'MainProcess':
+            self.queue = multiprocessing.Queue(-1)
+            self.task_logger = self.loop.create_task(self.logger())
+
         links = self.get_param('/oic/con', 'running_devices')
         if links:
             for link in links:
@@ -74,6 +69,15 @@ class VirtualServer(Device):
         self.save_config()
 
     async def on_cancelled(self):
+        if self.queue:
+            self.queue.close()
+        try:
+            if self.task_logger:
+                self.task_logger.cancel()
+                await self.task_logger
+        except asyncio.CancelledError:
+            pass
+
         for di in self._running_devices.keys():
             device = self._running_devices.pop(di)
             self.log.debug('{} begin cancelled'.format(di))
@@ -96,7 +100,7 @@ class VirtualServer(Device):
         # links = self.get_param(*self.run_dev)
         # for i, link in enumerate(links):
         #     self._running_devices[link['di']][1].cancel()
-        # await super().on_stopped()
+        await super().on_stopped()
 
     async def on_update_oic_con(self, message):
         # if 'running_devices' in result:

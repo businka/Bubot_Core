@@ -35,20 +35,6 @@ class Device(MainLoopMixin):
         MainLoopMixin.__init__(self, **kwargs)
         self.loop = kwargs.get('loop', asyncio.get_event_loop())
 
-    def run(self):
-        self.loop = asyncio.get_event_loop()
-        self.task = self.loop.create_task(self.main())
-        self.loop.run_forever()
-
-    async def stop(self):
-        await self.transport_layer.stop()
-        try:
-            if self.task:
-                self.task.cancel()
-                await self.task
-        except asyncio.CancelledError:
-            pass
-
     @classmethod
     def find_first_config(cls, config_path, class_name):
         _list = os.listdir(config_path)
