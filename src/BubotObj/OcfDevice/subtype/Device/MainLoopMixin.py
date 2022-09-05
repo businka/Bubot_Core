@@ -35,6 +35,7 @@ class MainLoopMixin(DeviceCore):
                 self.set_device_id(di)
             self.log = logging.getLogger('{0}:{1}'.format(self.__class__.__name__, di[-5:]))
             self.log.setLevel(getattr(logging, self.get_param('/oic/con', 'logLevel', 'error').upper()))
+            self.save_config()
 
             self.log.info("begin main")
             await self.transport_layer.start()
