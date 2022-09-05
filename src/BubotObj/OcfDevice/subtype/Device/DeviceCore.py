@@ -116,9 +116,9 @@ class DeviceCore:
     @classmethod
     def get_config_dir(cls, *, path='./', device=None):
         if device:
-            return os.path.join(device.path, 'ocf')
+            return os.path.join(device.path, 'device')
         else:
-            return os.path.join(path, 'ocf')
+            return os.path.join(path, 'device')
 
     @classmethod
     def get_config_path(cls, *, path='./', device_class_name='UnknownDevice', device_id='XXX', device=None):
