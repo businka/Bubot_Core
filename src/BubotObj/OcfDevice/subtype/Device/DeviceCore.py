@@ -121,7 +121,7 @@ class DeviceCore:
             return os.path.join(path, 'device')
 
     @classmethod
-    def get_config_path(cls, *, path='./', device_class_name='UnknownDevice', device_id='XXX', device=None):
+    def get_config_path(cls, *, path=None, device_class_name='UnknownDevice', device_id='XXX', device=None):
         if device:
             return os.path.normpath(os.path.join(cls.get_config_dir(device=device, path=path),
                                                  f'{device.__class__.__name__}.{device.get_device_id()}.json'))

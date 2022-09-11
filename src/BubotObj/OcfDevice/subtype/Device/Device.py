@@ -17,6 +17,7 @@ from Bubot.Core.OcfMessage import OcfRequest
 from Bubot.Helpers.ExtException import ExtException, ExtTimeoutError, NotFound
 from Bubot.Helpers.Helper import Helper
 from BubotObj.OcfDevice.subtype.Device.MainLoopMixin import MainLoopMixin
+
 from .__init__ import __version__ as device_version
 
 # _logger = logging.getLogger('OcfDevice')
@@ -48,12 +49,15 @@ class Device(MainLoopMixin):
     @classmethod
     def init_from_file(cls, **kwargs):
         kwargs['path'] = os.path.abspath(kwargs.get('path', './'))
+        config_dir = cls.get_config_dir(path=kwargs['path'])
+        os.makedirs(config_dir, exist_ok=True)
+
         kwargs['log'] = kwargs['log'] if kwargs.get('log') else logging.getLogger()
         class_name = kwargs.get('class_name', cls.__name__)
         di = kwargs.get('di')
         config = {}
         if di is None:
-            di = cls.find_first_config(cls.get_config_dir(path=kwargs['path']), class_name)
+            di = cls.find_first_config(config_dir, class_name)
         if di:
             config_path = cls.get_config_path(path=kwargs['path'], device_class_name=class_name, device_id=di)
             try:
@@ -146,7 +150,7 @@ class Device(MainLoopMixin):
         except FileExistsError:
             pass
         try:
-            with open(self.get_config_path(), 'w', encoding='utf-8') as file:
+            with open(self.get_config_path(device=self), 'w', encoding='utf-8') as file:
                 json.dump(data[1], file, ensure_ascii=False, indent=2)
         except FileNotFoundError:
             return {}
