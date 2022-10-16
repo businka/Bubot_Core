@@ -12,6 +12,7 @@ class Obj:
     file = __file__  # должен быть в каждом файле наследники для чтения форм
     extension = False
     name = None
+    subtype = False
     key_property = '_id'
     uuid_id = True
 
@@ -110,12 +111,12 @@ class Obj:
         return self.account_id
 
     @async_action
-    async def query(self, *, _form="List", **kwargs):
+    async def list(self, *, _form="List", **kwargs):
         self.add_projection(_form, kwargs)
-        kwargs = await self.query_set_default_params(**kwargs)
-        return await self.storage.query(self.db, self.obj_name, **kwargs)
+        kwargs = await self.list_set_default_params(**kwargs)
+        return await self.storage.list(self.db, self.obj_name, **kwargs)
 
-    async def query_set_default_params(self, **kwargs):
+    async def list_set_default_params(self, **kwargs):
         return kwargs
 
     async def set_default_params(self, data):
@@ -123,6 +124,10 @@ class Obj:
 
     async def count(self, **kwargs):
         return await self.storage.count(self.db, self.obj_name, **kwargs)
+
+    @async_action
+    async def create(self, data=None, **kwargs):
+        return await self.update(data, **kwargs)
 
     @async_action
     async def update(self, data=None, **kwargs):
@@ -133,7 +138,9 @@ class Obj:
         except KeyError:
             if self.uuid_id and not kwargs.get('where'):
                 data['_id'] = str(uuid4())
-        return await self.storage.update(self.db, self.obj_name, data, **kwargs)
+        res = await self.storage.update(self.db, self.obj_name, data)
+        self.data = data
+        return res
 
     @async_action
     async def push(self, field, item, *, _action=None):
@@ -155,12 +162,6 @@ class Obj:
     @async_action
     async def delete_many(self, where, *, _action=None):
         await self.storage.delete_many(self.db, self.obj_name, where)
-        pass
-
-    async def create(self, data=None):
-        data = data if data else self.data
-        await self.set_default_params(data)
-        await self.storage.createupdate(self.db, self.obj_name, self.data)
         pass
 
     @classmethod
@@ -222,12 +223,11 @@ class Obj:
         return bool(self.data)
 
     def init_subtype(self, subtype=None):
-        if subtype is None:
-            subtype = self.subtype
-        if not subtype:
+        _subtype = subtype or self.subtype
+        if not _subtype:
             return self
         current_class = self.__class__.__name__
-        if current_class == subtype:
+        if current_class == _subtype:
             return self
-        handler = BubotHelper.get_subtype_class(self.__class__.__name__, subtype)
+        handler = BubotHelper.get_subtype_class(self.__class__.__name__, _subtype)
         return handler(self.storage, account_id=self.account_id, lang=self.lang, data=self.data)

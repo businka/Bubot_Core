@@ -7,6 +7,7 @@ from BubotObj.OcfDevice.subtype.Device.Device import Device
 
 @action
 def find_drivers(**kwargs):
+    found_drivers = {}
     result = {}
     log = kwargs.get('log')
     for path1 in syspath:
@@ -15,9 +16,14 @@ def find_drivers(**kwargs):
             device_list = os.listdir(device_dir)
             for device_name in device_list:
                 device_path = os.path.normpath('{0}/{1}/{1}.py'.format(device_dir, device_name))
+                if device_name not in found_drivers:
+                    found_drivers[device_name] = device_path
+                else:
+                    continue
                 if not os.path.isfile(device_path):
                     continue
                 try:
+                    # print(f'{device_name} {device_path}')
                     driver = Device.init_from_config(class_name=device_name, save_config=False)
                 except Exception as err:
                     if log:

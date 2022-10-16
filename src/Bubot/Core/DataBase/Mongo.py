@@ -42,6 +42,8 @@ class Mongo:
             res = await self.client[db][table].update_one(
                 _where,
                 {'$set': data}, upsert=create, **kwargs)
+            if res.upserted_id:
+                data['_id'] = res.upserted_id
         else:
             if create:
                 res = await self.client[db][table].insert_one(data)
@@ -79,7 +81,7 @@ class Mongo:
         if not table:
             raise ExtException(message='table not defined', action=action)
 
-    async def query(self, db, table, *, where=None, projection=None, skip=0, limit=1000, order=None, _action=None,
+    async def list(self, db, table, *, where=None, projection=None, skip=0, limit=1000, order=None, _action=None,
                     **kwargs):
         self.check_db_and_table(db, table, _action)
         if where is not None:

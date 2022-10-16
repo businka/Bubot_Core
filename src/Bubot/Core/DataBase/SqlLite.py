@@ -54,7 +54,7 @@ class SqlLite:
     def get_table(self, name):
         pass
 
-    async def query(self, db, table, **kwargs):
+    async def list(self, db, table, **kwargs):
         db = self.get_db(db)
         cursor = self.client[db][table].find(
             filter=kwargs.get('filter', None),
