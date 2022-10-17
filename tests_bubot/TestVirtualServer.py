@@ -1,10 +1,10 @@
 import unittest
 import logging
 import asyncio
-from bubot.devices.VirtualServer.VirtualServer import VirtualServer as Device
-from bubot.OcfMessage import OcfRequest
-from bubot.DeviceLink import ResourceLink
-from bubot.TestHelper import async_test, wait_run_device, get_config_path, wait_run_device2
+from BubotObj.OcfDevice.subtype.VirtualServer.VirtualServer import VirtualServer as Device
+from Bubot.Core.OcfMessage import OcfRequest
+from Bubot.Core.DeviceLink import ResourceLink
+from Bubot.Core.TestHelper import async_test, wait_run_device, get_config_path, wait_run_device2
 from os import path
 
 

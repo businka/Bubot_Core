@@ -230,8 +230,7 @@ class DeviceCore:
         self.log.debug('begin cancelled')
         self.set_param('/oic/mnt', 'currentMachineState', 'cancelled')
         try:
-            # await self.task
-            await asyncio.wait_for(self.task, 30)
+            await asyncio.wait_for(self.task, 10)
         except asyncio.TimeoutError:
             self.task.cancel()
 

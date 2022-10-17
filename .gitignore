@@ -5,3 +5,5 @@ node_modules
 /dist
 /build
 *.egg-info
+/tests_bubot/device/
+/tests_bubot/conf/device/EchoDevice.e0000000-0000-0000-0000-000000000003.json

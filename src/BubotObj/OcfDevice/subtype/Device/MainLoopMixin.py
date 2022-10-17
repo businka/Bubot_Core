@@ -1,22 +1,28 @@
 import asyncio
+import logging
 import random
 import time
-import logging
 from uuid import uuid4
 
 from Bubot.Helpers.ExtException import ExtException
+
 from BubotObj.OcfDevice.subtype.Device.DeviceCore import DeviceCore
 
 
 class MainLoopMixin(DeviceCore):
-    # _logger = logging.getLogger(__name__)
 
     def run(self):
-        self.loop = asyncio.get_event_loop()
-        self.task = self.loop.create_task(self.main())
-        self.loop.run_until_complete(self.task)
-        if self.log:
-            self.log.info("shutdown")
+        try:
+            self.loop = asyncio.get_event_loop()
+            self.task = self.loop.create_task(self.main())
+            self.loop.run_until_complete(self.task)
+            if self.log:
+                self.log.info("shutdown")
+        except KeyboardInterrupt:
+            if self.log:
+                self.log.info("KeyboardInterrupt")
+            self.task.cancel()
+            self.loop.run_until_complete(self.task)
 
     async def stop(self):
         try:
@@ -76,17 +82,17 @@ class MainLoopMixin(DeviceCore):
             self.log.info("end main")
 
     async def on_pending(self):
-        self.log.info("on_pending")
+        self.log.info("")
         self.set_param('/oic/mnt', 'currentMachineState', 'idle', save_config=True)
 
     async def on_idle(self):
         pass
 
     async def on_cancelled(self):
-        self.log.info("on_cancelled")
+        self.log.info("")
         self.set_param('/oic/mnt', 'currentMachineState', '')
         raise asyncio.CancelledError()
 
     async def on_stopped(self):
-        self.log.info("on_stopped")
+        self.log.info("")
         self.set_param('/oic/mnt', 'currentMachineState', 'cancelled')

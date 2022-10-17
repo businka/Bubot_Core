@@ -1,0 +1,14 @@
+{
+  "/oic/d": {
+    "di": "e0000000-0000-0000-0000-000000000001"
+  },
+  "/oic/con": {
+    "logLevel": "debug",
+    "udpCoapPort": 11111
+  },
+  "/oic/sec/pstat": {
+    "dos": {
+      "s": 0
+    }
+  }
+}
