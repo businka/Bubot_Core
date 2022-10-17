@@ -78,9 +78,9 @@ class VirtualServer(Device):
         except asyncio.CancelledError:
             pass
 
-        for di in self._running_devices.keys():
+        for di in list(self._running_devices.keys()):
             device = self._running_devices.pop(di)
-            self.log.debug('{} begin cancelled'.format(di))
+            self.log.debug(f'Begin cancelled {device.__class__.__name__} {di}')
             if isinstance(device, multiprocessing.Process):
                 res = await self.find_resource_by_link(ResourceLink.init_from_link(dict(di=di, href='/oic/mnt')))
                 await self.request('update', res, dict(currentMachineState='cancelled'))
@@ -92,8 +92,8 @@ class VirtualServer(Device):
             else:
                 await device.cancel()
 
-            self.log.debug('{} end cancelled'.format(di))
-        await super().on_cancelled()
+            self.log.debug(f'End cancelled {device.__class__.__name__} {di}')
+        await super(VirtualServer, self).on_cancelled()
 
     async def on_stopped(self):
         pass

@@ -113,11 +113,11 @@ class TransportLayer:
         '''
 
         async def discover():
-            timeout = kwargs.get('timeout')
+            timeout = kwargs.get('timeout', 30)
             _protocol = []
-            if self.ipv4:
+            if self.ipv4 is not None:
                 _protocol.append(self.eps_coap_ipv4)
-            if self.ipv6:
+            if self.ipv6 is not None:
                 _protocol.append(self.eps_coap_ipv6)
             _res = None
             _token = self.coap.message_layer.fetch_token()
