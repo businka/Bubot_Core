@@ -169,6 +169,9 @@ class DeviceCore:
         else:
             return self._link
 
+    def get_logger(self, di=None):
+        return logging.getLogger(f'{self.__class__.__name__}:{di}' if di else self.__class__.__name__)
+
     def change_provisioning_state(self, new_state=None):
         provisioning_state = self.get_param('/oic/sec/pstat')
         if not provisioning_state['dos']:  # начальная инициализация

@@ -12,7 +12,6 @@ class Obj:
     file = __file__  # должен быть в каждом файле наследники для чтения форм
     extension = False
     name = None
-    subtype = False
     key_property = '_id'
     uuid_id = True
 
@@ -20,7 +19,7 @@ class Obj:
         self.storage = storage
         self.account_id = account_id
         self.lang = lang
-        data = data
+        data = data if data else {}
         if data:
             self.init_by_data(data)
         else:
@@ -131,16 +130,17 @@ class Obj:
 
     @async_action
     async def update(self, data=None, **kwargs):
-        data = data if data else self.data
-        await self.set_default_params(data)
+        _data = data if data else self.data
+        await self.set_default_params(_data)
         try:
-            data['_id']
+            _data['_id']
         except KeyError:
             if self.uuid_id and not kwargs.get('where'):
-                data['_id'] = str(uuid4())
-        res = await self.storage.update(self.db, self.obj_name, data)
-        self.data = data
-        return res
+                _data['_id'] = str(uuid4())
+        res = await self.storage.update(self.db, self.obj_name, _data, **kwargs)
+        if data is None:
+            self.data = _data
+        return _data
 
     @async_action
     async def push(self, field, item, *, _action=None):

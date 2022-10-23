@@ -39,7 +39,7 @@ class MainLoopMixin(DeviceCore):
             if not di:
                 di = str(uuid4())
                 self.set_device_id(di)
-            self.log = logging.getLogger('{0}:{1}'.format(self.__class__.__name__, di[-5:]))
+            self.log = self.get_logger(di)
             self.log.setLevel(getattr(logging, self.get_param('/oic/con', 'logLevel', 'error').upper()))
             self.save_config()
 

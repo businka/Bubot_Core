@@ -12,7 +12,6 @@ from Bubot.Helpers.Helper import Helper
 
 
 class ObjSubtype(Obj):
-    subtype = True
 
     def init(self):
         self.data = dict(
