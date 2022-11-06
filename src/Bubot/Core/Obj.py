@@ -4,7 +4,7 @@ from Bubot.Core.BubotHelper import BubotHelper
 from Bubot.Core.ObjForm import ObjForm
 from Bubot.Core.ObjModel import ObjModel
 from Bubot.Helpers.ActionDecorator import async_action
-from Bubot.Helpers.ExtException import KeyNotFound
+from Bubot.Helpers.ExtException import KeyNotFound, ExtException
 from Bubot.Helpers.Helper import Helper
 
 
@@ -32,11 +32,14 @@ class Obj:
         )
 
     def init_by_data(self, data):
-        self.init()
-        if data:
-            Helper.update_dict(self.data, data)
-        if '_id' not in data:
-            self.data['_id'] = str(uuid4())
+        try:
+            self.init()
+            if data:
+                Helper.update_dict(self.data, data)
+            if '_id' not in data:
+                self.data['_id'] = str(uuid4())
+        except Exception as err:
+            raise ExtException(parent=err, action=f'{self.__class__.__name__}.init_by_data') from err
 
     # @classmethod
     # @async_action

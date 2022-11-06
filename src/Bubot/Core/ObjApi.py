@@ -77,8 +77,8 @@ class ObjApi(DeviceApi):
             limit = None
         for key in data:
             try:
-                where[key] = self.filter_fields[key](where, key, data[key])
-            except:
+                self.filter_fields[key](where, key, data[key])
+            except KeyError:
                 where[key] = data[key]
         result = {
             'where': where
