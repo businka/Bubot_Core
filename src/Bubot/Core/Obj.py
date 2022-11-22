@@ -1,3 +1,5 @@
+import json
+from os.path import dirname, isfile, join
 from uuid import uuid4
 
 from Bubot.Core.BubotHelper import BubotHelper
@@ -11,9 +13,11 @@ from Bubot.Helpers.Helper import Helper
 class Obj:
     file = __file__  # должен быть в каждом файле наследники для чтения форм
     extension = False
+    is_subtype = False
     name = None
     key_property = '_id'
     uuid_id = True
+    _locales = {}
 
     def __init__(self, storage, *, account_id=None, lang=None, data=None, **kwargs):
         self.storage = storage
@@ -234,3 +238,53 @@ class Obj:
             return self
         handler = BubotHelper.get_subtype_class(self.__class__.__name__, _subtype)
         return handler(self.storage, account_id=self.account_id, lang=self.lang, data=self.data)
+
+    @classmethod
+    def get_dir(cls):
+        return dirname(cls.file)
+
+    @classmethod
+    def read_i18n(cls, lang):
+        def i18n_path(cl):
+            return join(cl.get_dir(), 'i18n')
+
+        def _read_locale(cl, _locale, _locales):
+            locale_path = join(i18n_path(cl), f'{_locale}.json')
+            if isfile(locale_path):
+                with open(locale_path, "r", encoding='utf-8') as file:
+                    try:
+                        _data = json.load(file)
+                        if isinstance(_data, dict):
+                            try:
+                                _locales[_locale]
+                            except KeyError:
+                                _locales[_locale] = {}
+                            Helper.update_dict(_locales[_locale], _data)
+                        else:
+                            raise ExtException(
+                                message=f'Build locale',
+                                detail=f'{lang} for object {cl.__name__}: Bad format {_data}')
+                    except Exception as err:
+                        err = ExtException(parent=err)
+            return
+
+        try:
+            return cls._locales[lang]
+        except KeyError:
+            pass
+
+        if cls.is_subtype:
+            for elem in cls.__bases__:
+                if issubclass(elem, Obj):
+                    _read_locale(elem, lang, cls._locales)
+        _read_locale(cls, lang, cls._locales)
+        return cls._locales[lang]
+
+    @classmethod
+    def t(cls, value, lang):
+        locale = None
+        if lang:
+            locale = cls.read_i18n(lang)
+        if not locale and lang != 'en':
+            locale = cls.read_i18n('en')
+        return Helper.get_element_in_dict(locale, value, value)

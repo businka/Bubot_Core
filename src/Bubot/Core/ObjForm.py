@@ -8,9 +8,9 @@ class ObjForm:
 
     @classmethod
     def get_form(cls, obj_handler, form_name):
-        form_path = normpath(f'{dirname(obj_handler.file)}/forms/{form_name}.form.json')
+        form_path = normpath(f'{dirname(obj_handler.file)}/form/{form_name}.form.json')
         if not isfile(form_path):
-            if not obj_handler.extension:
+            if not obj_handler.extension and not obj_handler.is_subtype:
                 return None
             for elem in obj_handler.__bases__:
                 if hasattr(elem, 'get_form'):
