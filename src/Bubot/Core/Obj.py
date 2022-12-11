@@ -8,9 +8,11 @@ from Bubot.Core.ObjModel import ObjModel
 from Bubot.Helpers.ActionDecorator import async_action
 from Bubot.Helpers.ExtException import KeyNotFound, ExtException
 from Bubot.Helpers.Helper import Helper
+from Bubot.Helpers.Helper import get_tzinfo
 
 
 class Obj:
+    tzinfo = get_tzinfo()
     file = __file__  # должен быть в каждом файле наследники для чтения форм
     extension = False
     is_subtype = False
@@ -68,7 +70,7 @@ class Obj:
         res = _action.add_stat(await self.find_one({"_id": _id}, _form=_form, **kwargs))
         if res:
             self.init_by_data(res)
-            return res
+            return self.data
         raise KeyNotFound(message=f'Object not found', detail=f'{self.obj_name} (id: {_id})')
 
     @async_action
@@ -120,7 +122,8 @@ class Obj:
     async def list(self, *, _form="List", **kwargs):
         self.add_projection(_form, kwargs)
         kwargs = await self.list_set_default_params(**kwargs)
-        return await self.storage.list(self.db, self.obj_name, **kwargs)
+        result = await self.storage.list(self.db, self.obj_name, **kwargs)
+        return result
 
     async def list_set_default_params(self, **kwargs):
         return kwargs
@@ -136,7 +139,11 @@ class Obj:
         return await self.update(data, **kwargs)
 
     @async_action
-    async def update(self, data=None, **kwargs):
+    async def before_update(self, data=None, **kwargs):
+        pass
+
+    @async_action
+    async def update(self, data=None, _action=None, **kwargs):
         _data = data if data else self.data
         await self.set_default_params(_data)
         try:
@@ -144,6 +151,7 @@ class Obj:
         except KeyError:
             if self.uuid_id and not kwargs.get('where'):
                 _data['_id'] = str(uuid4())
+        _action.add_stat(await self.before_update(_data, **kwargs))
         res = await self.storage.update(self.db, self.obj_name, _data, **kwargs)
         if data is None:
             self.data = _data

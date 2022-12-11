@@ -1,13 +1,14 @@
-from urllib.parse import quote_plus, urlparse
-
+from Bubot.Helpers.ActionDecorator import async_action
+from Bubot.Helpers.ExtException import ExtException, ExtTimeoutError, KeyNotFound
+from Bubot.Helpers.Helper import get_tzinfo
+from bson.codec_options import CodecOptions
 from motor import motor_asyncio
 from pymongo.errors import ServerSelectionTimeoutError
 
-from Bubot.Helpers.ActionDecorator import async_action
-from Bubot.Helpers.ExtException import ExtException, ExtTimeoutError
-
 
 class Mongo:
+    tzinfo = get_tzinfo()
+
     def __init__(self, **kwargs):
         self.client = kwargs.get('client')
 
@@ -60,7 +61,11 @@ class Mongo:
         res = await self.client[db][table].update_one({'_id': uid}, {'$pull': {field: item}}, upsert=False)
         return res
 
+    def set_timezone(self, db, table):
+        self.client[db][table].with_options(codec_options=CodecOptions(tz_aware=True, tzinfo=self.tzinfo))
+
     async def find_one(self, db, table, where, **kwargs):
+        self.set_timezone(db, table)
         return await self.client[db][table].find_one(where, **kwargs)
 
     async def delete_one(self, db, table, where):
@@ -82,8 +87,9 @@ class Mongo:
             raise ExtException(message='table not defined', action=action)
 
     async def list(self, db, table, *, where=None, projection=None, skip=0, limit=1000, order=None, _action=None,
-                    **kwargs):
+                   **kwargs):
         self.check_db_and_table(db, table, _action)
+        self.set_timezone(db, table)
         if where is not None:
             full_text_search = where.pop('_search', None)
             if full_text_search:
@@ -103,6 +109,8 @@ class Mongo:
 
     async def pipeline(self, db, table, pipeline, *, projection=None, where=None, skip=0, sort=None, limit=1000,
                        **kwargs):
+        self.set_timezone(db, table)
+        self.check_db(db)
         _pipeline = []
         if where:
             _pipeline.append({'$match': where})
@@ -124,3 +132,8 @@ class Mongo:
 
     async def find_one_and_update(self, db, table, where, data, **kwargs):
         return await self.client[db][table].find_one_and_update(where, {'$set': data}, **kwargs)
+
+    @classmethod
+    def check_db(cls, db):
+        if not db:
+            raise KeyNotFound(message='Data base not defined')

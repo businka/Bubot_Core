@@ -64,22 +64,25 @@ class ObjApi(DeviceApi):
         # with open(file_name, 'r', encoding='utf-8') as file:
         #     data = json.load(file)
         # obj = self.handler(view.storage, account_id=view.session['account'])
-        where = self.prepare_list_filter(data)
-        data = _action.add_stat(await handler.list(**where))
+        _data = self.prepare_list_filter(view, data)
+        data = _action.add_stat(await handler.list(**_data))
         data = _action.add_stat(await self.list_convert_result(data))
         return self.response.json_response({"rows": data})
 
-    def prepare_list_filter(self, data):
-        page = data.pop('page', None)
+    def prepare_list_filter(self, view, data):
         where = {}
-        limit = min(self.list_limit, int(data.pop('limit', self.list_limit)))
+        _where = data.get('filter', {})
+        nav = data.get('nav', {})
+        limit = int(nav.get('limit', 25))
+        page = int(nav.get('page', 1))
+
         if limit == -1:
             limit = None
-        for key in data:
-            try:
-                self.filter_fields[key](where, key, data[key])
-            except KeyError:
-                where[key] = data[key]
+        for key in _where:
+            if key in self.filter_fields:
+                self.filter_fields[key](where, key, _where[key])
+            else:
+                where[key] = _where[key]
         result = {
             'where': where
         }
@@ -87,7 +90,7 @@ class ObjApi(DeviceApi):
         if limit:
             result['limit'] = limit
             if page:
-                result['skip'] = (int(page) - 1) * result['limit']
+                result['skip'] = (int(page) - 1) * limit
         return result
 
     @async_action
