@@ -111,6 +111,14 @@ class Obj:
         self.data['_id'] = value
 
     @property
+    def uuid(self):
+        return self.data.get('_id')
+
+    @uuid.setter
+    def uuid(self, value):
+        self.data['_id'] = value
+
+    @property
     def subtype(self):
         return self.data.get('subtype')
 
@@ -176,8 +184,8 @@ class Obj:
 
     @async_action
     async def delete_many(self, where, *, _action=None):
-        await self.storage.delete_many(self.db, self.obj_name, where)
-        pass
+        result = await self.storage.delete_many(self.db, self.obj_name, where)
+        return result.raw_result
 
     @classmethod
     def get_form(cls, form_name):
@@ -296,3 +304,27 @@ class Obj:
         if not locale and lang != 'en':
             locale = cls.read_i18n('en')
         return Helper.get_element_in_dict(locale, value, value)
+
+    def data_getter_root_dict(self, name):
+        try:
+            return self.data[name]
+        except KeyError:
+            self.data[name] = {}
+            return self.data[name]
+
+    def data_getter_root_str(self, name):
+        try:
+            return self.data[name]
+        except KeyError:
+            self.data[name] = ''
+            return self.data[name]
+
+    def data_getter_root_list(self, name):
+        try:
+            return self.data[name]
+        except KeyError:
+            self.data[name] = []
+            return self.data[name]
+
+    def data_setter_root(self, name, value):
+        self.data[name] = value

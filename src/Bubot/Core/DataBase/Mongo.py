@@ -19,7 +19,7 @@ class Mongo:
         if device:
             url = device.get_param('/oic/con', 'storage_url', 'mongodb://localhost:27017')
         try:
-            client = motor_asyncio.AsyncIOMotorClient(url, serverSelectionTimeoutMS=5000)
+            client = motor_asyncio.AsyncIOMotorClient(url, serverSelectionTimeoutMS=5000, tz_aware=False)
             res = await client.server_info()
         except ServerSelectionTimeoutError as err:
             raise ExtTimeoutError(message='Mongo connection timeout', parent=err)
@@ -65,7 +65,7 @@ class Mongo:
         self.client[db][table].with_options(codec_options=CodecOptions(tz_aware=True, tzinfo=self.tzinfo))
 
     async def find_one(self, db, table, where, **kwargs):
-        self.set_timezone(db, table)
+        # self.set_timezone(db, table)
         return await self.client[db][table].find_one(where, **kwargs)
 
     async def delete_one(self, db, table, where):

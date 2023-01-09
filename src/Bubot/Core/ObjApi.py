@@ -4,6 +4,7 @@ from Bubot.Core.Obj import Obj
 from Bubot.Helpers.Action import Action
 from Bubot.Helpers.ActionDecorator import async_action
 from BubotObj.OcfDevice.subtype.WebServer.ApiHelper import DeviceApi
+from urllib.parse import unquote
 
 
 class ObjApi(DeviceApi):
@@ -31,15 +32,20 @@ class ObjApi(DeviceApi):
     @async_action
     async def api_delete_many(self, view, *, _action=None, **kwargs):
         handler, data = await self.prepare_json_request(view)
-        _filter = data.get('filter')
-        if not _filter:
+        where = data.get('filter')
+        if not where:
             _items = data.get('items')
             ids = []
             for item in _items:
                 ids.append(item['_id'])
-            _filter = {'_id': {'$in': ids}}
-        result = _action.add_stat(await handler.delete_many(_filter))
+            where = {'_id': {'$in': ids}}
+        _action.add_stat(await self._before_delete_many(view, handler, where))
+        result = _action.add_stat(await handler.delete_many(where))
         return self.response.json_response(result)
+
+    @async_action
+    async def _before_delete_many(self, view, handler, where, *, _action=None, **kwargs):
+        pass
 
     @async_action
     async def api_create(self, view, *, _action: Action = None, **kwargs):
@@ -105,6 +111,13 @@ class ObjApi(DeviceApi):
             handler = self.handler(view.storage, account_id=view.session.get('account'))
             handler.init()
         return handler, data
+
+    @staticmethod
+    def unquote_request_query(query):
+        _query = dict(query)
+        for elem in _query:
+            _query[elem] = unquote(_query[elem])
+        return _query
 
     @staticmethod
     def _init_subtype(handler, data):
