@@ -1,9 +1,10 @@
+from bson.codec_options import CodecOptions
+from motor import motor_asyncio
+from pymongo.errors import ServerSelectionTimeoutError, OperationFailure
+
 from Bubot.Helpers.ActionDecorator import async_action
 from Bubot.Helpers.ExtException import ExtException, ExtTimeoutError, KeyNotFound
 from Bubot.Helpers.Helper import get_tzinfo
-from bson.codec_options import CodecOptions
-from motor import motor_asyncio
-from pymongo.errors import ServerSelectionTimeoutError
 
 
 class Mongo:
@@ -29,6 +30,25 @@ class Mongo:
 
     async def close(self):
         self.client.close()
+
+    async def exist_database(self, db):
+        db_names = await self.client.list_database_names()
+        return db in db_names
+
+    async def exist_table(self, db, name):
+        if not await self.exist_database(db):
+            return False
+        try:
+            await self.client[db].validate_collection(name)
+            return True
+        except OperationFailure:
+            return False
+
+    def create_table(self, db, name):
+        table = self.client[db][name]
+
+    async def create_index(self, db, name_, keys, **kwargs):
+        await self.client[db][name_].create_index(keys, **kwargs)
 
     async def find_data_base(self, name):
         data_bases = await self.client.list_database_names()
@@ -62,10 +82,14 @@ class Mongo:
         return res
 
     def set_timezone(self, db, table):
-        self.client[db][table].with_options(codec_options=CodecOptions(tz_aware=True, tzinfo=self.tzinfo))
+        self.client[db][table].with_options(
+            codec_options=CodecOptions(
+                tz_aware=False,
+                # tzinfo=self.tzinfo
+            ))
 
     async def find_one(self, db, table, where, **kwargs):
-        # self.set_timezone(db, table)
+        self.set_timezone(db, table)
         return await self.client[db][table].find_one(where, **kwargs)
 
     async def delete_one(self, db, table, where):
@@ -103,6 +127,20 @@ class Mongo:
         )
         if order:
             cursor.sort(order)
+        result = await cursor.to_list(length=1000)
+        await cursor.close()
+        return result
+
+    @async_action
+    async def get_previous(self, db, table, *, where=None, index=None, projection=None, skip=0, limit=1000, order=None,
+                           _action=None, **kwargs):
+        self.check_db_and_table(db, table, _action)
+        self.set_timezone(db, table)
+
+        cursor = self.client[db][table].find(
+            filter=where,
+
+        ).sort([(index, -1)]).limit(10)
         result = await cursor.to_list(length=1000)
         await cursor.close()
         return result

@@ -13,7 +13,7 @@ from Bubot.Helpers.Helper import Helper
 
 class ObjSubtype(Obj):
 
-    def init(self):
+    def init(self, *, app_name=None, **kwargs):
         self.data = dict(
             title=self.__class__.__name__
         )

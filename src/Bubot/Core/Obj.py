@@ -21,8 +21,9 @@ class Obj:
     uuid_id = True
     _locales = {}
 
-    def __init__(self, storage, *, account_id=None, lang=None, data=None, **kwargs):
+    def __init__(self, storage, *, account_id=None, lang=None, data=None, app_name=None, **kwargs):
         self.storage = storage
+        self.app_name = app_name
         self.account_id = account_id
         self.lang = lang
         data = data if data else {}
@@ -32,7 +33,7 @@ class Obj:
             self.data = {}
         self.debug = False
 
-    def init(self):
+    def init(self, **kwargs):
         self.data = dict(
             title=''
         )
@@ -111,11 +112,11 @@ class Obj:
         self.data['_id'] = value
 
     @property
-    def uuid(self):
+    def uid(self):
         return self.data.get('_id')
 
-    @uuid.setter
-    def uuid(self, value):
+    @uid.setter
+    def uid(self, value):
         self.data['_id'] = value
 
     @property
@@ -253,7 +254,7 @@ class Obj:
         if current_class == _subtype:
             return self
         handler = BubotHelper.get_subtype_class(self.__class__.__name__, _subtype)
-        return handler(self.storage, account_id=self.account_id, lang=self.lang, data=self.data)
+        return handler(self.storage, account_id=self.account_id, lang=self.lang, app_name=self.app_name, data=self.data)
 
     @classmethod
     def get_dir(cls):

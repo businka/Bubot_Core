@@ -1,15 +1,17 @@
 from typing import Optional, Type
+from urllib.parse import unquote
 
 from Bubot.Core.Obj import Obj
 from Bubot.Helpers.Action import Action
 from Bubot.Helpers.ActionDecorator import async_action
+from Bubot.Helpers.ExtException import KeyNotFound
 from BubotObj.OcfDevice.subtype.WebServer.ApiHelper import DeviceApi
-from urllib.parse import unquote
 
 
 class ObjApi(DeviceApi):
     handler: Optional[Type[Obj]] = None
     extension = False
+    mandatory_field_in_list_filter = []
 
     @async_action
     async def api_read(self, view, *, _action=None, **kwargs):
@@ -66,21 +68,23 @@ class ObjApi(DeviceApi):
     @async_action
     async def api_list(self, view, *, _action: Action = None, **kwargs):
         handler, data = await self.prepare_json_request(view, **kwargs)
-        # file_name = '{}/examples/test-list-response.json'.format(os.path.dirname(__file__))
-        # with open(file_name, 'r', encoding='utf-8') as file:
-        #     data = json.load(file)
-        # obj = self.handler(view.storage, account_id=view.session['account'])
-        _data = self.prepare_list_filter(view, data)
+        _data = self.prepare_list_filter(view, handler, data)
         data = _action.add_stat(await handler.list(**_data))
         data = _action.add_stat(await self.list_convert_result(data))
         return self.response.json_response({"rows": data})
 
-    def prepare_list_filter(self, view, data):
+    def prepare_list_filter(self, view, handler, data):
         where = {}
         _where = data.get('filter', {})
         nav = data.get('nav', {})
         limit = int(nav.get('limit', 25))
         page = int(nav.get('page', 1))
+
+        for elem in self.mandatory_field_in_list_filter:
+            try:
+                _where[elem]
+            except KeyError as err:
+                raise KeyNotFound(message='Отсутствует обязательный параметр', detail=str(err))
 
         if limit == -1:
             limit = None
@@ -105,10 +109,16 @@ class ObjApi(DeviceApi):
 
     async def prepare_json_request(self, view, **kwargs):
         data = await view.loads_json_request_data(view)
-
+        app_name = view.request.match_info['device']
         handler: Optional[Obj] = None
         if self.handler:
-            handler = self.handler(view.storage, account_id=view.session.get('account'))
+            handler = self.handler(
+                view.storage, account_id=view.session.get('account'), user=view.session.get('user'), app_name=app_name)
+
+            subtype = view.request.match_info.get('subtype')
+            if subtype:
+                handler = handler.init_subtype(subtype)
+
             handler.init()
         return handler, data
 
@@ -122,8 +132,7 @@ class ObjApi(DeviceApi):
     @staticmethod
     def _init_subtype(handler, data):
         try:
-            subtype = data['subtype']
+            subtype = data.pop('subtype')
         except (KeyError, TypeError):
             subtype = None
-
         return handler.init_subtype(subtype)
