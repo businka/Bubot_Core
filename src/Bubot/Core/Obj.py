@@ -5,6 +5,7 @@ from uuid import uuid4
 from Bubot.Core.BubotHelper import BubotHelper
 from Bubot.Core.ObjForm import ObjForm
 from Bubot.Core.ObjModel import ObjModel
+
 from Bubot.Helpers.ActionDecorator import async_action
 from Bubot.Helpers.ExtException import KeyNotFound, ExtException
 from Bubot.Helpers.Helper import Helper
@@ -22,15 +23,15 @@ class Obj:
     _locales = {}
 
     def __init__(self, storage, *, account_id=None, lang=None, data=None, app_name=None, **kwargs):
+        self.data = {}
         self.storage = storage
-        self.app_name = app_name
-        self.account_id = account_id
-        self.lang = lang
         data = data if data else {}
         if data:
             self.init_by_data(data)
-        else:
-            self.data = {}
+
+        self.app_name = app_name
+        self.account_id = account_id
+        self.lang = lang
         self.debug = False
 
     def init(self, **kwargs):
