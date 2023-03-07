@@ -1,18 +1,19 @@
-import unittest
-import logging
 import asyncio
-from BubotObj.OcfDevice.subtype.VirtualServer.VirtualServer import VirtualServer as Device
-from Bubot.Core.OcfMessage import OcfRequest
-from Bubot.Core.DeviceLink import ResourceLink
-from Bubot.Core.TestHelper import async_test, wait_run_device, get_config_path, wait_run_device2
+import logging
+import unittest
 from os import path
+
+from Bubot.Core.DeviceLink import ResourceLink
+from Bubot.Core.TestHelper import async_test, wait_run_device
+from Bubot.Ocf.OcfMessage import OcfRequest
+from BubotObj.OcfDevice.subtype.VirtualServer.VirtualServer import VirtualServer as Device
 
 
 class TestVirtualServer(unittest.TestCase):
 
     def setUp(self):
         logging.basicConfig(level=logging.DEBUG)
-        self.config_path = '{}/config/'.format(path.dirname(__file__))
+        self.config_path = path.dirname(__file__)
 
     @async_test
     async def test_add_delete_device_from_update_running_device(self):
@@ -20,35 +21,37 @@ class TestVirtualServer(unittest.TestCase):
 
     async def add_delete_device_from_update_running_device(self, virtual_server_class):
         device = virtual_server_class.init_from_config()
-        device_task = asyncio.create_task(device.main())
-        while device.get_param('/oic/mnt', 'status') == 'init':
-            try:
-                device_task.result()
-            except asyncio.InvalidStateError:
-                pass
-            await asyncio.sleep(0.1)
-        msg = OcfRequest(cn={
-            "running_devices": [
+        device_task = await wait_run_device(device)
+
+        msg = OcfRequest(
+            to={'href': '/oic/con'},
+            op='update',
+            cn={"running_devices": [
                 {
                     "dmno": "EchoDevice",
-                    "n": "Test1"
+                    "n": "Test1",
+                    "di": "10000000-0000-0000-0000-000000000001"
                 },
                 {
                     "dmno": "EchoDevice",
-                    "n": "Test2"
+                    "n": "Test2",
+                    "di": "10000000-0000-0000-0000-000000000002"
                 }
             ]
-        })
-        await device.post_devices(msg)
+            })
+        await device.on_post_request(msg)
         await asyncio.sleep(0.2)
         devices = device.get_param(*device.run_dev)
         self.assertEqual(len(devices), 2, 'count devices')
 
         # удаляем девайс
-        msg = OcfRequest(cn={
-            "running_devices": [devices[0]]
-        })
-        await device.post_devices(msg)
+        msg = OcfRequest(
+            to={'href': '/oic/con'},
+            op='update',
+            cn={
+                "running_devices": [devices[0]]
+            })
+        await device.on_post_request(msg)
         await asyncio.sleep(0.1)
         devices = device.get_param(*device.run_dev)
         self.assertEqual(len(devices), 1, 'count devices')
@@ -73,13 +76,16 @@ class TestVirtualServer(unittest.TestCase):
 
     @async_test
     async def test_run_several_virtual_server(self):
-        device = Device.init_from_file('VirtualServer', '3')
-        device.run()
-        device_task = await wait_run_device2(device)
+        device = Device.init_from_file(
+            class_name='VirtualServer',
+            di='30000000-0000-0000-0000-000000000003',
+            path=self.config_path)
+        device_task = await wait_run_device(device)
         # device1_task = await wait_run_device(device._running_devices['4'][0])
 
         while True:
-            res = await device.find_resource_by_link(ResourceLink.init_from_link(dict(di='2', href='/oic/mnt')))
+            res = await device.transport_layer.find_resource_by_link(ResourceLink.init_from_link(
+                dict(di='30000000-0000-0000-0000-000000000004', href='/oic/mnt')))
             if res:
                 break
         await device.cancel()

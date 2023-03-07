@@ -8,12 +8,11 @@ import json
 import logging
 import os
 import re
-from os import path
 from typing import TypeVar, Type
 from uuid import uuid4
 
 # from .QueueMixin import QueueMixin
-from Bubot.Core.OcfMessage import OcfRequest
+from Bubot.Ocf.OcfMessage import OcfRequest
 from Bubot.Helpers.ExtException import ExtException, ExtTimeoutError, NotFound
 from Bubot.Helpers.Helper import Helper
 from BubotObj.OcfDevice.subtype.Device.MainLoopMixin import MainLoopMixin

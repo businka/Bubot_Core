@@ -49,7 +49,7 @@ class VirtualServer(Device):
                 import sys, traceback
                 print('Whoops! Problem:', file=sys.stderr)
                 traceback.print_exc(file=sys.stderr)
-            executor.shutdown()
+        executor.shutdown()
 
     async def on_pending(self):
         if multiprocessing.current_process().name == 'MainProcess':
@@ -82,7 +82,7 @@ class VirtualServer(Device):
             device = self._running_devices.pop(di)
             self.log.debug(f'Begin cancelled {device.__class__.__name__} {di}')
             if isinstance(device, multiprocessing.Process):
-                res = await self.find_resource_by_link(ResourceLink.init_from_link(dict(di=di, href='/oic/mnt')))
+                res = await self.transport_layer.find_resource_by_link(ResourceLink.init_from_link(dict(di=di, href='/oic/mnt')))
                 await self.request('update', res, dict(currentMachineState='cancelled'))
                 for i in range(15):
                     if not device.is_alive():
@@ -159,7 +159,8 @@ class VirtualServer(Device):
             raise KeyNotFound(detail='dmno', action='action_run_device') from None
         if di and di in self._running_devices:
             raise Exception('device is already running')
-        if class_name == 'VirtualServer':
+        device_class = self.get_device_class(class_name)
+        if issubclass(device_class, VirtualServer):# == 'VirtualServer':
             process = multiprocessing.Process(
                 target=self.device_process,
                 args=(class_name, di, self.queue, dict(path=self.path)),

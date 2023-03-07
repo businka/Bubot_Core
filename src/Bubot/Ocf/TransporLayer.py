@@ -237,12 +237,15 @@ class TransportLayer:
 
         links = await self.discovery_resource(
             query=dict(di=[link.di], href=[link.href]))
-        if isinstance(links, dict):
-            for di in links:
-                if di == link.di:
-                    for ref in links[di].links:
-                        if ref == link.href:
-                            return links[di].links[ref]
+        if isinstance(links, list):
+            for _link in links:
+                if _link['di'] == link.di:
+
+                    link.data['eps'] = [{'ep'}]
+                    return link
+                    # for ref in links[di].links:
+                    #     if ref == link.href:
+                    #         return links[di].links[ref]
         return None
 
     pass

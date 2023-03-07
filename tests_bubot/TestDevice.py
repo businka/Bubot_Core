@@ -15,7 +15,7 @@ class TestDevice(unittest.TestCase):
 
     def setUp(self):
         logging.basicConfig(level=logging.DEBUG)
-        self.config_path = path.join(path.dirname(__file__), 'conf')
+        self.config_path = path.dirname(__file__)
         # self.device = Device.init_from_config()
 
     @async_test
@@ -118,7 +118,7 @@ class TestDevice(unittest.TestCase):
         )
         device2_task = await wait_run_device(device2)
 
-        result = await device2.discovery_resource()
+        result = await device2.transport_layer.discovery_resource()
 
         di = device.get_device_id()
 

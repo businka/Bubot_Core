@@ -5,7 +5,7 @@ from uuid import uuid4
 
 from Bubot.Core.BubotHelper import BubotHelper
 from Bubot.Core.DeviceLink import ResourceLink
-from Bubot.Core.OcfMessage import OcfResponse, OcfRequest
+from Bubot.Ocf.OcfMessage import OcfResponse, OcfRequest
 from Bubot.Helpers.ExtException import ExtException, KeyNotFound
 from Bubot.Helpers.Helper import Helper
 from Bubot.Ocf.ResourceLayer import ResourceLayer
@@ -139,6 +139,9 @@ class DeviceCore:
         # for device in listener:
         #     task.append(self.send_event_change(name, device))
         # await asyncio.gather(task)
+
+    async def discovery_resource(self, **kwargs):
+        return await self.transport_layer.discovery_resource(**kwargs)
 
     async def send_event_change(self, resource_name, receiver):
         pass

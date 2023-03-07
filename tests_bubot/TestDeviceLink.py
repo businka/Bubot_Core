@@ -1,9 +1,9 @@
 import unittest
 import logging
 import asyncio
-from bubot.devices.Device.Device import Device
-from bubot.DeviceLink import DeviceLink, ResourceLink
-from bubot.TestHelper import async_test, wait_run_device, get_config_path
+from BubotObj.OcfDevice.subtype.Device.Device import Device
+from Bubot.Core.DeviceLink import DeviceLink, ResourceLink
+from Bubot.Core.TestHelper import async_test, wait_run_device, get_config_path
 from os import path
 
 
