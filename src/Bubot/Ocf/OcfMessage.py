@@ -79,10 +79,10 @@ class OcfRequest(OcfMessage):
         request = Request()
         request.type = NON
         # request.token = generate_random_token(2)
-        request.destination = destination
+        request.destination = self.to.get_endpoint_address()
         # request.destination = (sender, 5683)
         request.multicast = self.multicast
-        request.source = (sender, None)
+        request.source = (self.fr.get_endpoint_address()[0], None)
         request.code = self.code
         request.uri_path = self.to.href
 
@@ -95,6 +95,7 @@ class OcfRequest(OcfMessage):
         option.number = defines.OptionRegistry.URI_QUERY.number
         option.value = self.encode_query(self.query)  # todo  разобраться что тут надо
         request.add_option(option)
+        return request, request.destination
 
         # params = dict(
         #     mtype=NON,

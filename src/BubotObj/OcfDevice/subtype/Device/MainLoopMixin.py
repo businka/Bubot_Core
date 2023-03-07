@@ -13,7 +13,7 @@ class MainLoopMixin(DeviceCore):
 
     def run(self):
         try:
-            self.loop = asyncio.get_event_loop()
+            asyncio.get_event_loop()
             self.task = self.loop.create_task(self.main())
             self.loop.run_until_complete(self.task)
             if self.log:

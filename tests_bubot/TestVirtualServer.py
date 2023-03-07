@@ -3,7 +3,6 @@ import logging
 import unittest
 from os import path
 
-from Bubot.Core.DeviceLink import ResourceLink
 from Bubot.Core.TestHelper import async_test, wait_run_device
 from Bubot.Ocf.OcfMessage import OcfRequest
 from BubotObj.OcfDevice.subtype.VirtualServer.VirtualServer import VirtualServer as Device
@@ -30,12 +29,12 @@ class TestVirtualServer(unittest.TestCase):
                 {
                     "dmno": "EchoDevice",
                     "n": "Test1",
-                    "di": "10000000-0000-0000-0000-000000000001"
+                    "di": "e0000000-0000-0000-0000-000000000001"
                 },
                 {
                     "dmno": "EchoDevice",
                     "n": "Test2",
-                    "di": "10000000-0000-0000-0000-000000000002"
+                    "di": "e0000000-0000-0000-0000-000000000002"
                 }
             ]
             })
@@ -76,16 +75,15 @@ class TestVirtualServer(unittest.TestCase):
 
     @async_test
     async def test_run_several_virtual_server(self):
-        device = Device.init_from_file(
+        device: Device = Device.init_from_file(
             class_name='VirtualServer',
             di='30000000-0000-0000-0000-000000000003',
             path=self.config_path)
         device_task = await wait_run_device(device)
-        # device1_task = await wait_run_device(device._running_devices['4'][0])
-
+        await asyncio.sleep(5)
+        # device1_task = await wait_run_device(device.running_devices['4'][0])
         while True:
-            res = await device.transport_layer.find_resource_by_link(ResourceLink.init_from_link(
-                dict(di='30000000-0000-0000-0000-000000000004', href='/oic/mnt')))
+            res = await device.transport_layer.find_device('30000000-0000-0000-0000-000000000004', timeout=30)
             if res:
                 break
         await device.cancel()

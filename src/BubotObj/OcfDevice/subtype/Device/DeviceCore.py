@@ -5,9 +5,9 @@ from uuid import uuid4
 
 from Bubot.Core.BubotHelper import BubotHelper
 from Bubot.Core.DeviceLink import ResourceLink
-from Bubot.Ocf.OcfMessage import OcfResponse, OcfRequest
-from Bubot.Helpers.ExtException import ExtException, KeyNotFound
+from Bubot.Helpers.ExtException import ExtException, KeyNotFound, ExtTimeoutError
 from Bubot.Helpers.Helper import Helper
+from Bubot.Ocf.OcfMessage import OcfResponse, OcfRequest
 from Bubot.Ocf.ResourceLayer import ResourceLayer
 from Bubot.Ocf.TransporLayer import TransportLayer
 
@@ -23,7 +23,6 @@ class DeviceCore:
         self.resource_layer = ResourceLayer(self)
 
         self.log = None
-        self.coap = None
         self._resource_changed = {}
         self._link = None
         self.loop = None
@@ -340,8 +339,8 @@ class DeviceCore:
                 ))
                 await self.coap.send_answer(msg)
             except TimeoutError as e:
-                raise Exception(9001, action='notify',
-                                dump=dict(op='observe', to=to)) from None
+                raise ExtTimeoutError(action='notify',
+                                      dump=dict(op='observe', to=to)) from None
             except ExtException as e:
                 raise ExtException(parent=e,
                                    action='{}.notify()'.format(self.__class__.__name__),

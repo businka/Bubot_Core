@@ -105,15 +105,17 @@ class TransportLayer:
                 parent=err
             )
 
-    async def discovery_resource(self, **kwargs):
+    async def discovery_resource(self, *, timeout=30, owned=False, query=None, **kwargs):
         '''
+        :param query:
+        :param timeout:
+        :param owned:
 
         :param kwargs:
         :return:
         '''
 
         async def discover():
-            timeout = kwargs.get('timeout', 30)
             _protocol = []
             if self.ipv4 is not None:
                 _protocol.append(self.eps_coap_ipv4)
@@ -128,7 +130,7 @@ class TransportLayer:
                         ep = elem[ip][port]
                         request = Request()
                         request.token = _token
-                        request.query = {'owned': ['TRUE'] if kwargs.get('owned') else ['FALSE']}
+                        request.query = _query
                         request.mid = _mid
                         request.type = NON
                         request.code = Code.GET
@@ -209,6 +211,8 @@ class TransportLayer:
 
         try:
             result = []
+            _query = query if query else {}
+            _query['owned'] = ['TRUE'] if owned else ['FALSE']
             # _address_index = {}
             _list_res = await discover()
             for _msg in _list_res:
@@ -232,17 +236,27 @@ class TransportLayer:
         except Exception as e:
             raise ExtException(parent=e)
 
-    async def find_resource_by_link(self, link):
+    async def find_device(self, di, timeout=30):
+        links = await self.discovery_resource(
+            query=dict(di=[di]),
+            timeout=timeout
+        )
+        if isinstance(links, list):
+            for _link in links:
+                if _link['di'] == di:
+                    return _link
+        return None
+
+    async def find_resource_by_link(self, link, timeout=30):
         self.device.log.debug('find resource by di {0} href {1}'.format(link.di, link.href))
 
         links = await self.discovery_resource(
-            query=dict(di=[link.di], href=[link.href]))
+            query=dict(di=[link.di], href=[link.href], timeout=timeout)
+        )
         if isinstance(links, list):
             for _link in links:
-                if _link['di'] == link.di:
-
-                    link.data['eps'] = [{'ep'}]
-                    return link
+                if _link['di'] == link.di:  # todo переделать
+                    return _link
                     # for ref in links[di].links:
                     #     if ref == link.href:
                     #         return links[di].links[ref]

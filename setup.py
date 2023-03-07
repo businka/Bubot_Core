@@ -29,7 +29,7 @@ setuptools.setup(
     install_requires=[
         'cbor2>5',
         'Bubot_Helpers>=0.0.12',
-        'Bubot_CoAP>=1.0.4'
+        'Bubot_CoAP>=1.0.7',
     ],
     entry_points={
         'console_scripts':

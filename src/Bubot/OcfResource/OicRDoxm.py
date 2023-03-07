@@ -13,6 +13,11 @@ class OicRDoxm(OcfResource):
         except:
             is_owned = False
 
+        di = query.get('di')
+        if di:
+            if self.device.get_device_id() not in di:
+                return self, None
+
         # if not is_owned:
         #     return self, None
         self.device.log.debug(

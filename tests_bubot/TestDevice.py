@@ -3,9 +3,8 @@ import logging
 import unittest
 from os import path
 
-from Bubot.Helpers.ArrayHelper import ArrayHelper
-
 from Bubot.Core.TestHelper import async_test, wait_run_device
+from Bubot.Helpers.ArrayHelper import ArrayHelper
 # from bubot.CoapServer import CoapServer
 from BubotObj.OcfDevice.subtype.Device.Device import Device
 from BubotObj.OcfDevice.subtype.EchoDevice.EchoDevice import EchoDevice as EchoDevice
@@ -136,6 +135,40 @@ class TestDevice(unittest.TestCase):
         device2_task.cancel()
         await device_task
         await device2_task
+
+    @async_test
+    async def test_send_request(self):
+        device: Device = Device.init_from_file(
+            di='e0000000-0000-0000-0000-000000000001',
+            class_name='EchoDevice',
+            path=self.config_path
+        )
+        device_task = await wait_run_device(device)
+        device2: Device = Device.init_from_file(
+            di='e0000000-0000-0000-0000-000000000002',
+            class_name='EchoDevice',
+            path=self.config_path
+        )
+        device2_task = await wait_run_device(device2)
+        for i in range(3):
+            await asyncio.sleep(5)
+            to = await device2.transport_layer.find_device(device.get_device_id(), timeout=5)
+            if to:
+                break
+        to['href'] = '/oic/mnt'
+        res1 = await device2.request('get', to)
+
+        to['href'] = '/oic/mnt'
+        res2 = await device2.request('update', to, dict(currentMachineState='cancelled'))
+
+        to['href'] = '/oic/mnt'
+        res3 = await device2.request('get', to)
+
+        device_task.cancel()
+        device2_task.cancel()
+        await device_task
+        await device2_task
+        pass
 
 
 if __name__ == '__main__':

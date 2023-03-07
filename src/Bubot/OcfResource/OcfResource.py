@@ -1,5 +1,6 @@
 from Bubot.Helpers.ExtException import KeyNotFound
 from Bubot_CoAP.resources.resource import Resource
+from Bubot_CoAP.defines import Codes
 
 
 class OcfResource(Resource):
@@ -58,7 +59,7 @@ class OcfResource(Resource):
     def interface_type(self):
         return self._data.get('if', [])
 
-    def get_link(self, request_address):
+    def get_link(self, request_address=None):
         return {
             'anchor': f'ocf://{self.device.get_device_id()}',
             'href': self._href,
@@ -77,3 +78,19 @@ class OcfResource(Resource):
     def debug(self, method, request):
         self.device.log.debug(
             f'{self.__class__.__name__} {method} {self._href} {request.query} {request.decode_payload()} from {request.source} {request.destination}')
+
+    async def render_POST_advanced(self, request, response):
+        # self.debug('post', request)
+        path = '/' + request.uri_path
+        try:
+            res = self.device.get_param(path)
+        except KeyNotFound as err:
+            response.code = Codes.INTERNAL_SERVER_ERROR.number
+            response.paylod = err.to_dict()
+            return self, response
+        payload = request.decode_payload()
+        for elem in payload:
+            if elem in res:
+                self.device.set_param(path, elem, payload[elem])
+        response.code = Codes.CHANGED.number
+        return self, response

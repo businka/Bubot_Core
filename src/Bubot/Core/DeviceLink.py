@@ -179,6 +179,12 @@ class ResourceLink:
         except IndexError:
             return ''
 
+    def get_endpoint_address(self):
+        try:
+            return tuple(urllib.parse.urlparse(self.get_endpoint()).netloc.split(':'))
+        except IndexError:
+            return ''
+
     @property
     def discoverable(self):
         _bm = self.data['p'].get('bm', 0)

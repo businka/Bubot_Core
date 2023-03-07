@@ -11,10 +11,10 @@ import re
 from typing import TypeVar, Type
 from uuid import uuid4
 
-# from .QueueMixin import QueueMixin
-from Bubot.Ocf.OcfMessage import OcfRequest
 from Bubot.Helpers.ExtException import ExtException, ExtTimeoutError, NotFound
 from Bubot.Helpers.Helper import Helper
+# from .QueueMixin import QueueMixin
+from Bubot.Ocf.OcfMessage import OcfRequest
 from BubotObj.OcfDevice.subtype.Device.MainLoopMixin import MainLoopMixin
 
 from .__init__ import __version__ as device_version
@@ -157,25 +157,26 @@ class Device(MainLoopMixin):
 
     # deprecated
     async def request(self, operation, to, data=None, **kwargs):
-        return await self.send_request(operation, to, data, **kwargs)
+        response = await self.send_request(operation, to, data, **kwargs)
+        return response.decode_payload()
 
     async def send_request(self, operation, to, data=None, **kwargs):
         try:
-            msg = OcfRequest(
-                to=to,
-                fr=self.link,
-                op=operation,
-                cn=data,
-                # uri_path=link['href'],
-                # operation=operation,
-                # data=data,
-                # code=kwargs.pop('code', 1),
-                # token=self.coap.token,
-                # mid=self.coap.mid,
-                **kwargs
-            )
-            coap_msg, remote = msg.encode_to_coap()
-            result = await self.coap.send_request(coap_msg, remote)
+            # msg = OcfRequest(
+            #     to=to,
+            #     fr=self.link,
+            #     op=operation,
+            #     cn=data,
+            #     # uri_path=link['href'],
+            #     # operation=operation,
+            #     # data=data,
+            #     # code=kwargs.pop('code', 1),
+            #     # token=self.coap.token,
+            #     # mid=self.coap.mid,
+            #     **kwargs
+            # )
+            # coap_msg, remote = msg.encode_to_coap()
+            result = await self.transport_layer.send_message(operation, to, data)
             return result
         except TimeoutError:
             raise ExtTimeoutError(action='request', dump=dict(op=operation, to=to, data=data, kwargs=kwargs)) from None

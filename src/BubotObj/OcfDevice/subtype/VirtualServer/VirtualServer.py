@@ -11,6 +11,7 @@ from Bubot.Helpers.Helper import ArrayHelper
 from BubotObj.OcfDevice.subtype.Device.Device import Device
 from BubotObj.OcfDevice.subtype.VirtualServer import __version__ as device_version
 from Bubot.Helpers.ExtException import ExtException
+import concurrent.futures
 
 # _logger = multiprocessing.get_logger()
 
@@ -22,11 +23,12 @@ class VirtualServer(Device):
     run_dev = ('/oic/con', 'running_devices')
 
     def __init__(self, **kwargs):
-        self._running_devices = {}
+        self.running_devices = {}
         self.loop = None
         self.task = None
         self.task_logger = None
         self.queue = None
+        self.manager = None
         Device.__init__(self, **kwargs)
 
     async def logger(self):
@@ -53,7 +55,8 @@ class VirtualServer(Device):
 
     async def on_pending(self):
         if multiprocessing.current_process().name == 'MainProcess':
-            self.queue = multiprocessing.Queue(-1)
+            self.manager = multiprocessing.Manager()
+            self.queue = self.manager.Queue(-1)
             self.task_logger = self.loop.create_task(self.logger())
 
         links = self.get_param('/oic/con', 'running_devices')
@@ -69,8 +72,32 @@ class VirtualServer(Device):
         self.save_config()
 
     async def on_cancelled(self):
-        if self.queue:
-            self.queue.close()
+
+        for di in list(self.running_devices.keys()):
+            device = self.running_devices.pop(di)
+            self.log.debug(f'Begin cancelled {device.__class__.__name__} {di}')
+            if isinstance(device, multiprocessing.Process):
+                link = await self.transport_layer.find_device(di=di, timeout=15)
+                link['href'] = '/oic/mnt'
+                await self.request('update', link, dict(currentMachineState='cancelled'))
+                for i in range(15):
+                    if not device.is_alive():
+                        break
+                    self.log.debug('wait cancelled {}'.format(di))
+                    await asyncio.sleep(i)
+            elif asyncio.isfuture(device):
+                device.cancel()
+                try:
+                    await device
+                except asyncio.CancelledError:
+                    pass
+            else:
+                await device.cancel()
+
+            self.log.debug(f'End cancelled {device.__class__.__name__} {di}')
+
+        if self.manager:
+            self.manager.shutdown()
         try:
             if self.task_logger:
                 self.task_logger.cancel()
@@ -78,28 +105,13 @@ class VirtualServer(Device):
         except asyncio.CancelledError:
             pass
 
-        for di in list(self._running_devices.keys()):
-            device = self._running_devices.pop(di)
-            self.log.debug(f'Begin cancelled {device.__class__.__name__} {di}')
-            if isinstance(device, multiprocessing.Process):
-                res = await self.transport_layer.find_resource_by_link(ResourceLink.init_from_link(dict(di=di, href='/oic/mnt')))
-                await self.request('update', res, dict(currentMachineState='cancelled'))
-                for i in range(15):
-                    if not device.is_alive():
-                        break
-                    self.log.debug('wait cancelled {}'.format(di))
-                    await asyncio.sleep(i)
-            else:
-                await device.cancel()
-
-            self.log.debug(f'End cancelled {device.__class__.__name__} {di}')
         await super(VirtualServer, self).on_cancelled()
 
     async def on_stopped(self):
         pass
         # links = self.get_param(*self.run_dev)
         # for i, link in enumerate(links):
-        #     self._running_devices[link['di']][1].cancel()
+        #     self.running_devices[link['di']][1].cancel()
         await super().on_stopped()
 
     async def on_update_oic_con(self, message):
@@ -157,18 +169,31 @@ class VirtualServer(Device):
             class_name = link['dmno']
         except KeyError:
             raise KeyNotFound(detail='dmno', action='action_run_device') from None
-        if di and di in self._running_devices:
+        if di and di in self.running_devices:
             raise Exception('device is already running')
         device_class = self.get_device_class(class_name)
-        if issubclass(device_class, VirtualServer):# == 'VirtualServer':
-            process = multiprocessing.Process(
-                target=self.device_process,
-                args=(class_name, di, self.queue, dict(path=self.path)),
-                daemon=True
-            )
-            process.start()
-            self._running_devices[link['di']] = process
-            return None
+        if link.get('process') or issubclass(device_class, VirtualServer):
+        # if issubclass(device_class, VirtualServer):
+            try:
+                # pool = concurrent.futures.ProcessPoolExecutor()
+                # self.running_devices[link['di']] = self.loop.run_in_executor(
+                #     pool,
+                #     self.device_process,
+                #     class_name,
+                #     di,
+                #     self.queue,
+                #     dict(path=self.path)
+                # )
+                process = multiprocessing.Process(
+                    target=self.device_process,
+                    args=(class_name, di, self.queue, dict(path=self.path)),
+                    daemon=True
+                )
+                process.start()
+                self.running_devices[link['di']] = process
+                return None
+            except Exception as err:
+                raise ExtException(parent=err) from err
 
         else:
             device = Device.init_from_file(
@@ -181,13 +206,13 @@ class VirtualServer(Device):
             link['di'] = device.get_device_id()
             task = self.loop.create_task(device.main())
             device.task = task
-            self._running_devices[link['di']] = device
+            self.running_devices[link['di']] = device
             return device
 
     async def action_stop_device(self, di):
         try:
-            self._running_devices[di].task.cancel()
-            await self._running_devices[di].task
+            self.running_devices[di].task.cancel()
+            await self.running_devices[di].task
         except asyncio.CancelledError:
             pass
 
@@ -195,6 +220,7 @@ class VirtualServer(Device):
     def device_process(class_name, di, queue, kwargs):
         h = logging.handlers.QueueHandler(queue)  # Just the one handler needed
         kwargs['loop'] = asyncio.new_event_loop()
+        asyncio.set_event_loop(kwargs['loop'])
         root = logging.getLogger()
         root.handlers = []
         root.addHandler(h)

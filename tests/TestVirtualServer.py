@@ -76,7 +76,7 @@ class TestVirtualServer(unittest.TestCase):
         device = Device.init_from_file('VirtualServer', '3')
         device.run()
         device_task = await wait_run_device2(device)
-        # device1_task = await wait_run_device(device._running_devices['4'][0])
+        # device1_task = await wait_run_device(device.running_devices['4'][0])
 
         while True:
             res = await device.find_resource_by_link(ResourceLink.init_from_link(dict(di='2', href='/oic/mnt')))

@@ -15,8 +15,13 @@ class EchoDevice(Device):
     async def on_idle(self):
         i = self.get_param('/oic/mnt', 'i')
         self.set_param('/oic/mnt', 'i', i + 1)
-        self.log.info('i: {}'.format(i))
-        await asyncio.sleep(1)
+        self.log.info(f'i: {i}')
+        # import time
+        # sleep = self.get_param('/oic/con', 'updateTime')
+        # time.sleep(sleep)
+        # print(f'{self.get_device_id()} {i} {sleep}')
+
+        # await asyncio.sleep(1)
 
     @classmethod
     def get_install_actions(cls):
