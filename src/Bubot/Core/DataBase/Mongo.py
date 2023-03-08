@@ -16,11 +16,12 @@ class Mongo:
     pass
 
     @classmethod
-    async def connect(cls, device=None, *, url='mongodb://localhost:27017', **kwargs):
+    async def connect(cls, device=None, *, url='mongodb://localhost:27017', loop=None, **kwargs):
         if device:
             url = device.get_param('/oic/con', 'storage_url', 'mongodb://localhost:27017')
+            loop = device.loop
         try:
-            client = motor_asyncio.AsyncIOMotorClient(url, serverSelectionTimeoutMS=5000, tz_aware=False)
+            client = motor_asyncio.AsyncIOMotorClient(url, io_loop=loop, serverSelectionTimeoutMS=5000, tz_aware=False)
             res = await client.server_info()
         except ServerSelectionTimeoutError as err:
             raise ExtTimeoutError(message='Mongo connection timeout', parent=err)
