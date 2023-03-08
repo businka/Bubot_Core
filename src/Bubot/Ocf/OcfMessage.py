@@ -1,6 +1,7 @@
 # from aiocoap import Message, NON, Code
 # from Bubot.Core.Coap.coap import Message, NON, Code
-import urllib.parse
+from urllib.parse import urlparse
+from uuid import uuid4
 
 import cbor2
 
@@ -10,23 +11,47 @@ from Bubot_CoAP import defines
 from Bubot_CoAP.messages.numbers import NON, Code
 from Bubot_CoAP.messages.option import Option
 from Bubot_CoAP.messages.request import Request
+import bson
 
 
 class OcfMessage:
-    def __init__(self, **kwargs):
-        self.fr = ResourceLink.init(kwargs.get('fr'))
-        self.to = ResourceLink.init(kwargs.get('to'))
-        self.code = kwargs.get('code')
-        self.ri = kwargs.get('ri', {})  # Request Identifier
-        self.cn = kwargs.get('cn', {})  # Content
+    def __init__(self, *, fr=None, to=None, ri=None, cn=None, query=None, **kwargs):
+        '''
+        :param fr: The URI of the message originator.
+        :param to: The URI of the recipient of the message.
+        :param ri: The  identifier  that  uniquely  identifies  the message in the originator and the recipient.
+        :param cn: Information specific to the operation.
+        :param query: ?
+        :param kwargs: ?
+        '''
+        self.data = {}
+        self.fr = fr
+        self.to = to
+        self.ri = ri if ri else str(uuid4())
+        self.cn = cn  # Content
+
         # self.uri_path = kwargs.get('uri_path')
-        self.query = kwargs.get('query', {})
-        self.token = kwargs.get('token')
-        self.mid = kwargs.get('mid')
+        # self.code = kwargs.get('code')
+        # self.query = kwargs.get('query', {})
+        # self.token = kwargs.get('token')
+        # self.mid = kwargs.get('mid')
         # self.data = kwargs.get('data', {})
-        self.raw_msg = None
+        # self.raw_msg = None
         # self.code = kwargs.get('code', NON)
         pass
+
+    def parse_url_to(self):
+        return urlparse(self.to)
+
+    @staticmethod
+    def init_from_bson(data: bytes):
+        _data = bson.decode(data)
+        if 'op' in _data:
+            return OcfRequest(**_data)
+        elif 'rs' in _data:
+            return OcfResponse(**_data)
+        else:
+            raise ExtException(message='Bad message data', dump=_data)
 
     @staticmethod
     def encode_query(query):
@@ -54,18 +79,59 @@ class OcfMessage:
 
 class OcfRequest(OcfMessage):
 
-    def __init__(self, **kwargs):
+    def __init__(self, *, obs=None, op=None, multicast=False, **kwargs):
         super().__init__(**kwargs)
-        self.obs = kwargs.get('obs')
-        self.multicast = kwargs.get('multicast', False)
-        self.op = kwargs.get('op')
-        if not self.code or not self.op:
-            if not self.code and self.op:
-                self.code = self.map_crudn_to_coap_code(self.op)
-            else:
-                raise Exception('не заполнены обязательные параметры')
+        self.obs = obs
+        self.op = op
+        # self.multicast = multicast
+        # if not self.code or not self.op:
+        #     if not self.code and self.op:
+        #         self.code = self.map_crudn_to_coap_code(self.op)
+        #     else:
+        #         raise Exception('не заполнены обязательные параметры')
 
         # self.observe = None
+
+    def to_dict(self):
+        return dict(
+            fr=self.fr,
+            to=self.to,
+            ri=self.ri,
+            cn=self.cn,
+            op=self.op,
+            obs=self.obs
+        )
+
+    def generate_error(self, err, *, rs=Code.UNPROCESSABLE_ENTITY, obs=None, **kwargs):
+        if not isinstance(err, ExtException):
+            err = ExtException(parent=err)
+        return OcfResponse(
+            to=self.fr,
+            fr=self.to,
+            ri=self.ri,
+            cn=err.to_dict(),
+            rs=rs,
+            obs=obs if obs else self.obs  # todo не понятно как должно быть
+            # uri_query=self.query,
+            # token=self.token,
+            # mid=self.mid,
+        )
+
+    def generate_answer(self, data, *, rs=Code.CONTENT, obs=None, **kwargs):
+        return OcfResponse(
+            to=self.fr,
+            fr=self.to,
+            ri=self.ri,
+            rs=rs,
+            cn=data,
+            obs=obs if obs else self.obs  # todo не понятно как должно быть
+            # mid=kwargs.get('mid', self.mid),
+            # uri_query=self.query,
+            # token=self.token,
+        )
+        # if req.raw_msg:
+        #     self.raw_msg = req.raw_msg.copy()
+        # self.raw_msg.code = Code.CONTENT
 
     def encode_to_coap(self):
 
@@ -169,11 +235,11 @@ class OcfRequest(OcfMessage):
 
 
 class OcfResponse(OcfMessage):
-    def __init__(self, **kwargs):
+    def __init__(self, *, rs=None, obs=None, **kwargs):
         super().__init__(**kwargs)
         # self.error = self.is_successful(kwargs['rs'].)
-        self.rs = kwargs['rs']  # Response Code RFC 7252
-        self.obs = kwargs.get('obs')  # Observe
+        self.rs = rs  # Response Code RFC 7252
+        self.obs = obs  # Observe
         # self.observe = kwargs.get('observe', None)
 
         # +------+------------------------------+-----------+
@@ -202,46 +268,22 @@ class OcfResponse(OcfMessage):
         # | 5.05 | Proxying Not Supported       | [RFC7252] |
         # +------+------------------------------+-----------+
 
+    def to_dict(self):
+        return dict(
+            fr=self.fr,
+            to=self.to,
+            ri=self.ri,
+            cn=self.cn,
+            rs=self.rs,
+            obs=self.obs
+        )
+
     def is_successful(self):
         """True if the code is in the successful subrange of the response code range"""
-        return True if (64 <= self.code < 96) else False
-
-    @classmethod
-    def generate_error(cls, err, req, **kwargs):
-        if isinstance(err, ExtException):
-            _err = err.dumps()
-        else:
-            _err = dumps_error(err)
-        self = cls(
-            to=req.to,
-            fr=req.fr,
-            uri_query=req.query,
-            token=req.token,
-            mid=req.mid,
-            rs=Code.UNPROCESSABLE_ENTITY,
-            cn=_err
-        )
-        return self
-
-    @classmethod
-    def generate_answer(cls, data, req, **kwargs):
-        self = cls(
-            to=req.to,
-            fr=req.fr,
-            mid=kwargs.get('mid', req.mid),
-            rs=kwargs.get('code', Code.CONTENT),
-            cn=data,
-            uri_query=req.query,
-            token=req.token,
-            obs=req.obs
-        )
-        # if req.raw_msg:
-        #     self.raw_msg = req.raw_msg.copy()
-        # self.raw_msg.code = Code.CONTENT
-        return self
+        return True if (64 <= self.rs < 96) else False
 
     def encode_to_coap(self):
-        parsed = urllib.parse.urlparse(self.fr.get_endpoint(), allow_fragments=False)
+        parsed = urlparse(self.fr.get_endpoint(), allow_fragments=False)
         msg2 = Message(
             mtype=NON,
             mid=self.mid,
@@ -288,16 +330,16 @@ class OcfResponse(OcfMessage):
                 pass
         return self
 
-    def to_dict(self):
-        return dict(
-            code=self.code,
-            token=self.token,
-            mid=self.mid,
-            obs=self.obs,
-            fr=self.fr.data if self.fr else None,
-            to=self.to.data if self.to else None,
-            cn=self.cn
-        )
-
-    def __str__(self):
-        return '{code} {value}'.format(code=self.raw_msg.code, value=str(self.cn))
+    # def to_dict(self):
+    #     return dict(
+    #         code=self.code,
+    #         token=self.token,
+    #         mid=self.mid,
+    #         obs=self.obs,
+    #         fr=self.fr.data if self.fr else None,
+    #         to=self.to.data if self.to else None,
+    #         cn=self.cn
+    #     )
+    #
+    # def __str__(self):
+    #     return '{code} {value}'.format(value=str(self.cn))

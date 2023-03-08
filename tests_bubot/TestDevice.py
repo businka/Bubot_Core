@@ -150,11 +150,15 @@ class TestDevice(unittest.TestCase):
             path=self.config_path
         )
         device2_task = await wait_run_device(device2)
+        to = None
         for i in range(3):
             await asyncio.sleep(5)
             to = await device2.transport_layer.find_device(device.get_device_id(), timeout=5)
             if to:
                 break
+        if not to:
+            raise Exception('device not found')
+
         to['href'] = '/oic/mnt'
         res1 = await device2.request('get', to)
 
