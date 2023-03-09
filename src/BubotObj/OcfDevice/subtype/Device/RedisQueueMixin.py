@@ -81,7 +81,7 @@ class RedisQueueMixin:
                 self.log.error(ExtException(parent=err))
                 return
 
-    async def execute_in_redis_queue(self, href, data=None, *, timeout=None, callback=None):
+    async def execute_in_redis_queue(self, href, data=None):
         src_redis = self.get_device_id()
         request = Request(
             fr=f"redis://{src_redis}",
@@ -94,11 +94,14 @@ class RedisQueueMixin:
         self.log.info(f'send request {request.ri} in redis queue {href}')
         await self.redis.rpush(href, raw_data)
         self.log.debug(f'wait request {request.ri} in redis queue {src_redis}')
-        response: Response = await self.wait_redis_request_from_queue(request, timeout=timeout, callback=None)
-        if response.is_successful():
-            return response.cn
-        else:
-            raise ExtException(parent=response.cn)
+
+        waiter = Waiter(request)
+        self._redis_waited_answer[waiter.key] = waiter
+        return waiter
+
+    async def execute_in_redis_queue_sync(self, href, data=None, *, timeout=None):
+        waiter = await self.execute_in_redis_queue(href, data)
+        return await self.wait_redis_request_from_queue(waiter, timeout=timeout)
 
     async def send_response(self, response: Response):
         href = response.parse_url_to().hostname
@@ -106,11 +109,13 @@ class RedisQueueMixin:
         self.log.debug(f'send response {response.ri} to redis queue {href}')
         await self.redis.rpush(href, raw_data)
 
-    async def wait_redis_request_from_queue(self, request: Request, *, callback=None, timeout=None):
-        waiter = Waiter(request, callback)
-        self._redis_waited_answer[waiter.key] = waiter
+    async def wait_redis_request_from_queue(self, waiter, *, timeout=None):
         try:
-            return await asyncio.wait_for(waiter.future, timeout)
+            response = await asyncio.wait_for(waiter.future, timeout)
+            if response.is_successful():
+                return response.cn
+            else:
+                raise ExtException(parent=response.cn)
         except asyncio.CancelledError:
             waiter.future.set_exception(asyncio.CancelledError())
         except asyncio.TimeoutError:
@@ -131,8 +136,7 @@ class RedisQueueMixin:
 
 
 class Waiter:
-    def __init__(self, request: Request, callback=None):
-        self.callback = callback
+    def __init__(self, request: Request):
         self._request = request
         self._future = asyncio.Future()
         self._result = []
