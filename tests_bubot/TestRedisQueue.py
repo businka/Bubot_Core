@@ -58,6 +58,12 @@ class TestRedisQueue(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(5, res)
         pass
 
+    async def test_good_request_with_callback(self):
+        res = await self.device1.execute_in_redis_queue('/test_queue', 2, self.device1.callback)
+        self.assertEqual(5, res)
+        pass
+
+
     async def test_exception_in_answer(self):
         res = await self.device1.execute_in_redis_queue('/test_queue', 0)
         self.assertEqual(5, res)
@@ -87,6 +93,9 @@ class RedisTestDevice(RedisQueueMixin, Device):
     async def on_idle(self):
         await Device.on_idle(self)
         pass
+
+    async def callback(self, value):
+        return value * 10
 
     @staticmethod
     def device_process(class_name, di, queue, kwargs):

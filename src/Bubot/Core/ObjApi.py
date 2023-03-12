@@ -4,7 +4,7 @@ from urllib.parse import unquote
 from Bubot.Core.Obj import Obj
 from Bubot.Helpers.Action import Action
 from Bubot.Helpers.ActionDecorator import async_action
-from Bubot.Helpers.ExtException import KeyNotFound
+from Bubot.Helpers.ExtException import KeyNotFound, AccessDenied
 from BubotObj.OcfDevice.subtype.WebServer.ApiHelper import DeviceApi
 
 
@@ -12,6 +12,7 @@ class ObjApi(DeviceApi):
     handler: Optional[Type[Obj]] = None
     extension = False
     mandatory_field_in_list_filter = []
+    app_access = []
 
     @async_action
     async def api_read(self, view, *, _action=None, **kwargs):
@@ -110,6 +111,8 @@ class ObjApi(DeviceApi):
     async def prepare_json_request(self, view, **kwargs):
         data = await view.loads_json_request_data(view)
         app_name = view.request.match_info['device']
+        if self.app_access and app_name not in self.app_access:
+            raise AccessDenied(detail='app')
         handler: Optional[Obj] = None
         if self.handler:
             handler = self.handler(

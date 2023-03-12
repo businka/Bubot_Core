@@ -21,7 +21,7 @@ class RedisQueueMixin:
         self.redis_url = self.get_param('/oic/con', 'redis_url', 'redis://localhost')
         self.redis_queues = [self.get_device_id()]
         for href in self.data:
-            if 'bubot.redis.queue' in self.data[href]['rt']:
+            if 'bubot.redis.queue' in self.data[href].get('rt', []):
                 self.redis_queues.append(href)
 
         self.log.info(f'Connect {self.redis_url} {self.redis_queues}')

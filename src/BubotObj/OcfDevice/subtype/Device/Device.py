@@ -8,10 +8,11 @@ import json
 import logging
 import os
 import re
+from json import JSONDecodeError
 from typing import TypeVar, Type
 from uuid import uuid4
 
-from Bubot.Helpers.ExtException import ExtException, ExtTimeoutError, NotFound
+from Bubot.Helpers.ExtException import ExtException, ExtTimeoutError, NotFound, UserError
 from Bubot.Helpers.Helper import Helper
 # from .QueueMixin import QueueMixin
 from Bubot.Ocf.OcfMessage import OcfRequest
@@ -63,6 +64,9 @@ class Device(MainLoopMixin):
                 with open(config_path, encoding='utf-8') as file:
                     config = json.load(file)
                     kwargs['log'].info('OcfDevice.init_from_file {0}.{1}'.format(class_name, di))
+            except JSONDecodeError as err:
+                raise UserError(message='Bad device config file', detail=f'{class_name} {di} {err}')
+
             except FileNotFoundError:
                 kwargs['log'].warning('OcfDevice config not found {0}'.format(config_path))
             except Exception as e:
