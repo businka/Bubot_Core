@@ -93,8 +93,6 @@ class RedisQueueMixin:
         raw_data = bson.encode(request.to_dict())
         self.log.info(f'send request {request.ri} in redis queue {href}')
         await self.redis.rpush(href, raw_data)
-        self.log.debug(f'wait request {request.ri} in redis queue {src_redis}')
-
         waiter = Waiter(request)
         self._redis_waited_answer[waiter.key] = waiter
         return waiter

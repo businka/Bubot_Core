@@ -5,7 +5,18 @@ from Bubot.Core.Obj import Obj
 from Bubot.Helpers.Action import Action
 from Bubot.Helpers.ActionDecorator import async_action
 from Bubot.Helpers.ExtException import KeyNotFound, AccessDenied
-from BubotObj.OcfDevice.subtype.WebServer.ApiHelper import DeviceApi
+
+
+class DeviceApi:
+    def __init__(self, response, *, db=None, **kwargs):
+        self.response = response
+        self.db = db
+        self.filter_fields = {}
+        self.list_limit = 1000
+
+    @staticmethod
+    def get_device(view):
+        return view.app['device']
 
 
 class ObjApi(DeviceApi):
