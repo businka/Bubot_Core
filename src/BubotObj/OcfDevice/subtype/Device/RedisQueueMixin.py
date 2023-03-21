@@ -18,7 +18,9 @@ class RedisQueueMixin:
         self.current_redis_msg = None
 
     async def on_pending(self):
-        self.redis_url = self.get_param('/oic/con', 'redis_url', 'redis://localhost')
+        self.redis_url = self.get_param('/oic/con', 'redis_url', None)
+        if not self.redis_url:
+            return
         self.redis_queues = [self.get_device_id()]
         for href in self.data:
             if 'bubot.redis.queue' in self.data[href].get('rt', []):
