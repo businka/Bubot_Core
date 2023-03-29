@@ -153,7 +153,7 @@ class Obj:
         pass
 
     @async_action
-    async def update(self, data=None, _action=None, **kwargs):
+    async def update(self, data=None, *, _action=None, **kwargs):
         _data = data if data else self.data
         await self.set_default_params(_data)
         try:

@@ -59,10 +59,14 @@ class Mongo:
     @async_action
     async def update(self, db, table, data, create=True, *, where=None, _action=None, **kwargs):
         if data.get('_id') or where:
-            _where = where if where else dict(_id=data['_id'])
-            res = await self.client[db][table].update_one(
-                _where,
-                {'$set': data}, upsert=create, **kwargs)
+            if where:
+                res = await self.client[db][table].update_many(
+                    where,
+                    {'$set': data}, upsert=create, **kwargs)
+            else:
+                res = await self.client[db][table].update_one(
+                    dict(_id=data['_id']),
+                    {'$set': data}, upsert=create, **kwargs)
             if res.upserted_id:
                 data['_id'] = res.upserted_id
         else:
