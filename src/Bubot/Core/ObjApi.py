@@ -129,7 +129,7 @@ class ObjApi(DeviceApi):
             handler = self.handler(
                 view.storage, account_id=view.session.get('account'), user=view.session.get('user'), app_name=app_name)
 
-            subtype = view.request.match_info.get('subtype')
+            subtype = data.get('subtype', view.request.match_info.get('subtype'))
             if subtype:
                 handler = handler.init_subtype(subtype)
 

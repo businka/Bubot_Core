@@ -62,6 +62,8 @@ class VirtualServer(Device):
         links = self.get_param('/oic/con', 'running_devices')
         if links:
             for link in links:
+                if not link.get('enable', True):
+                    continue
                 try:
                     device = await self.action_run_device(link)
                     if device:
