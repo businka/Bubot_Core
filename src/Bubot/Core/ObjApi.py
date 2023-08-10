@@ -51,7 +51,10 @@ class ObjApi(DeviceApi):
             _items = data.get('items')
             ids = []
             for item in _items:
-                ids.append(item['_id'])
+                if isinstance(item, str):
+                    ids.append(item)
+                else:
+                    ids.append(item['_id'])
             where = {'_id': {'$in': ids}}
         _action.add_stat(await self._before_delete_many(view, handler, where))
         result = _action.add_stat(await handler.delete_many(where))
@@ -83,7 +86,7 @@ class ObjApi(DeviceApi):
         _data = self.prepare_list_filter(view, handler, data)
         data = _action.add_stat(await handler.list(**_data))
         data = _action.add_stat(await self.list_convert_result(data))
-        return self.response.json_response({"rows": data})
+        return self.response.json_response(data)
 
     def prepare_list_filter(self, view, handler, data):
         where = {}

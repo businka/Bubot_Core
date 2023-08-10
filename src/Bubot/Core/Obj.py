@@ -22,7 +22,7 @@ class Obj:
     uuid_id = True
     _locales = {}
 
-    def __init__(self, storage, *, account_id=None, lang=None, data=None, app_name=None, **kwargs):
+    def __init__(self, storage, *, account_id=None, lang=None, data=None, app_name=None, user=None, **kwargs):
         self.data = {}
         self.storage = storage
         data = data if data else {}
@@ -95,9 +95,20 @@ class Obj:
             # "_ref": DBRef(self.obj_name, self.obj_id)
             "_id": self.obj_id
         }
-        for elem in self.data:  # добаляем заголовок на всех языках
-            if elem[:5] == 'title':
-                result[elem] = self.data[elem]
+        title = self.data.get('title')
+        # if add_obj_type:
+        #     result['type'] =
+        if title:
+            result['title'] = title
+        if properties:
+            for name in properties:
+                value = self.data.get(name)
+                if value:
+                    result[name] = name
+
+        # for elem in self.data:  # добаляем заголовок на всех языках
+        #     if elem[:5] == 'title':
+        #         result[elem] = self.data[elem]
         return result
 
     @property
@@ -113,14 +124,6 @@ class Obj:
         self.data['_id'] = value
 
     @property
-    def uid(self):
-        return self.data.get('_id')
-
-    @uid.setter
-    def uid(self, value):
-        self.data['_id'] = value
-
-    @property
     def subtype(self):
         return self.data.get('subtype')
 
@@ -133,7 +136,7 @@ class Obj:
         self.add_projection(_form, kwargs)
         kwargs = await self.list_set_default_params(**kwargs)
         result = await self.storage.list(self.db, self.obj_name, **kwargs)
-        return result
+        return {'rows': result}
 
     async def list_set_default_params(self, **kwargs):
         return kwargs
@@ -242,7 +245,7 @@ class Obj:
 
     @property
     def title(self, lang=None):
-        return self.data['title']
+        return self.data.get('title')
 
     def __bool__(self):
         return bool(self.data)
