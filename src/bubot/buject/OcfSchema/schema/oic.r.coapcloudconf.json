@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "https://www.openconnectivity.org/ocf-apis/security/schemas/oic.r.amacl.json#",
+  "title": "Managed Access Control information",
+  "definitions": {
+    "CoAPCloudConf": {
+      "properties": {
+        "rt": {
+          "description": "Resource Type of the Resource",
+          "items": {
+            "enum": [
+              "oic.r.coapcloudconf"
+            ],
+            "type": "string",
+            "maxLength": 64
+          },
+          "minItems": 1,
+          "uniqueItems": true,
+          "readOnly": true,
+          "type": "array"
+        },
+        "n": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core- schema.json#/definitions/n"
+        },
+        "cis": {
+          "description": "URL of OCF Cloud",
+          "format": "uri",
+          "type": "string"
+        },
+        "apn": {
+          "description": "The Authorisation Provider through which an Access Token was obtained.",
+          "type": "string"
+        },
+        "sid": {
+          "$ref": "http://openconnectivityfoundation.github.io/core/schemas/oic.types- schema.json#/definitions/uuid"
+        },
+        "clec": {
+          "description": "Last Error Code during Cloud Provisioning (0: No Error, 1: Error response from the OCF Cloud, 2: Failed to connect to the OCF Cloud, 3: Failed to refresh Access Token, 4~254: Reserved, 255: Unknown error)",
+          "enum": [
+            0,
+            1,
+            2,
+            3,
+            255
+          ],
+          "readOnly": true
+        },
+        "id": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core- schema.json#/definitions/id"
+        },
+        "if": {
+          "description": "The OCF Interfaces supported by this Resource",
+          "items": {
+            "enum": [
+              "oic.if.rw",
+              "oic.if.baseline"
+            ],
+            "type": "string",
+            "maxLength": 64
+          },
+          "minItems": 2,
+          "uniqueItems": true,
+          "readOnly": true,
+          "type": "array"
+        }
+      },
+      "type": "object",
+      "required": [
+        "cis",
+        "sid"
+      ]
+    }
+  }
+}

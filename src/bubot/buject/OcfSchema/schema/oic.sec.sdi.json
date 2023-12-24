@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "https://www.openconnectivity.org/ocf-apis/security/schemas/oic.sec.session.json#",
+  "title": "Device Identifier Format type",
+"definitions": {
+    "Sdi" : {
+      "properties": {
+        "uuid": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.types-schema.json#/definitions/uuid"
+        },
+        "name": {
+          "description": "Human-friendly name for the Security Domain, set by DOTS during onboarding.",
+          "type": "string"
+        },
+        "rt": {
+          "description": "Resource Type of the Resource.",
+          "items": {
+            "maxLength": 64,
+            "type": "string",
+            "enum": ["oic.r.sdi"]
+          },
+          "minItems": 1,
+          "readOnly": true,
+          "type": "array"
+        },
+        "n": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/n"
+        },
+        "id": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/id"
+        },
+        "priv": {
+          "description": "Flag to indicate whether the Security Domain Information is copied to “/oic/res”, and thus, whether it is publicly visible or private.",
+          "type": "boolean"
+        },
+        "if" : {
+          "description": "The interface set supported by this Resource.",
+          "items": {
+            "enum": [ "oic.if.rw", "oic.if.baseline" ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "readOnly": true,
+          "type": "array"
+        }
+      },
+      "type" : "object",
+      "required": [ "uuid", "name", "priv" ]
+    },
+
+    "Sdi-Update" : {
+      "properties": {
+        "uuid": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.types-schema.json#/definitions/uuid"
+        },
+        "name": {
+          "description": "Human-friendly name for the Security Domain, set by DOTS during onboarding.",
+          "type": "string"
+        },
+        "priv": {
+          "description": "Flag to indicate whether the Security Domain Information is copied to “/oic/res”, and thus, whether it is publicly visible or private.",
+          "type": "boolean"
+        }
+      },
+      "type" : "object",
+      "required": [ "name", "priv" ]
+    }
+  }
+}

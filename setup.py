@@ -1,5 +1,5 @@
 import setuptools
-from src.BubotObj.OcfDevice.subtype.Device import __version__
+from src.bubot import __version__
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -28,8 +28,8 @@ setuptools.setup(
     zip_safe=False,
     install_requires=[
         'cbor2>5',
-        'Bubot_Helpers>=0.0.12',
-        'Bubot_CoAP>=1.0.7',
+        'Bubot_Helpers>=4.0.0',
+        'Bubot_CoAP>=2.0.0',
     ],
     entry_points={
         'console_scripts':

@@ -1,5 +1,5 @@
 from unittest import TestCase
-from Bubot.Ocf.OcfMessage import OcfRequest, OcfResponse
+from bubot.Ocf.OcfMessage import OcfRequest, OcfResponse
 
 
 class TestOcfMessage(TestCase):

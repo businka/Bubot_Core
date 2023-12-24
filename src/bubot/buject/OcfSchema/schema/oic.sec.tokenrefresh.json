@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "https://www.openconnectivity.org/ocf-apis/security/schemas/oic.sec.tokenrefresh.json#",
+  "title": "Device Identifier Format type",
+  "properties": {
+    "expiresin": {
+      "description": "Access Token life time in seconds (-1 if permanent).",
+      "readOnly": true,
+      "type": "integer"
+    },
+    "rt": {
+      "description": "Resource Type of the Resource.",
+      "items": {
+        "maxLength": 64,
+        "type": "string",
+        "enum": [
+          "oic.r.tokenrefresh"
+        ]
+      },
+      "minItems": 1,
+      "readOnly": true,
+      "type": "array"
+    },
+    "refreshtoken": {
+      "description": "Refresh token can be used to refresh the Access Token before getting expired.",
+      "readOnly": true,
+      "type": "string"
+    },
+    "accesstoken": {
+      "description": "Access Token used to authorize and associate the TLS connection for communication with the OCF Cloud with the Device ID.",
+      "readOnly": true,
+      "type": "string"
+    },
+    "n": {
+      "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/n"
+    },
+    "id": {
+      "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/id"
+    },
+    "if": {
+      "description": "The interface set supported by this Resource.",
+      "items": {
+        "enum": [
+          "oic.if.baseline"
+        ],
+        "type": "string"
+      },
+      "minItems": 1,
+      "readOnly": true,
+      "type": "array"
+    }
+  },
+  "type": "object",
+  "required": [
+    "accesstoken",
+    "refreshtoken",
+    "expiresin"
+  ]
+}

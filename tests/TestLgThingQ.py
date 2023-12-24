@@ -2,12 +2,12 @@ import unittest
 import logging
 import asyncio
 from unittest import IsolatedAsyncioTestCase
-# from Bubot.Core.Coap.CoapServer2 import CoapServer
+# from bubot.core.Coap.CoapServer2 import CoapServer
 from Bubot_CoAP.messages.request import Request
 from Bubot_CoAP.messages.response import Response
-from BubotObj.OcfDevice.subtype.Device.Device import Device
-from BubotObj.OcfDevice.subtype.EchoDevice.EchoDevice import EchoDevice as EchoDevice
-from Bubot.Core.TestHelper import async_test, wait_run_device
+from bubot.buject.OcfDevice.subtype.Device.Device import Device
+from bubot.buject.OcfDevice.subtype.EchoDevice.EchoDevice import EchoDevice as EchoDevice
+from bubot.core.TestHelper import async_test, wait_run_device
 from os import path
 
 
@@ -15,6 +15,8 @@ class TestDevice(IsolatedAsyncioTestCase):
 
     def setUp(self):
         logging.basicConfig()
+        logger = logging.getLogger()
+        logger.setLevel(logging.DEBUG)
         # _log = logging.getLogger('Bubot_CoAP.layers.message_layer')
         # _log.setLevel(logging.INFO)
         self.config_path = '{}/config/'.format(path.dirname(__file__))
@@ -73,6 +75,18 @@ class TestDevice(IsolatedAsyncioTestCase):
         await device_task
         await device2_task
 
+    async def test_wait(self):
+        echo_config = {
+            "/oic/con": {
+                "logLevel": "debug",
+                "udpCoapIPv4Ssl": True
+            }
+        }
+        self.echo = Device.init_from_config(echo_config,
+                                            di="00000000-0000-0000-0000-000000000002",
+                                            class_name='EchoDevice')
+        self.echo_task = await wait_run_device(self.echo)
+        await asyncio.Future()
 
 if __name__ == '__main__':
     unittest.main()
