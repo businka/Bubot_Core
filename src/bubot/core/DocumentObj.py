@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from Bubot.Core.Obj import Obj
+from bubot.core.Obj import Obj
 
 
 class DocumentObj(Obj):

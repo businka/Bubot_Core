@@ -2,14 +2,12 @@ import json
 from os.path import dirname, isfile, join
 from uuid import uuid4
 
-from Bubot.Core.BubotHelper import BubotHelper
-from Bubot.Core.ObjForm import ObjForm
-from Bubot.Core.ObjModel import ObjModel
-
-from Bubot.Helpers.ActionDecorator import async_action
-from Bubot.Helpers.ExtException import KeyNotFound, ExtException
-from Bubot.Helpers.Helper import Helper
-from Bubot.Helpers.Helper import get_tzinfo
+from bubot.core.BubotHelper import BubotHelper
+from bubot.core.ObjForm import ObjForm
+from bubot_helpers.ActionDecorator import async_action
+from bubot_helpers.ExtException import KeyNotFound, ExtException
+from bubot_helpers.Helper import Helper
+from bubot_helpers.Helper import get_tzinfo
 
 
 class Obj:
@@ -21,18 +19,27 @@ class Obj:
     key_property = '_id'
     uuid_id = True
     _locales = {}
+    # описание натуральных ключей объекта
+    # массив объектов
+    # * key - имя ключа
+    # * fields - массив с объектами описывающими получение каждого значения ключа
+    #   * path - путь до значения ключа в объекте
+    #   * format - правила форматирования значения
+    keys_meta = None
 
-    def __init__(self, storage, *, account_id=None, lang=None, data=None, app_name=None, user=None, **kwargs):
+    def __init__(self, storage, *, session=None, **kwargs):
         self.data = {}
         self.storage = storage
-        data = data if data else {}
-        if data:
-            self.init_by_data(data)
-
-        self.app_name = app_name
-        self.account_id = account_id
-        self.lang = lang
+        self.session = session
         self.debug = False
+
+    @property
+    def account_id(self):
+        return self.session.account_id if self.session else None
+
+    @property
+    def app_name(self):
+        return self.session.app_name if self.session else None
 
     def init(self, **kwargs):
         self.data = dict(
@@ -40,14 +47,22 @@ class Obj:
         )
 
     def init_by_data(self, data):
+        subtype = data.get('subtype')
+        obj_class = self
+        if subtype and self.__class__.__name__ != subtype:
+            obj_class = self.init_subtype(subtype)
         try:
-            self.init()
+            obj_class.init()
             if data:
-                Helper.update_dict(self.data, data)
+                Helper.update_dict(obj_class.data, data)
             if '_id' not in data:
-                self.data['_id'] = str(uuid4())
+                obj_class.data['_id'] = str(uuid4())
+
+            if subtype and self.__class__.__name__ != subtype:
+                self.data = obj_class.data
+            return obj_class
         except Exception as err:
-            raise ExtException(parent=err, action=f'{self.__class__.__name__}.init_by_data') from err
+            raise ExtException(parent=err, action=f'{self.__class__.__name__}.init_by_data')
 
     # @classmethod
     # @async_action
@@ -69,19 +84,14 @@ class Obj:
     async def find_by_id(self, _id, *, _form="Item", _action=None, **kwargs):
         if not _id:
             raise KeyNotFound(message=f'Object id not defined', detail=f'{self.obj_name}')
-        res = _action.add_stat(await self.find_one({"_id": _id}, _form=_form, **kwargs))
-        if res:
-            self.init_by_data(res)
-            return self.data
-        raise KeyNotFound(message=f'Object not found', detail=f'{self.obj_name} (id: {_id})')
+        return _action.add_stat(await self.find_one({"_id": _id}, _form=_form, **kwargs))
 
     @async_action
     async def find_one(self, where, *, _form="Item", _action=None, **kwargs):
         self.add_projection(_form, kwargs)
         res = await self.storage.find_one(self.db, self.obj_name, where, **kwargs)
         if res:
-            self.init_by_data(res)
-            return res
+            return self.init_by_data(res)
         raise KeyNotFound(message=f'Object not found', detail=f'{self.obj_name}', dump=where, action=_action)
 
     def get_link(self, *, properties=None, add_obj_type=False):
@@ -153,11 +163,15 @@ class Obj:
 
     @async_action
     async def before_update(self, data=None, **kwargs):
+        if self.keys_meta:
+            keys = self.get_keys(data)
+            if keys:
+                data['keys'] = keys
         pass
 
     @async_action
     async def update(self, data=None, *, _action=None, **kwargs):
-        _data = data if data else self.data
+        _data = data if data is not None else self.data
         await self.set_default_params(_data)
         try:
             _data['_id']
@@ -213,11 +227,11 @@ class Obj:
     # def get_obj_name(cls):
     #     return cls.name if cls.name else cls.__name__
 
-    @classmethod
-    def get_model(cls):
-        if cls.model is None:
-            cls.model = ObjModel.get(cls)
-        return cls.model
+    # @classmethod
+    # def get_model(cls):
+    #     if cls.model is None:
+    #         cls.model = ObjModel.get(cls)
+    #     return cls.model
 
     # @classmethod
     # def get_obj_table(cls):
@@ -228,18 +242,17 @@ class Obj:
     async def find_by_keys(self, keys):
         for key in keys:
             try:
-                return await self.find_by_key(key['name'], key['value'])
+                return await self.find_by_key(**key)
             except KeyError:
                 pass
         raise KeyError
 
-    async def find_by_key(self, key_name, key_value):
+    async def find_by_key(self, key, **values):
         res = await self.storage.find_one(self.db, self.obj_name, dict(
-            keys=dict(name=key_name, value=key_value)
+            keys=dict(key=key, **values)
         ))
         if res:
-            self.init_by_data(res)
-            return res
+            return self.init_by_data(res)
         raise KeyError
         pass
 
@@ -257,8 +270,11 @@ class Obj:
         current_class = self.__class__.__name__
         if current_class == _subtype:
             return self
-        handler = BubotHelper.get_subtype_class(self.__class__.__name__, _subtype)
-        return handler(self.storage, account_id=self.account_id, lang=self.lang, app_name=self.app_name, data=self.data)
+        try:
+            handler = BubotHelper.get_subtype_class(self.__class__.__name__, _subtype)
+        except:
+            return self
+        return handler(self.storage, session=self.session)
 
     @classmethod
     def get_dir(cls):
@@ -333,3 +349,47 @@ class Obj:
 
     def data_setter_root(self, name, value):
         self.data[name] = value
+
+    @classmethod
+    def get_keys(cls, obj_data, **kwargs):
+        if cls.keys_meta is None:
+            return None
+        keys = []
+        for key in cls.keys_meta:
+            try:
+                key_name = key['key']
+                fields = key['fields']
+            except KeyError:
+                continue
+            obj_key = dict(
+                key=key_name
+            )
+            not_null = False
+            for index, field in enumerate(fields):
+                value = Helper.obj_get_path_value(obj_data, field['path'])
+
+                _value = value
+                if value is not None:
+                    not_null = True
+                    format_value = field.get('format')
+                    if format_value:
+                        if format_value == 'date':
+                            _value = value.strftime('%Y-%m-%d')
+                        # elif format_value == 'link':
+                        #     try:
+                        #         _value = f"{value['ТипИС' + str(connection_index)]}/{value['ИдИС' + str(connection_index)]}"
+                        #         title = value.get('Название')
+                        #         if title:
+                        #             obj_key[f'title{index}'] = title
+                        #     except KeyError:
+                        #         not_null = False  # todo проверка обязательности ключа
+                        #         _value = None
+                        else:
+                            raise NotImplementedError(f'key format {format_value}')
+                    else:
+                        _value = str(value)
+                obj_key[f'value{index}'] = _value
+            if not_null:
+                keys.append(obj_key)
+        return keys
+

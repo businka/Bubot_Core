@@ -2,9 +2,9 @@ from bson.codec_options import CodecOptions
 from motor import motor_asyncio
 from pymongo.errors import ServerSelectionTimeoutError, OperationFailure
 
-from Bubot.Helpers.ActionDecorator import async_action
-from Bubot.Helpers.ExtException import ExtException, ExtTimeoutError, KeyNotFound
-from Bubot.Helpers.Helper import get_tzinfo
+from bubot_helpers.ActionDecorator import async_action
+from bubot_helpers.ExtException import ExtException, ExtTimeoutError, KeyNotFound
+from bubot_helpers.Helper import get_tzinfo
 
 
 class Mongo:
@@ -57,16 +57,29 @@ class Mongo:
         return None
 
     @async_action
-    async def update(self, db, table, data, create=True, *, where=None, _action=None, **kwargs):
-        if data.get('_id') or where:
+    async def update(self, db, table, data, create=True, *, where=None, pull=None, add_to_set=None, push=None,
+                     _action=None, **kwargs):
+        _id = data.get('_id')
+        if _id or where:
+
+            raw_data = {}
+            if data:
+                raw_data['$set'] = data
+            if pull:
+                raw_data['$pull'] = pull
+            if add_to_set:
+                raw_data['$addToSet'] = add_to_set
+            if push:
+                raw_data['$push'] = push
             if where:
+
                 res = await self.client[db][table].update_many(
                     where,
-                    {'$set': data}, upsert=create, **kwargs)
+                    raw_data, upsert=create, **kwargs)
             else:
                 res = await self.client[db][table].update_one(
-                    dict(_id=data['_id']),
-                    {'$set': data}, upsert=create, **kwargs)
+                    dict(_id=_id),
+                    raw_data, upsert=create, **kwargs)
             if res.upserted_id:
                 data['_id'] = res.upserted_id
         else:

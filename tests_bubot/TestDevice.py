@@ -3,11 +3,11 @@ import logging
 import unittest
 from os import path
 
-from Bubot.Core.TestHelper import async_test, wait_run_device
-from Bubot.Helpers.ArrayHelper import ArrayHelper
+from bubot.core.TestHelper import async_test, wait_run_device
+from bubot_helpers.ArrayHelper import ArrayHelper
 # from bubot.CoapServer import CoapServer
-from BubotObj.OcfDevice.subtype.Device.Device import Device
-from BubotObj.OcfDevice.subtype.EchoDevice.EchoDevice import EchoDevice as EchoDevice
+from bubot.buject.OcfDevice.subtype.Device.Device import Device
+from bubot.buject.OcfDevice.subtype.EchoDevice.EchoDevice import EchoDevice as EchoDevice
 
 
 class TestDevice(unittest.TestCase):

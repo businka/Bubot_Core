@@ -1,11 +1,11 @@
 import unittest
 import logging
 import asyncio
-from Bubot.Core.Coap.CoapServer import CoapServer
-from BubotObj.OcfDevice.subtype.Device.Device import Device
-from Bubot.Core.DeviceLink import ResourceLink
-from BubotObj.OcfDevice.subtype.EchoDevice.EchoDevice import EchoDevice as EchoDevice
-from Bubot.Core.TestHelper import async_test, wait_run_device
+from bubot.core.Coap.CoapServer import CoapServer
+from bubot.buject.OcfDevice.subtype.Device.Device import Device
+from bubot.core.ResourceLink import ResourceLink
+from bubot.buject.OcfDevice.subtype.EchoDevice.EchoDevice import EchoDevice as EchoDevice
+from bubot.core.TestHelper import async_test, wait_run_device
 from os import path
 
 

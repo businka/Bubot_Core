@@ -3,9 +3,9 @@ import logging
 import unittest
 from os import path
 
-from Bubot.Core.TestHelper import async_test, wait_run_device
-from Bubot.Ocf.OcfMessage import OcfRequest
-from BubotObj.OcfDevice.subtype.VirtualServer.VirtualServer import VirtualServer as Device
+from bubot.core.TestHelper import async_test, wait_run_device
+from bubot.Ocf.OcfMessage import OcfRequest
+from bubot.buject.OcfDevice.subtype.VirtualServer.VirtualServer import VirtualServer as Device
 
 
 class TestVirtualServer(unittest.TestCase):

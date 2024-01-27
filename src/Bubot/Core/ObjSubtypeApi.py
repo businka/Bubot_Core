@@ -1,9 +1,9 @@
 from typing import Optional, Type
 
-from Bubot.Core.Obj import Obj
-from Bubot.Helpers.Action import Action
-from Bubot.Helpers.ActionDecorator import async_action
-from Bubot.Core.ObjApi import ObjApi
+from bubot.core.Obj import Obj
+from bubot_helpers.Action import Action
+from bubot_helpers.ActionDecorator import async_action
+from bubot.core.ObjApi import ObjApi
 
 
 class ObjSubtypeApi(ObjApi):

@@ -1,7 +1,7 @@
 import logging
 import os.path
 
-from BubotObj.OcfDevice.subtype.EchoDevice.EchoDevice import EchoDevice
+from bubot.buject.OcfDevice.subtype.EchoDevice.EchoDevice import EchoDevice
 
 if __name__ == '__main__':
     logging.basicConfig(

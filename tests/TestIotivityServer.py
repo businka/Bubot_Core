@@ -4,9 +4,9 @@ import unittest
 from os import path
 from unittest import IsolatedAsyncioTestCase
 
-from Bubot.Core.TestHelper import wait_run_device
-# from Bubot.Core.Coap.CoapServer2 import CoapServer
-from BubotObj.OcfDevice.subtype.Device.Device import Device
+from bubot.core.TestHelper import wait_run_device
+# from bubot.core.Coap.CoapServer2 import CoapServer
+from bubot.buject.OcfDevice.subtype.Device.Device import Device
 
 logging.basicConfig()
 logger = logging.getLogger()

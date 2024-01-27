@@ -1,22 +1,22 @@
-from Bubot.Core.Obj import Obj
+from bubot.core.Obj import Obj
 from uuid import uuid4
 
-from Bubot.Core.BubotHelper import BubotHelper
-from Bubot.Core.ObjForm import ObjForm
-from Bubot.Core.ObjModel import ObjModel
-from Bubot.Helpers.ActionDecorator import async_action
-from Bubot.Helpers.ExtException import KeyNotFound
-from Bubot.Helpers.Helper import Helper
+from bubot.core.BubotHelper import BubotHelper
+from bubot.core.ObjForm import ObjForm
+from bubot.core.ObjModel import ObjModel
+from bubot_helpers.ActionDecorator import async_action
+from bubot_helpers.ExtException import KeyNotFound
+from bubot_helpers.Helper import Helper
 
 # from .SyncObjCore import ExtObjCore
 
 
 class ObjSubtype(Obj):
 
-    def init(self, *, app_name=None, **kwargs):
-        self.data = dict(
-            title=self.__class__.__name__
-        )
+    # def init(self, *, app_name=None, **kwargs):
+    #     self.data = dict(
+    #         title=self.__class__.__name__
+    #     )
 
     async def set_default_params(self, data):
         data['subtype'] = self.__class__.__name__

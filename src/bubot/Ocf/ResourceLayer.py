@@ -1,23 +1,11 @@
-from Bubot.OcfResource.OcfResource import OcfResource
-from Bubot.OcfResource.OicRAcl2 import OicRAcl2
-from Bubot.OcfResource.OicRCred import OicRCred
-from Bubot.OcfResource.OicRDoxm import OicRDoxm
-from Bubot.OcfResource.OicRPstat import OicRPstat
-from Bubot.OcfResource.OicRSdi import OicRSdi
-from Bubot.OcfResource.OicWkRes import OicWkRes
+from bubot.OcfResource.OcfResource import OcfResource
 
 
 class ResourceLayer:
     def __init__(self, device):
         self.device = device
-        self._handlers = {
-            '/oic/res': OicWkRes,
-            '/oic/sec/doxm': OicRDoxm,
-            '/oic/sec/pstat': OicRPstat,
-            '/oic/sec/cred': OicRCred,
-            '/oic/sec/acl2': OicRAcl2,
-            '/oic/sec/sdi': OicRSdi
-        }
+        if not hasattr(self, '_handlers'):
+            self._handlers = {}
         pass
 
     def add_handler(self, href, handler):
@@ -28,3 +16,7 @@ class ResourceLayer:
         for href in config:
             _handler = self._handlers.get(href, OcfResource).init_from_config(self.device, href, config[href])
             self.device.res[href] = _handler
+        for href in self._handlers:
+            if href not in self.device.res:
+                _handler = self._handlers.get(href, OcfResource).init_from_config(self.device, href, {})
+                self.device.res[href] = _handler
