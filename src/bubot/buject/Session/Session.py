@@ -26,14 +26,13 @@ class Session(Obj):
 
     @classmethod
     @async_action
-    async def init_from_view(cls, view, **kwargs):
-        action = kwargs['_action']
+    async def init_from_view(cls, view, *, _action=None, **kwargs):
         _session = await get_session(view.request)
         if not _session or not _session.identity:  # если авторизация происходит под чужой живой сессией грохаем её
             raise KeyNotFound(detail='session')
         self = cls(view.storage)
-        action.add_stat(await self.find_by_id(_session.identity, _form=None))
-        return action.set_end(self)
+        _action.add_stat(await self.find_by_id(_session.identity, _form=None))
+        return _action.set_end(self)
 
     @classmethod
     @async_action
@@ -42,7 +41,7 @@ class Session(Obj):
         try:
             old_session = _action.add_stat(await cls.init_from_view(view))
             if not old_session.data.get('end'):
-                old_user = old_session.data.get('user')
+                old_user = old_session.data.get('user_')
                 if old_user:
                     if user.obj_id == old_user['_id']:
                         return old_session
@@ -51,7 +50,7 @@ class Session(Obj):
         except KeyNotFound:
             pass
         data = kwargs
-        data["user"] = user.get_link()
+        data["user_"] = user.get_link()
         data["account"] = user.get_default_account()
         data["begin"] = datetime.utcnow()
 
@@ -64,7 +63,7 @@ class Session(Obj):
         _session = await new_session(view.request)
         identity = self.get_identity()
         _session.set_new_identity(identity)
-        _session['user'] = self.data['user']
+        _session['user_'] = self.data['user_']
         _session['account'] = self.data['account']
         # _session['_id'] = identity
         return self
@@ -90,7 +89,7 @@ class Session(Obj):
     def user_id(self):
         try:
             return self.data['user_']['_id']
-        except:
+        except (KeyError, TypeError):
             return None
 
     @property

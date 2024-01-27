@@ -18,8 +18,14 @@ class Obj:
     name = None
     key_property = '_id'
     uuid_id = True
-    keys_meta = None  # описание натуральных ключей объекта
     _locales = {}
+    # описание натуральных ключей объекта
+    # массив объектов
+    # * key - имя ключа
+    # * fields - массив с объектами описывающими получение каждого значения ключа
+    #   * path - путь до значения ключа в объекте
+    #   * format - правила форматирования значения
+    keys_meta = None
 
     def __init__(self, storage, *, session=None, **kwargs):
         self.data = {}
@@ -158,7 +164,7 @@ class Obj:
     @async_action
     async def before_update(self, data=None, **kwargs):
         if self.keys_meta:
-            keys = self.get_obj_keys(data)
+            keys = self.get_keys(data)
             if keys:
                 data['keys'] = keys
         pass
@@ -345,7 +351,7 @@ class Obj:
         self.data[name] = value
 
     @classmethod
-    def get_obj_keys(cls, obj_data, **kwargs):
+    def get_keys(cls, obj_data, **kwargs):
         if cls.keys_meta is None:
             return None
         keys = []
