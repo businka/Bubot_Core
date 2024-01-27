@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "https://www.openconnectivity.org/ocf-apis/security/schemas/oic.sec.dpmtype.json#",
+  "title": "Device Provisioning Mode Types",
+  "definitions": {
+    "oic.sec.dpmtype": {
+      "description": "Device provisioning mode maintains a bitmask of the possible provisioning states of a device",
+      "properties" : {
+        "bitmask": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 63,
+          "description": "The value can be either 8 or 16 character in length. If its only 8 characters it represents the lower byte value",
+          "detail-desc": [  "1 - Manufacturer reset state",
+                            "2 - Device pairing and owner transfer state",
+                            "4 - Provisiong of bootstrap services",
+                            "8 - Provisioning of credential management services",
+                            "16 - Provisioning of access management services",
+                            "32 - Provisioning of local ACLs",
+                            "64 - Unused",
+                            "128 - Unused" ]
+        }
+      }
+    }
+  },
+  "type": "object",
+  "$ref": "#/definitions/oic.sec.dpmtype",
+  "required": [ "bitmask" ]
+}

@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "https://www.openconnectivity.org/ocf-apis/security/schemas/oic.sec.account.json#",
+  "title": "Device Identifier Format type",
+  "properties": {
+    "expiresin": {
+      "description": "Access Token life time in seconds (-1 if permanent).",
+      "readOnly": true,
+      "type": "integer"
+    },
+    "rt": {
+      "description": "Resource Type of the Resource",
+      "items": {
+        "maxLength": 64,
+        "type": "string",
+        "enum": [
+          "oic.r.account"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 1,
+      "readOnly": true,
+      "type": "array"
+    },
+    "refreshtoken": {
+      "description": "Refresh token can be used to refresh the Access Token before getting expired.",
+      "readOnly": true,
+      "type": "string"
+    },
+    "uid": {
+      "description": "Unique OCF Cloud User identifier. Format pattern according to IETF RFC 4122.",
+      "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+      "readOnly": true,
+      "type": "string"
+    },
+    "accesstoken": {
+      "description": "Access Token used to authorize and associate the TLS connection for communication with the OCF Cloud with the Device ID.",
+      "readOnly": true,
+      "type": "string"
+    },
+    "n": {
+      "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/n"
+    },
+    "id": {
+      "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/id"
+    },
+    "redirecturi": {
+      "description": "Using this URI, the Client needs to reconnect to a redirected OCF Cloud. If provided, this value shall be used by the Device instead of Mediator-provided URI during the Device Registration.",
+      "readOnly": true,
+      "type": "string"
+    },
+    "if": {
+      "description": "The interface set supported by this resource",
+      "items": {
+        "enum": [
+          "oic.if.baseline"
+        ],
+        "type": "string"
+      },
+      "minItems": 1,
+      "maxItems": 1,
+      "uniqueItems": true,
+      "readOnly": true,
+      "type": "array"
+    }
+  },
+  "type": "object",
+  "required": [
+    "accesstoken",
+    "refreshtoken",
+    "expiresin",
+    "uid"
+  ]
+}
+
+}

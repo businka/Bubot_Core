@@ -1,0 +1,9 @@
+{
+  "/oic/d": {
+    "n": "Echo device"
+  },
+  "/oic/mnt": {
+    "i": 0,
+    "j": 0
+  }
+}

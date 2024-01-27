@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "https://www.openconnectivity.org/ocf-apis/security/schemas/oic.r.acl.json#",
+  "title": "Access Control List information",
+  "definitions": {
+    "oic.r.acl": {
+      "type": "object",
+      "properties": {
+        "aclist":  {
+          "type": "object",
+          "description": "Access Control Entries in the Acl resource",
+          "$ref": "oic.sec.ace.json#/definitions/oic.sec.ace"
+        },
+        "rowneruuid": {
+          "$ref": "oic.types.json#/definitions/uuid",
+          "description": "The value identifies the unique resource owner"
+        },
+        "rowner": {
+          "oneOf": [
+            {
+              "type": "object",
+              "$ref": "oic.sec.svctype.json#/definitions/oic.sec.svctype",
+              "description": "Entries in oic.sec.svc resource that own this resource"
+            },
+            {
+              "type": "object",
+              "$ref": "oic.sec.didtype.json#/definitions/oic.sec.host",
+              "description": "Resource owner indicated in the form of a device id"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "type": "object",
+  "allOf": [
+    { "$ref": "oic.core.json#/definitions/oic.core" },
+    { "$ref": "#/definitions/oic.r.acl" }
+  ],
+  "required": [ "aclist","rowneruuid" ]
+}

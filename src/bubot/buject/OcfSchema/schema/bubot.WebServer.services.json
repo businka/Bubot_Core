@@ -1,0 +1,48 @@
+{
+  "id": "http://razgovorov.ru/bubot/schemas/x.b3d.webServer.services.json#",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description" : "",
+  "title": "Service",
+  "definitions": {
+    "x.b3d.webServer.services": {
+      "type": "object",
+      "properties": {
+        "links": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/x.b3d.webServer.service"
+          }
+        }
+      }
+    },
+    "x.b3d.webServer.service": {
+      "type": "object",
+      "properties": {
+        "class": {
+          "type": "string",
+          "maxLength": 64,
+          "description": "The name of the class implementing the device"
+        },
+        "di": {
+          "allOf": [
+            {
+              "$ref": "http://openconnectivityfoundation.github.io/core/schemas/oic.types.json#/definitions/uuid"
+            },
+            {
+              "description": "Unique identifier for device"
+            }
+          ]
+        },
+        "worker": {
+          "type": "integer",
+          "description": "Worker number to start the service"
+        }
+      }
+    }
+  },
+  "type": "object",
+  "allOf": [
+    {"$ref": "oic.baseResource.json#/definitions/oic.r.baseresource"},
+    {"$ref": "#/definitions/x.b3d.webServer.services"}
+  ]
+}

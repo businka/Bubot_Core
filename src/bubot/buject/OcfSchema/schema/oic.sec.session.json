@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "https://www.openconnectivity.org/ocf-apis/security/schemas/oic.sec.session.json#",
+  "title": "Device Identifier Format type",
+  "definitions": {
+    "Account-Session-Request" : {
+      "properties": {
+        "uid": {
+          "description": "User ID provided by Device Registration process. Format pattern according to IETF RFC 4122.",
+          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+          "type": "string"
+        },
+        "di": {
+          "description": "Unique device id registered for a Device. Format pattern according to IETF RFC 4122.",
+          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+          "type": "string"
+        },
+        "accesstoken": {
+          "description": "Access Token used to authorize and associate the TLS connection for communication with the OCF Cloud with the Device ID.",
+          "type": "string"
+        },
+        "login": {
+          "description": "Action for the request: true = login, false = logout.",
+          "type": "boolean"
+        }
+      },
+      "type" : "object",
+      "required": ["uid", "di", "accesstoken", "login"]
+    },
+    "Account-Session-Response" : {
+      "properties": {
+        "expiresin": {
+          "description": "Remaining Access Token life time in seconds (-1 if permanent). This Property is only provided to Device during connection establishment (when \"login\" Property Value equals \"true\"), it’s not available otherwise.",
+          "readOnly": true,
+          "type": "integer"
+        },
+        "rt": {
+          "description": "Resource Type of the Resource.",
+          "items": {
+            "maxLength": 64,
+            "type": "string",
+            "enum": ["oic.r.session"]
+          },
+          "minItems": 1,
+          "readOnly": true,
+          "type": "array"
+        },
+        "n": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/n"
+        },
+        "id": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/id"
+        },
+        "if": {
+          "description": "The interface set supported by this Resource.",
+          "items": {
+            "enum": [
+              "oic.if.baseline"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "readOnly": true,
+          "type": "array"
+        }
+      },
+      "type" : "object",
+      "required" : ["expiresin"]
+    }
+  }
+}

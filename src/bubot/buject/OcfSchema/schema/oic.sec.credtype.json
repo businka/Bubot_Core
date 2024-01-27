@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "https://www.openconnectivity.org/ocf-apis/security/schemas/oic.sec.credtype.json#",
+  "title": "Credential Types",
+  "definitions": {
+    "oic.sec.credtype": {
+      "type": "object",
+      "description": "OIC credential types",
+      "properties": {
+        "bitmask": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 63,
+          "description": "Cred type encoded as a bitmask ",
+          "detail-desc": [  "0 - Empty credential used for testing",
+                            "1 - Symmetric pair-wise key",
+                            "2 - Symmetric group key",
+                            "4 - Asymmetric signing key",
+                            "8 - Asymmetric signing key with certificate",
+                            "16 - PIN or password",
+                            "32 - Asymmetric encryption key",
+                            "64 – Directly Provisioned OSCORE Security Context",
+                            "128 – Simple Secure Multicast Client Context",
+                            "256 – Simple Secure Multicast Server Context"
+          ]
+        }
+      }
+    }
+  },
+  "type": "object",
+  "allOf": [
+    { "$ref": "#/definitions/oic.sec.credtype" }
+  ],
+  "required": ["bitmask"]
+}

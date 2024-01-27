@@ -1,0 +1,7 @@
+{
+  "fields": {
+    "_id": { "mode": 1},
+    "title": { "mode": 1},
+    "account": { "mode": 1}
+  }
+}

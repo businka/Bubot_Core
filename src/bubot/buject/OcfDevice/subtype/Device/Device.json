@@ -1,0 +1,151 @@
+{
+  "/oic/res": {
+    "rt": [
+      "oic.wk.res"
+    ],
+    "if": [
+      "oic.if.ll",
+      "oic.if.baseline"
+    ]
+  },
+  "/oic/p": {
+    "rt": [
+      "oic.wk.p"
+    ],
+    "if": [
+      "oic.if.baseline"
+    ],
+    "n": "Platform",
+    "mnpv": ""
+  },
+  "/oic/d": {
+    "n": "Device",
+    "rt": [
+      "oic.wk.d"
+    ],
+    "if": [
+      "oic.if.baseline",
+      "oic.if.r"
+    ],
+    "dmv": "ocf.res.1.0.0",
+    "icv": "ocf.1.0.0"
+  },
+  "/oic/mnt": {
+    "n": "Maintenance",
+    "rt": [
+      "bubot.mnt",
+      "oic.r.operational.state"
+    ],
+    "if": [
+      "oic.if.baseline"
+    ],
+    "machineStates": [
+      "pending",
+      "idle",
+      "pendingHeld",
+      "processing",
+      "stopped"
+    ],
+    "currentMachineState": "pending",
+    "status": "init",
+    "message": ""
+  },
+  "/oic/con": {
+    "rt": [
+      "oic.wk.con",
+      "bubot.con"
+    ],
+    "if": [
+      "oic.if.baseline"
+    ],
+    "logLevel": "info",
+    "udpCoapPort": 0,
+    "udpCoapSslPort": 0,
+    "udpCoapIPv4": "",
+    "udpCoapIPv6": null,
+    "tcpCoapIPv4": false,
+    "tcpCoapIPv4Ssl": false,
+    "udpCoapIPv4Ssl": false,
+    "udpCoapIPv6Ssl": false,
+    "listening": [],
+    "observed": []
+  },
+  "/oic/sec/doxm": {
+    "rt": [
+      "oic.r.doxm"
+    ],
+    "if": [
+      "oic.if.rw",
+      "oic.if.baseline"
+    ],
+    "oxms": [
+      0
+    ],
+    "oxmsel": 4,
+    "sct": 0,
+    "owned": false,
+    "devowneruuid": "00000000-0000-0000-0000-000000000000",
+    "deviceuuid": "",
+    "rowneruuid": "00000000-0000-0000-0000-000000000000"
+  },
+  "/oic/sec/pstat": {
+    "rt": [
+      "oic.r.pstat"
+    ],
+    "if": [
+      "oic.if.rw",
+      "oic.if.baseline"
+    ],
+    "dos": {},
+    "isop": false,
+    "cm": 0,
+    "tm": 0,
+    "om": 4,
+    "sm": 4,
+    "rowneruuid": "00000000-0000-0000-0000-000000000000"
+  },
+  "/oic/sec/cred": {
+    "rt": [
+      "oic.r.cred"
+    ],
+    "if": [
+      "oic.if.rw",
+      "oic.if.baseline"
+    ],
+    "creds": [],
+    "rowneruuid": "00000000-0000-0000-0000-000000000000"
+  },
+  "/oic/sec/acl2": {
+    "rt": [
+      "oic.r.acl2"
+    ],
+    "if": [
+      "oic.if.rw",
+      "oic.if.baseline"
+    ],
+    "rowneruuid": "00000000-0000-0000-0000-000000000000"
+  },
+  "/oic/sec/sdi": {
+    "rt": [
+      "oic.r.sdi"
+    ],
+    "if": [
+      "oic.if.rw",
+      "oic.if.baseline"
+    ],
+    "rowneruuid": "00000000-0000-0000-0000-000000000000"
+  },
+  "/CoAPCloudConfResURI": {
+    "rt": [
+      "oic.r.coapcloudconf"
+    ],
+    "if": [
+      "oic.if.rw",
+      "oic.if.baseline"
+    ],
+    "apn": "",
+    "cis": "",
+    "sid": "",
+    "clec": 0
+  }
+}

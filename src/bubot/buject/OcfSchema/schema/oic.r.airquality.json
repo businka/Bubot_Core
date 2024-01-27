@@ -1,0 +1,97 @@
+{
+  "id": "http://openinterconnect.org/iotdatamodels/schemas/oic.r.airquality.json#",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Copyright (c) 2016, 2017 Open Connectivity Foundation, Inc. All rights reserved.",
+  "title": "Air Quality",
+  "definitions": {
+    "AirQuality": {
+      "properties": {
+        "rt": {
+          "description": "The Resource Type.",
+          "items": {
+            "enum": [
+              "oic.r.airquality"
+            ],
+            "maxLength": 64,
+            "type": "string"
+          },
+          "minItems": 1,
+          "uniqueItems": true,
+          "readOnly": true,
+          "type": "array"
+        },
+        "contaminanttype": {
+          "description": "The contaminant being measured.",
+          "enum": [
+            "CH2O",
+            "CO2",
+            "CO",
+            "PM1",
+            "PM2.5",
+            "PM10",
+            "VOC",
+            "Smoke",
+            "Odor",
+            "AirPollution",
+            "NO2",
+            "SO2",
+            "O3"
+          ],
+          "readOnly": true,
+          "type": "string"
+        },
+        "valuetype": {
+          "description": "The property that indicates whether the provided value is qualitative or measured.",
+          "enum": [
+            "Qualitative",
+            "Measured"
+          ],
+          "readOnly": true,
+          "type": "string"
+        },
+        "contaminantvalue": {
+          "description": "The measured or qualitative value for the contaminant.",
+          "readOnly": true,
+          "type": "integer"
+        },
+        "n": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/n"
+        },
+        "id": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/id"
+        },
+        "range": {
+          "$ref": "https://openconnectivityfoundation.github.io/IoTDataModels/schemas/oic.baseresource.properties-schema.json#/definitions/range_integer"
+        },
+        "if": {
+          "description": "The OCF Interface set supported by this Resource.",
+          "items": {
+            "enum": [
+              "oic.if.s",
+              "oic.if.baseline"
+            ],
+            "type": "string"
+          },
+          "minItems": 2,
+          "uniqueItems": true,
+          "readOnly": true,
+          "type": "array"
+        }
+      },
+      "type": "object",
+      "required": [
+        "contaminantvalue",
+        "contaminanttype",
+        "valuetype"
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "$ref": "oic.core.json#/definitions/oic.core"
+    },
+    {
+      "$ref": "#/definitions/AirQuality"
+    }
+  ]
+}

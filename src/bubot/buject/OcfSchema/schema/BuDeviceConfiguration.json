@@ -1,0 +1,30 @@
+{
+  "properties": {
+    "rt": {
+      "default": [
+        "bu.dev.conf"
+      ]
+    },
+    "status_code": {
+      "type": "string",
+      "maxLength": 64,
+      "readonly": true,
+      "default": "init",
+      "description": ""
+    },
+    "status_msg": {
+      "type": "string",
+      "maxLength": 255,
+      "readonly": true,
+      "default": "",
+      "description": ""
+    },
+    "log_level": {
+      "type": "string",
+      "maxLength": 255,
+      "readonly": true,
+      "default": "debug",
+      "description": ""
+    }
+  }
+}

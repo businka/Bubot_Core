@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "https://www.openconnectivity.org/ocf-apis/security/schemas/oic.sec.csr.json#",
+  "title": "Device Identifier Format type",
+  "definitions": {
+    "Csr": {
+      "properties": {
+        "rt": {
+          "description": "Resource Type of the Resource.",
+          "items": {
+            "maxLength": 64,
+            "type": "string",
+            "enum": [
+              "oic.r.csr"
+            ]
+          },
+          "minItems": 1,
+          "readOnly": true,
+          "type": "array"
+        },
+        "encoding": {
+          "description": "A string specifying the encoding format of the data contained in CSR.",
+          "x-detail-desc": [
+            "oic.sec.encoding.pem - Encoding for PEM encoded CSR."
+          ],
+          "enum": [
+            "oic.sec.encoding.pem"
+          ],
+          "readOnly": true,
+          "type": "string"
+        },
+        "n": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/n"
+        },
+        "id": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/id"
+        },
+        "csr": {
+          "description": "Signed CSR in ASN.1 in the encoding specified by the encoding property.",
+          "maxLength": 3072,
+          "readOnly": true,
+          "type": "string"
+        },
+        "if": {
+          "description": "The interface set supported by this Resource.",
+          "items": {
+            "enum": [
+              "oic.if.rw",
+              "oic.if.baseline"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "readOnly": true,
+          "type": "array"
+        }
+      },
+      "type": "object",
+      "required": [
+        "csr",
+        "encoding"
+      ]
+    }
+  }
+}

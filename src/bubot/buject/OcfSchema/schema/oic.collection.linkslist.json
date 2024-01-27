@@ -1,0 +1,9 @@
+{
+  "$schema": "http://json-schema.org/draft-v4/schema#",
+  "description" : "Copyright (c) 2016 Open Connectivity Foundation, Inc. All rights reserved.",
+  "id": "http://openconnectivityfoundation.github.io/core/schemas/oic.collection.linkslist.json#",
+  "type": "array",
+  "items": {
+    "$ref": "http://openconnectivityfoundation.github.io/core/schemas/oic.collection.json#/definitions/oic.oic-link"
+  }
+}

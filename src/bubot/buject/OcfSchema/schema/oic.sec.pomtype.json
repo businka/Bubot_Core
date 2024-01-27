@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "https://www.openconnectivity.org/ocf-apis/security/schemas/oic.sec.pomtype.json#",
+  "title": "Provisioning Operational Modes",
+  "definitions": {
+    "oic.sec.pomtype": {
+      "description": "Device provisioning operation may be server directed or client (aka provisioning service) directed.",
+      "properties" : {
+        "bitmask": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 7,
+          "description": "The value is a bitmask encoded as integer and indicates the provisioning operation modes",
+          "detail-desc": [  "1 - Server-directed utilzing multiple provisioning services",
+                            "2 - Server-directed utilzing a single provisioning service",
+                            "4 - Client-directed provisioning",
+                            "8 - Unused",
+                            "16 - Unused",0
+                            "32 - Unused",
+                            "64 - Unused",
+                            "128 - Unused" ]
+        }
+      }
+    }
+  },
+  "type": "object",
+  "allOf": [
+    { "$ref": "#/definitions/oic.sec.pomtype" }
+  ],
+  "required": ["bitmask"]
+}

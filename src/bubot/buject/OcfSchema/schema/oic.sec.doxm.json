@@ -1,0 +1,122 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "https://www.openconnectivity.org/ocf-apis/security/schemas/oic.sec.session.json#",
+  "title": "Device Identifier Format type",
+  "definitions": {
+    "Doxm": {
+      "properties": {
+        "rowneruuid": {
+          "description": "Format pattern according to IETF RFC 4122.",
+          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+          "type": "string"
+        },
+        "oxms": {
+          "description": "List of supported owner transfer methods.",
+          "items": {
+            "description": "The Device owner transfer methods that may be selected at Device on-boarding. Each value indicates a specific Owner Transfer method\n0 - Numeric OTM identifier for the Just-Works method (oic.sec.doxm.jw)\n1 - Numeric OTM identifier for the random PIN method (oic.sec.doxm.rdp)\n2 - Numeric OTM identifier for the manufacturer certificate method (oic.sec.doxm.mfgcert)\n3 - Numeric OTM identifier for the decap method (oic.sec.doxm.dcap) (deprecated).",
+            "type": "integer"
+          },
+          "readOnly": true,
+          "type": "array"
+        },
+        "devowneruuid": {
+          "description": "Format pattern according to IETF RFC 4122.",
+          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+          "type": "string"
+        },
+        "deviceuuid": {
+          "description": "The uuid formatted identity of the Device\nFormat pattern according to IETF RFC 4122.",
+          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+          "type": "string"
+        },
+        "owned": {
+          "description": "Ownership status flag.",
+          "type": "boolean"
+        },
+        "n": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/n"
+        },
+        "id": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/id"
+        },
+        "oxmsel": {
+          "description": "The selected owner transfer method used during on-boarding\nThe Device owner transfer methods that may be selected at Device on-boarding. Each value indicates a specific Owner Transfer method0 - Numeric OTM identifier for the Just-Works method (oic.sec.doxm.jw)1 - Numeric OTM identifier for the random PIN method (oic.sec.doxm.rdp)2 - Numeric OTM identifier for the manufacturer certificate method (oic.sec.doxm.mfgcert)3 - Numeric OTM identifier for the decap method (oic.sec.doxm.dcap) (deprecated).",
+          "description_ru": "Выбранный метод передачи владельца, используемый при регистрации\nСпособы передачи владельца устройства, которые можно выбрать при настройке устройства. Каждое значение указывает на конкретный метод передачи владельца: 0 — Just-Works (oic.sec.doxm.jw), 1 — случайного PIN-кода (oic.sec.doxm.rdp), 2 — сертификата производителя (oic.sec.doxm.mfgcert), 3 — декапирования (oic.sec.doxm.dcap) (устарело).",
+          "type": "integer"
+        },
+        "sct": {
+          "description": "Bitmask encoding of supported credential types\nCredential Types - Cred type encoded as a bitmask.0 - Empty credential used for testing1 - Symmetric pair-wise key2 - Symmetric group key4 - Asymmetric signing key8 - Asymmetric signing key with certificate16 - PIN or password32 - Asymmetric encryption key.",
+          "description_ru": "Кодирование битовой маски поддерживаемых типов учетных данных\nТипы учетных данных — тип учетных данных, закодированный в виде битовой маски.0 — Пустые учетные данные, используемые для тестирования, 1 — Симметричный парный ключ, 2 — Симметричный групповой ключ, 4 — Асимметричный ключ подписи, 8 — Асимметричный ключ подписи с сертификатом, 16 — ПИН-код или пароль, 32 — Асимметричный ключ шифрования.",
+          "maximum": 511,
+          "minimum": 0,
+          "type": "integer",
+          "readOnly": true
+        },
+        "rt": {
+          "description": "Resource Type of the Resource.",
+          "items": {
+            "maxLength": 64,
+            "type": "string",
+            "enum": [
+              "oic.r.doxm"
+            ]
+          },
+          "minItems": 1,
+          "readOnly": true,
+          "type": "array"
+        },
+        "if": {
+          "description": "The OCF Interface set supported by this Resource.",
+          "items": {
+            "enum": [
+              "oic.if.rw",
+              "oic.if.baseline"
+            ],
+            "type": "string"
+          },
+          "minItems": 2,
+          "readOnly": true,
+          "type": "array"
+        }
+      },
+      "type": "object",
+      "required": [
+        "oxms",
+        "oxmsel",
+        "sct",
+        "owned",
+        "deviceuuid",
+        "devowneruuid",
+        "rowneruuid"
+      ]
+    },
+    "Doxm-Update": {
+      "properties": {
+        "rowneruuid": {
+          "description": "Format pattern according to IETF RFC 4122.",
+          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+          "type": "string"
+        },
+        "devowneruuid": {
+          "description": "Format pattern according to IETF RFC 4122.",
+          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+          "type": "string"
+        },
+        "deviceuuid": {
+          "description": "The uuid formatted identity of the Device\nFormat pattern according to IETF RFC 4122.",
+          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+          "type": "string"
+        },
+        "owned": {
+          "description": "Ownership status flag.",
+          "type": "boolean"
+        },
+        "oxmsel": {
+          "description": "The selected owner transfer method used during on-boarding\nThe Device owner transfer methods that may be selected at Device on-boarding. Each value indicates a specific Owner Transfer method0 - Numeric OTM identifier for the Just-Works method (oic.sec.doxm.jw)1 - Numeric OTM identifier for the random PIN method (oic.sec.doxm.rdp)2 - Numeric OTM identifier for the manufacturer certificate method (oic.sec.doxm.mfgcert)3 - Numeric OTM identifier for the decap method (oic.sec.doxm.dcap) (deprecated).",
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    }
+  }
+}

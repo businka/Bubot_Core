@@ -1,0 +1,47 @@
+{
+  "id": "http://razgovorov.ru/bubot/schemas/bubot.buffer.json#",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "",
+  "title": "configuration",
+  "definitions": {
+    "bubot.buffer": {
+      "type": "array",
+      "description": "the Endpoint information of the target Resource",
+      "items": {
+        "type": "object",
+        "properties": {
+          "uid": {
+            "type": "string",
+            "format": "uri",
+            "description": ""
+          },
+          "datetime": {
+            "type": "string",
+            "description": "time add to buffer"
+          },
+          "title": {
+            "type": "string",
+            "description": "title of buffer data"
+          }
+        }
+      }
+    },
+    "bubot.console": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "$ref": "#/definitions/bubot.buffer"
+        }
+      }
+    }
+  },
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "oic.core.json#/definitions/oic.core"
+    },
+    {
+      "$ref": "#/definitions/bubot.console"
+    }
+  ]
+}

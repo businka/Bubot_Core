@@ -1,0 +1,30 @@
+{
+  "id": "http://razgovorov.ru/bubot/schemas/bubot.storage.json#",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "",
+  "title": "configuration",
+  "definitions": {
+    "bubot.storage": {
+      "type": "object",
+      "properties": {
+          "storage_type": {
+            "type": "string",
+            "default": "Mongo"
+          },
+          "storage_uri": {
+            "type": "string",
+            "default": "mongodb://localhost:27017"
+          }
+      }
+    }
+  },
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "oic.core.json#/definitions/oic.core"
+    },
+    {
+      "$ref": "#/definitions/bubot.storage"
+    }
+  ]
+}
