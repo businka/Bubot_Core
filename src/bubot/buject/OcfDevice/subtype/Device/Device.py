@@ -17,7 +17,7 @@ from bubot.Ocf.OcfMessage import OcfRequest
 from bubot.buject.OcfDevice.subtype.Device.MainLoopMixin import MainLoopMixin
 from bubot_helpers.ExtException import ExtException, ExtTimeoutError, NotFound, UserError
 from bubot_helpers.Helper import Helper
-from .__init__ import __version__ as device_version
+from bubot import __version__ as device_version
 
 # _logger = logging.getLogger('OcfDevice')
 tDevice = TypeVar('tDevice', bound='Device')
