@@ -4,8 +4,8 @@ from sys import path as syspath
 
 from aiohttp.web import json_response, Response
 
-from Bubot.Helpers.ActionDecorator import async_action
-from Bubot.Helpers.JsonSchema.JsonSchema4 import JsonSchema4
+from bubot_helpers.ActionDecorator import async_action
+from bubot_helpers.JsonSchema4 import JsonSchema4
 
 
 class ObjSchemaApi:

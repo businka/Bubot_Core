@@ -1,6 +1,6 @@
 import asyncio
 
-from BubotObj.OcfDevice.subtype.Device.Device import Device
+from bubot.buject.OcfDevice.subtype.Device.Device import Device
 from .__init__ import __version__ as device_version
 
 
@@ -15,11 +15,11 @@ class EchoDevice(Device):
     async def on_idle(self):
         i = self.get_param('/oic/mnt', 'i')
         self.set_param('/oic/mnt', 'i', i + 1)
-        self.log.info(f'i: {i}')
+        self.log.info(f'on idle i: {i}')
         # import time
         # sleep = self.get_param('/oic/con', 'updateTime')
         # time.sleep(sleep)
-        # print(f'{self.get_device_id()} {i} {sleep}')
+        # print(f'{self.di} {i} {sleep}')
 
         # await asyncio.sleep(1)
 
@@ -34,7 +34,7 @@ class EchoDevice(Device):
     async def on_action(self, message, answer):
         j = self.get_param('/oic/mnt', 'j')
         self.set_param('/oic/mnt', 'j', j + 1)
-        self.log.info('j: {}'.format(j))
+        self.log.info(f'on action j: {j}')
 
     async def find_devices(self, **kwargs):
         notify = kwargs.get('notify')
@@ -47,7 +47,7 @@ class EchoDevice(Device):
                 await notify({'message': f'Найдено {self.__class__.__name__}: {i + 1}'})
             tmp_device = EchoDevice.init_from_config({})
             result.append(dict(
-                id=tmp_device.get_device_id(),
+                id=tmp_device.di,
                 name=tmp_device.get_device_name(),
                 links=tmp_device.get_discover_res(),
                 _actions=Device.get_install_actions()

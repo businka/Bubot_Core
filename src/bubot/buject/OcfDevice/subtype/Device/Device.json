@@ -63,8 +63,10 @@
     "udpCoapSslPort": 0,
     "udpCoapIPv4": "",
     "udpCoapIPv6": null,
-    "udpCoapIPv4Ssl": true,
-    "udpCoapIPv6Ssl": null,
+    "tcpCoapIPv4": false,
+    "tcpCoapIPv4Ssl": false,
+    "udpCoapIPv4Ssl": false,
+    "udpCoapIPv6Ssl": false,
     "listening": [],
     "observed": []
   },
@@ -79,8 +81,8 @@
     "oxms": [
       0
     ],
-    "oxmsel": 0,
-    "sct": 1,
+    "oxmsel": 4,
+    "sct": 0,
     "owned": false,
     "devowneruuid": "00000000-0000-0000-0000-000000000000",
     "deviceuuid": "",
@@ -110,7 +112,6 @@
       "oic.if.rw",
       "oic.if.baseline"
     ],
-
     "creds": [],
     "rowneruuid": "00000000-0000-0000-0000-000000000000"
   },
@@ -121,7 +122,8 @@
     "if": [
       "oic.if.rw",
       "oic.if.baseline"
-    ]
+    ],
+    "rowneruuid": "00000000-0000-0000-0000-000000000000"
   },
   "/oic/sec/sdi": {
     "rt": [
@@ -130,6 +132,20 @@
     "if": [
       "oic.if.rw",
       "oic.if.baseline"
-    ]
+    ],
+    "rowneruuid": "00000000-0000-0000-0000-000000000000"
+  },
+  "/CoAPCloudConfResURI": {
+    "rt": [
+      "oic.r.coapcloudconf"
+    ],
+    "if": [
+      "oic.if.rw",
+      "oic.if.baseline"
+    ],
+    "apn": "",
+    "cis": "",
+    "sid": "",
+    "clec": 0
   }
 }

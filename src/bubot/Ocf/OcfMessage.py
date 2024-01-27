@@ -1,12 +1,12 @@
 # from aiocoap import Message, NON, Code
-# from Bubot.Core.Coap.coap import Message, NON, Code
+# from bubot.core.Coap.coap import Message, NON, Code
 from urllib.parse import urlparse
 from uuid import uuid4
 
 import cbor2
 
-from Bubot.Core.DeviceLink import ResourceLink
-from Bubot.Helpers.ExtException import ExtException, dumps_error
+from bubot.core.ResourceLink import ResourceLink
+from bubot_helpers.ExtException import ExtException, dumps_error
 from Bubot_CoAP import defines
 from Bubot_CoAP.messages.numbers import NON, Code
 from Bubot_CoAP.messages.option import Option

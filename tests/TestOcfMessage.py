@@ -1,6 +1,6 @@
 from unittest import TestCase
-from Bubot.Ocf.OcfMessage import OcfRequest, OcfResponse
-from Bubot.Core.Coap.coap import Message
+from bubot.Ocf.OcfMessage import OcfRequest, OcfResponse
+from bubot.core.Coap.coap import Message
 
 
 class TestOcfMessage(TestCase):

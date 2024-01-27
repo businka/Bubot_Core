@@ -1,6 +1,7 @@
-from Bubot.Helpers.ExtException import KeyNotFound
-from Bubot.OcfResource.OcfResource import OcfResource
 from Bubot_CoAP.defines import Codes
+
+from bubot.OcfResource.OcfResource import OcfResource
+from bubot_helpers.ExtException import KeyNotFound
 
 
 class OicWkRes(OcfResource):
@@ -9,10 +10,7 @@ class OicWkRes(OcfResource):
     def payload(self):
         return self._data
 
-    async def render_GET(self, request):
-        raise NotImplementedError(self.__class__.__name__)
-
-    async def render_GET_advanced(self, request, response):
+    async def render_GET(self, request, response):
         query = request.query
         links = []
         for href in self.device.res:
@@ -34,10 +32,11 @@ class OicWkRes(OcfResource):
                                 suited = False
                         except KeyNotFound:
                             suited = False
-                        except KeyError:
+                        except (KeyError, AttributeError):
                             suited = False
-                        except AttributeError:
+                        except Exception as err:
                             suited = False
+
                 if suited:
                     links.append(self.device.res[href].get_link(request.destination))
         self.device.log.debug(

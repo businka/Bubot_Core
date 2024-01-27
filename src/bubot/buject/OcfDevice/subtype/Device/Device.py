@@ -12,12 +12,11 @@ from json import JSONDecodeError
 from typing import TypeVar, Type
 from uuid import uuid4
 
-from Bubot.Helpers.ExtException import ExtException, ExtTimeoutError, NotFound, UserError
-from Bubot.Helpers.Helper import Helper
 # from .QueueMixin import QueueMixin
-from Bubot.Ocf.OcfMessage import OcfRequest
-from BubotObj.OcfDevice.subtype.Device.MainLoopMixin import MainLoopMixin
-
+from bubot.Ocf.OcfMessage import OcfRequest
+from bubot.buject.OcfDevice.subtype.Device.MainLoopMixin import MainLoopMixin
+from bubot_helpers.ExtException import ExtException, ExtTimeoutError, NotFound, UserError
+from bubot_helpers.Helper import Helper
 from .__init__ import __version__ as device_version
 
 # _logger = logging.getLogger('OcfDevice')
@@ -52,7 +51,7 @@ class Device(MainLoopMixin):
         config_dir = cls.get_config_dir(path=kwargs['path'])
         os.makedirs(config_dir, exist_ok=True)
 
-        kwargs['log'] = kwargs['log'] if kwargs.get('log') else logging.getLogger()
+        kwargs['log'] = kwargs['log'] if kwargs.get('log') else logging.getLogger('bubot')
         class_name = kwargs.get('class_name', cls.__name__)
         di = kwargs.get('di')
         config = {}
@@ -118,21 +117,23 @@ class Device(MainLoopMixin):
             if not self.get_param('/oic/d', 'piid', None):
                 self.set_param('/oic/d', 'piid', str(uuid4()))
 
-            di = self.get_device_id()
+            di = self.di
             if not di:
                 di = kwargs.get('di')
-                self.set_device_id(di)
+            self.set_device_id(di)
+            self.loop.set_debug(self.log and self.log.level == logging.DEBUG)
             return self
-        except Exception as e:
+        except Exception as err:
             raise ExtException(
                 message='Bad driver config',
                 detail=self.__class__.__name__,
+                parent=err,
                 action='OcfDevice.init_from_config',
                 dump=dict(
                     config=config,
                     kwargs=kwargs
                 )
-            ) from e
+            )
 
     def get_default_config(self, current_class, root_class, cache):
         data = Helper.get_default_config(current_class, root_class, cache)
@@ -158,40 +159,6 @@ class Device(MainLoopMixin):
         except FileNotFoundError:
             return {}
         return data
-
-    # deprecated
-    async def request(self, operation, to, data=None, **kwargs):
-        response = await self.send_request(operation, to, data, **kwargs)
-        return response.decode_payload()
-
-    async def send_request(self, operation, to, data=None, **kwargs):
-        try:
-            # msg = OcfRequest(
-            #     to=to,
-            #     fr=self.link,
-            #     op=operation,
-            #     cn=data,
-            #     # uri_path=link['href'],
-            #     # operation=operation,
-            #     # data=data,
-            #     # code=kwargs.pop('code', 1),
-            #     # token=self.coap.token,
-            #     # mid=self.coap.mid,
-            #     **kwargs
-            # )
-            # coap_msg, remote = msg.encode_to_coap()
-            result = await self.transport_layer.send_message(operation, to, data)
-            return result
-        except TimeoutError:
-            raise ExtTimeoutError(action='request', dump=dict(op=operation, to=to, data=data, kwargs=kwargs)) from None
-        except ExtException as err:
-            raise ExtException(parent=err,
-                               action='{}.request()'.format(self.__class__.__name__),
-                               dump=dict(op=operation, to=to, data=data, kwargs=kwargs)) from None
-        except Exception as err:
-            raise ExtException(parent=err,
-                               action='{}.request()'.format(self.__class__.__name__),
-                               dump=dict(op=operation, to=to, data=data, kwargs=kwargs)) from None
 
     async def observe(self, to, callback=None):
         try:

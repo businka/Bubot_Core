@@ -3,13 +3,21 @@ import logging
 import os.path
 from uuid import uuid4
 
-from Bubot.Core.BubotHelper import BubotHelper
-from Bubot.Core.DeviceLink import ResourceLink
-from Bubot.Helpers.ExtException import ExtException, KeyNotFound, ExtTimeoutError
-from Bubot.Helpers.Helper import Helper
-from Bubot.Ocf.OcfMessage import OcfResponse, OcfRequest
-from Bubot.Ocf.ResourceLayer import ResourceLayer
-from Bubot.Ocf.TransporLayer import TransportLayer
+from bubot.Ocf.OcfMessage import OcfResponse, OcfRequest
+from bubot.Ocf.ResourceLayer import ResourceLayer
+from bubot.Ocf.TransporLayer import TransportLayer
+from bubot.OcfResource.OicRAcl2 import OicRAcl2
+from bubot.OcfResource.OicRCoapCloudConf import OicRCoapCloudConf
+from bubot.OcfResource.OicRCred import OicRCred
+from bubot.OcfResource.OicRDoxm import OicRDoxm
+from bubot.OcfResource.OicRPstat import OicRPstat
+from bubot.OcfResource.OicRSdi import OicRSdi
+from bubot.OcfResource.OicWkRes import OicWkRes
+from bubot.core.BubotHelper import BubotHelper
+from bubot.core.ResourceLink import ResourceLink
+from bubot_helpers.ArrayHelper import ArrayHelper
+from bubot_helpers.ExtException import ExtException, KeyNotFound, ExtTimeoutError
+from bubot_helpers.Helper import Helper
 
 
 # self.logger = logging.getLogger('DeviceCore')
@@ -20,7 +28,17 @@ class DeviceCore:
     def __init__(self, **kwargs):
         self.res = {}
         self.transport_layer = TransportLayer(self)
-        self.resource_layer = ResourceLayer(self)
+        if not hasattr(self, 'resource_layer'):
+            self.resource_layer = ResourceLayer(self)
+        self.resource_layer.add_handler('/oic/res', OicWkRes)
+        self.resource_layer.add_handler('/oic/sec/doxm', OicRDoxm)
+        self.resource_layer.add_handler('/oic/sec/pstat', OicRPstat)
+        self.resource_layer.add_handler('/oic/sec/cred', OicRCred)
+        self.resource_layer.add_handler('/oic/sec/acl2', OicRAcl2)
+        self.resource_layer.add_handler('/oic/sec/sdi', OicRSdi)
+        self.resource_layer.add_handler('/CoAPCloudConfResURI', OicRCoapCloudConf)
+        self.last_error = None
+        self.last_error_count = None
 
         self.log = None
         self._resource_changed = {}
@@ -38,6 +56,14 @@ class DeviceCore:
 
     def get_device_id(self):
         return self.res['/oic/d'].get_attr('di', None)
+
+    @property
+    def di(self):
+        return self.res['/oic/sec/doxm'].get_attr('deviceuuid', None)
+
+    @property
+    def n(self):
+        return self.res['/oic/d'].get_attr('n', None)
 
     def get_device_name(self):
         try:
@@ -77,8 +103,10 @@ class DeviceCore:
             old_value = self.get_param(resource, name, None)
             difference, changes = Helper.compare(old_value, new_value)
             if difference:
+                # if self.log:
+                #     self.log.info(f'set_param {resource}/{name} = {new_value}')
                 self._resource_changed[resource] = True
-                self.data[resource][name] = new_value
+                self.res[resource].set_attr(name, new_value)
 
                 if save_config:
                     self.save_config()
@@ -89,20 +117,20 @@ class DeviceCore:
                 value=new_value
             ))
 
-    def update_param(self, resource, name, new_value, **kwargs):
+    def update_param(self, resource, name, new_value, *, save_config=False):
         old_value = self.get_param(resource, name)
         difference, changes = Helper.compare(old_value, new_value)
         if difference:
             self._resource_changed[resource] = True
             if isinstance(old_value, dict):
                 Helper.update_dict(old_value, changes)
-            elif isinstance(old_value, (str, int, float, bool)):
+            elif old_value is None or isinstance(old_value, (str, int, float, bool,)):
                 self.data[resource][name] = changes
             elif isinstance(old_value, list):
                 self.log.warning("NOT SUPPORTED OPERATIONS!!!")
                 self.data[resource][name] = changes
 
-            if kwargs.get('save_config', False):
+            if save_config:
                 self.save_config()
         return changes
 
@@ -123,7 +151,7 @@ class DeviceCore:
     def get_config_path(cls, *, path=None, device_class_name='UnknownDevice', device_id='XXX', device=None):
         if device:
             return os.path.normpath(os.path.join(cls.get_config_dir(device=device, path=path),
-                                                 f'{device.__class__.__name__}.{device.get_device_id()}.json'))
+                                                 f'{device.__class__.__name__}.{device.di}.json'))
         else:
             return os.path.normpath(
                 os.path.join(cls.get_config_dir(device=device, path=path), f'{device_class_name}.{device_id}.json'))
@@ -159,7 +187,7 @@ class DeviceCore:
             #         continue
             #     eps.append(dict(ep=self.coap.endpoint[elem]['uri']))
             self._link = dict(
-                anchor='ocf://{}'.format(self.get_device_id()),
+                anchor='ocf://{}'.format(self.di),
                 eps=self.transport_layer.get_eps()
             )
         if href and href in self.data:
@@ -328,7 +356,7 @@ class DeviceCore:
             if elem['href'] != href:
                 continue
             try:
-                self.log.debug('notify {0} {1}'.format(self.get_device_id(), href))
+                self.log.debug('notify {0} {1}'.format(self.di, href))
                 msg = OcfResponse.generate_answer(data, OcfRequest(
                     to=to,
                     fr=ResourceLink.init_from_link(dict(di=elem['di'], ep=elem['ep'])),
@@ -359,3 +387,73 @@ class DeviceCore:
     @classmethod
     def get_device_class(cls, class_name):
         return BubotHelper.get_subtype_class('OcfDevice', class_name, folder=True)
+
+    async def check_link(self, resource, name, *, owned=None):
+        link_data = self.get_param(resource, name)
+        if not link_data:
+            raise KeyNotFound(message='Не заполнен обязательный параметр', detail='{resource} {name}')
+        link = ResourceLink.init_from_link(link_data)
+        try:
+            if not link:
+                raise KeyNotFound(message='Не заполнен обязательный параметр', detail='{resource} {name}')
+            return link, await link.retrieve(self)
+        except ExtTimeoutError:
+            try:
+                href = link.href
+                found_link = await self.transport_layer.find_device(link.di, owned=owned)
+                if found_link:
+                    self.log.info(f'Link {name} found')
+                    found_link['href'] = href
+                    self.set_param(resource, name, found_link)
+                    self.save_config()
+                else:
+                    self.log.info(f'Link {name} not found')
+                pass
+            except Exception as err:
+                raise ExtException(parent=err)
+        except Exception as err:
+            raise ExtException(parent=err)
+        return None, None
+
+    async def send_request(self, operation, to, data=None, *, ack=True, **kwargs):
+        result = await self.transport_layer.send_message(operation, to, data, ack=ack, **kwargs)
+        return result
+
+    async def return_to_pending(self, exception: ExtException, max_count=2):
+        if exception.message == self.last_error:
+            self.last_error_count += 1
+        else:
+            self.last_error = exception.message
+            self.last_error_count = 1
+        if self.last_error_count >= max_count:
+            self.set_param('/oic/mnt', 'currentMachineState', 'pending')
+            self.log.info('return to pending')
+
+    # def find_resource_by_type(self, rt):
+    #     for elem in self.data:
+    #         if rt in self.data[elem].get('rt', {}):
+    #             return self.data[elem]
+
+    def get_owner_cred(self):
+        user_uid = self.get_param('/oic/sec/cred', 'rowneruuid', None)
+        return self.get_user_cred(user_uid)
+
+    def get_user_cred(self, user_uid):
+        if not user_uid:
+            return KeyNotFound(message='User cred not defined')
+        try:
+            creds = self.get_param('/oic/sec/cred', 'creds', None)
+            cred_index = ArrayHelper.find_one(creds, {'subjectuuid': user_uid})
+            if cred_index >= 0:
+                return creds[cred_index], creds, cred_index
+            return None, None, None
+        except Exception as err:
+            raise ExtException(parent=err)
+
+    def get_cloud_access_token(self):
+        cred, creds, cred_index = self.get_owner_cred()
+        try:
+            cloud_access_token = cred['privatedata']['cloud_access_token']
+            return cloud_access_token
+        except (TypeError, KeyError):
+            return None

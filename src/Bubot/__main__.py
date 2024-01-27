@@ -1,10 +1,10 @@
 import argparse
 import logging
 
-from Bubot.Helpers.ExtException import HandlerNotFoundError
-from BubotObj.OcfDevice.subtype.Device.Device import Device
+from bubot_helpers.ExtException import HandlerNotFoundError
+from bubot.buject.OcfDevice.subtype.Device.Device import Device
 
-# from Bubot.Core import main
+# from bubot.Core import main
 
 parser = argparse.ArgumentParser(description='IoT framework based on OCF specification')
 parser.add_argument('--n', dest='class_name', default='WebServer', type=str,

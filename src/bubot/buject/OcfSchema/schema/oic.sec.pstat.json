@@ -1,0 +1,157 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "https://www.openconnectivity.org/ocf-apis/security/schemas/oic.sec.session.json#",
+  "title": "Device Identifier Format type",
+"definitions": {
+    "Pstat" : {
+      "properties": {
+        "rowneruuid": {
+          "description": "The UUID formatted identity of the Resource owner\nFormat pattern according to IETF RFC 4122.",
+          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+          "type": "string"
+        },
+        "rt": {
+          "description": "Resource Type of the Resource.",
+          "items": {
+            "maxLength": 64,
+            "type": "string",
+            "enum": ["oic.r.pstat"]
+          },
+          "minItems": 1,
+          "readOnly": true,
+          "type": "array"
+        },
+        "om": {
+          "description": "Current operational mode\nDevice provisioning operation may be server directed or client (aka provisioning service) directed. The value is a bitmask encoded as integer and indicates the provisioning operation modes1 - Server-directed utilzing multiple provisioning services2 - Server-directed utilzing a single provisioning service4 - Client-directed provisioning8 - Unused16 - Unused32 - Unused64 - Unused128 - Unused.",
+          "description_ru": "Текущий режим работы\nОперация подготовки устройства может управляться сервером или клиентом (так называемая служба подготовки). Значение представляет собой битовую маску, закодированную как целое число, и указывает режимы работы подготовки 1 - Под управлением сервера с использованием нескольких служб подготовки, 2 - Под управлением сервера с использованием одной службы подготовки, 4 - Подготовка под управлением клиента, 8 - Не используется, 16 - Не используется, 32 - Не используется64 - Не используется, 128 - Не используется.",
+          "maximum": 7,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "cm": {
+          "description": "Current Device provisioning mode\nDevice provisioning mode maintains a bitmask of the possible provisioning states of a Device. The value can be either 8 or 16 character in length. If its only 8 characters it represents the lower byte value1 - Manufacturer reset state2 - Device pairing and owner transfer state4 - Unused8 - Provisioning of credential management services16 - Provisioning of access management services32 - Provisioning of local ACLs64 - Initiate Software Version Validation128 - Initiate Secure Software Update.",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer",
+          "readOnly": true
+        },
+        "n": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/n"
+        },
+        "id": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/id"
+        },
+        "isop": {
+          "description": "true indicates Device is operational.",
+          "description_ru": "true указывает, что устройство находится в рабочем состоянии.",
+          "readOnly": true,
+          "type": "boolean"
+        },
+        "tm": {
+          "description": "Target Device provisioning mode\nDevice provisioning mode maintains a bitmask of the possible provisioning states of a Device. The value can be either 8 or 16 character in length. If its only 8 characters it represents the lower byte value1 - Manufacturer reset state2 - Device pairing and owner transfer state4 - Unused8 - Provisioning of credential management services16 - Provisioning of access management services32 - Provisioning of local ACLs64 - Initiate Software Version Validation128 - Initiate Secure Software Update.",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "sm": {
+          "description": "Supported operational modes\nDevice provisioning operation may be server directed or client (aka provisioning service) directed. The value is a bitmask encoded as integer and indicates the provisioning operation modes1 - Server-directed utilzing multiple provisioning services2 - Server-directed utilzing a single provisioning service4 - Client-directed provisioning8 - Unused16 - Unused32 - Unused64 - Unused128 - Unused.",
+          "maximum": 7,
+          "minimum": 1,
+          "type": "integer",
+          "readOnly": true
+        },
+        "dos": {
+          "description": "Device on-boarding state\nDevice operation state machine.",
+          "properties": {
+            "p": {
+              "default": true,
+              "description": "'p' is TRUE when the 's' state is pending until all necessary changes to Device Resources are complete.",
+              "description_ru": "'p' имеет значение TRUE, когда состояние 's' ожидает завершения всех необходимых изменений в ресурсах устройства.",
+              "readOnly": true,
+              "type": "boolean"
+            },
+            "s": {
+              "description": "The current or pending operational state.",
+              "x-detail-desc": [
+                "0 - RESET - Device reset state.",
+                "1 - RFOTM - Ready for Device owner transfer method state.",
+                "2 - RFPRO - Ready for Device provisioning state.",
+                "3 - RFNOP - Ready for Device normal operation state.",
+                "4 - SRESET - The Device is in a soft reset state."
+              ],
+              "maximum": 4,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "s"
+          ],
+          "type": "object"
+        },
+        "if" : {
+          "description": "The interface set supported by this Resource.",
+          "items": {
+            "enum": [ "oic.if.rw", "oic.if.baseline" ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "readOnly": true,
+          "type": "array"
+        }
+      },
+      "type" : "object",
+      "required": ["dos", "isop", "cm", "tm", "om", "sm", "rowneruuid"]
+    },
+    "Pstat-Update" : {
+      "properties": {
+        "rowneruuid": {
+          "description": "The UUID formatted identity of the Resource owner\nFormat pattern according to IETF RFC 4122.",
+          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+          "type": "string"
+        },
+        "om": {
+          "description": "Current operational mode\nDevice provisioning operation may be server directed or client (aka provisioning service) directed. The value is a bitmask encoded as integer and indicates the provisioning operation modes1 - Server-directed utilzing multiple provisioning services2 - Server-directed utilzing a single provisioning service4 - Client-directed provisioning8 - Unused16 - Unused32 - Unused64 - Unused128 - Unused.",
+          "maximum": 7,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "tm": {
+          "description": "Target Device provisioning mode\nDevice provisioning mode maintains a bitmask of the possible provisioning states of a Device. The value can be either 8 or 16 character in length. If its only 8 characters it represents the lower byte value1 - Manufacturer reset state2 - Device pairing and owner transfer state4 - Unused8 - Provisioning of credential management services16 - Provisioning of access management services32 - Provisioning of local ACLs64 - Initiate Software Version Validation128 - Initiate Secure Software Update.",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "dos": {
+          "description": "Device on-boarding state\nDevice operation state machine.",
+          "properties": {
+            "p": {
+              "default": true,
+              "description": "'p' is TRUE when the 's' state is pending until all necessary changes to Device Resources are complete.",
+              "readOnly": true,
+              "type": "boolean"
+            },
+            "s": {
+              "description": "The current or pending operational state.",
+              "x-detail-desc": [
+                "0 - RESET - Device reset state.",
+                "1 - RFOTM - Ready for Device owner transfer method state.",
+                "2 - RFPRO - Ready for Device provisioning state.",
+                "3 - RFNOP - Ready for Device normal operation state.",
+                "4 - SRESET - The Device is in a soft reset state."
+              ],
+              "maximum": 4,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "s"
+          ],
+          "type": "object"
+        }
+      },
+      "type" : "object"
+    }
+  }
+}

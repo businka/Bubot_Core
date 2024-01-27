@@ -7,3 +7,4 @@ node_modules
 *.egg-info
 /tests_bubot/device/
 /tests_bubot/conf/device/EchoDevice.e0000000-0000-0000-0000-000000000003.json
+.parcel-cache

@@ -1,0 +1,86 @@
+{
+  "id": "http://openinterconnect.org/iotdatamodels/schemas/oic.r.temperature.json#",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Copyright (c) 2016, 2017 Open Connectivity Foundation, Inc. All rights reserved.",
+  "title": "Temperature",
+  "definitions": {
+    "Temperature": {
+      "properties": {
+        "rt": {
+          "description": "The Resource Type.",
+          "items": {
+            "maxLength": 64,
+            "type": "string",
+            "enum": [
+              "oic.r.temperature"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true,
+          "readOnly": true,
+          "type": "array"
+        },
+        "temperature": {
+          "description": "The current temperature setting or measurement.",
+          "type": "number"
+        },
+        "units": {
+          "description": "The unit for the conveyed temperature value, Note that when doing an UPDATE, the unit on the device does NOT change, it only indicates the unit of the conveyed value during the UPDATE operation.",
+          "enum": [
+            "C",
+            "F",
+            "K"
+          ],
+          "type": "string"
+        },
+        "n": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/n"
+        },
+        "id": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/id"
+        },
+        "range": {
+          "$ref": "https://openconnectivityfoundation.github.io/IoTDataModels/schemas/oic.baseresource.properties-schema.json#/definitions/range_number"
+        },
+        "step": {
+          "$ref": "https://openconnectivityfoundation.github.io/IoTDataModels/schemas/oic.baseresource.properties-schema.json#/definitions/step_number"
+        },
+        "precision": {
+          "$ref": "https://openconnectivityfoundation.github.io/IoTDataModels/schemas/oic.baseresource.properties-schema.json#/definitions/precision"
+        },
+        "if": {
+          "description": "The OCF Interface set supported by this Resource.",
+          "items": {
+            "enum": [
+              "oic.if.baseline",
+              "oic.if.s",
+              "oic.if.a"
+            ],
+            "maxLength": 64,
+            "type": "string"
+          },
+          "minItems": 2,
+          "uniqueItems": true,
+          "readOnly": true,
+          "type": "array"
+        }
+      },
+      "type": "object",
+      "required": [
+        "temperature"
+      ]
+    }
+  },
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "oic.core.json#/definitions/oic.core"
+    },
+    {
+      "$ref": "#/definitions/Temperature"
+    }
+  ],
+  "required": [
+    "temperature"
+  ]
+}

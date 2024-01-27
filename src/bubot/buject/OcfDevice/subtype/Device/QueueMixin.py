@@ -1,6 +1,6 @@
 import asyncio
 
-from Bubot.Helpers.ExtException import ExtException
+from bubot_helpers.ExtException import ExtException
 
 
 # _logger = logging.getLogger(__name__)
@@ -9,23 +9,28 @@ from Bubot.Helpers.ExtException import ExtException
 class QueueMixin:
 
     async def queue_worker(self, queue, name=''):
-        self.log.debug('start queue_worker "{}"'.format(name))
+        self.log.debug(f'start queue_worker "{name}"')
         while True:
             (future, result) = await queue.get()
+            self.log.debug(f'queue worker start. queue "{name}" size {queue.qsize()}')
             try:
                 _result = await future
+                self.log.debug(f'queue worker complete. {_result}')
                 if result and asyncio.isfuture(result):
                     result.set_result(_result)
-            except ExtException as e:
-                result.set_exception(e)
-            except Exception as e:
-                result.set_exception(ExtException(parent=e, action='queue_worker'))
+            except ExtException as err:
+                self.log.debug(f'queue worker error. {err}')
+                result.set_exception(err)
+            except Exception as err:
+                err = ExtException(parent=err, action='queue_worker')
+                self.log.debug(f'queue worker error. {err}')
+                result.set_exception(err)
             finally:
                 queue.task_done()
 
     async def execute_in_queue(self, queue, task, name=''):
         try:
-            self.log.debug('execute_in_queue {}'.format(name))
+            self.log.debug(f'execute_in_queue {name}')
             result = asyncio.Future()
             queue.put_nowait((task, result))
             return await result

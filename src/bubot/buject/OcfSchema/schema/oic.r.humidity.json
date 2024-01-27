@@ -1,0 +1,68 @@
+{
+  "id": "http://openinterconnect.org/iotdatamodels/schemas/oic.r.airquality.json#",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Copyright (c) 2016, 2017 Open Connectivity Foundation, Inc. All rights reserved.",
+  "title": "Humidity",
+  "definitions": {
+    "Humidity": {
+      "properties": {
+        "rt": {
+          "description": "The Resource Type.",
+          "items": {
+            "enum": ["oic.r.humidity"],
+            "maxLength": 64,
+            "type": "string"
+          },
+          "minItems": 1,
+          "uniqueItems": true,
+          "readOnly": true,
+          "type": "array"
+        },
+        "desiredHumidity": {
+          "description": "The desired value for humidity.",
+          "maximum": 100,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "humidity": {
+          "description": "The current sensed value for humidity.",
+          "maximum": 100,
+          "minimum": 0,
+          "readOnly": true,
+          "type": "integer"
+        },
+        "n": {
+            "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/n"
+        },
+        "id": {
+            "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/id"
+        },
+        "if": {
+          "description": "The OCF Interface set supported by this Resource.",
+          "items": {
+            "enum": [
+              "oic.if.a",
+              "oic.if.s",
+              "oic.if.baseline"
+            ],
+            "type": "string"
+          },
+          "minItems": 2,
+          "uniqueItems": true,
+          "readOnly": true,
+          "type": "array"
+        }
+      },
+      "type": "object",
+      "required": ["humidity"]
+    }
+  },
+  "allOf": [
+    {
+      "$ref": "oic.core.json#/definitions/oic.core"
+    },
+    {
+      "$ref": "#/definitions/Humidity"
+    }
+  ]
+}

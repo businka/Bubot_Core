@@ -1,6 +1,6 @@
 # import argparse
-# from BubotObj.OcfDevice.subtype.Device.Device import Device
-# from Bubot.Helpers.ExtException import HandlerNotFoundError
+# from bubot.buject.OcfDevice.subtype.Device.Device import Device
+# from bubot_helpers.ExtException import HandlerNotFoundError
 # import logging
 
 

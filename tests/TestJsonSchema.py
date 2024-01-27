@@ -1,7 +1,6 @@
 import unittest
 import os
-from bubot.JsonSchema4 import JsonSchema4
-from bubot.Helper import Helper
+from bubot_helpers.JsonSchema4 import JsonSchema4
 
 
 class TestJsonSchema(unittest.TestCase):

@@ -24,10 +24,12 @@
           "type": "string"
         },
         "udpCoapIPv4Ssl": {
-          "type": "boolean"
+          "type": "boolean",
+          "default": false
         },
         "udpCoapIPv6Ssl": {
-          "type": "boolean"
+          "type": "boolean",
+          "default": false
         },
         "logLevel": {
           "type": "string",

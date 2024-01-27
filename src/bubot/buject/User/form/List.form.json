@@ -1,0 +1,66 @@
+{
+  "template": "TableBrowser",
+  "dataSource": {
+    "type": "Service",
+    "keyProperty": "_id",
+    "objName": "User"
+  },
+  "toolbarItemsBeforeFilter": [
+    {
+      "name": "Reload",
+      "icon": "mdi-reload",
+      "title": "Reload"
+    }
+  ],
+  "operationsPanelItems": [
+  ],
+  "rowTemplate": "rowViewer",
+  "rowActivateHandler": {
+    "name": "ShowForm",
+    "formViewer": "RightDrawerFormViewer3",
+    "form": "Client/Item"
+  },
+  "rowActions": [
+    {
+      "name": "CallDataSourceForSelectedItems",
+      "icon": "mdi-delete",
+      "title": "Delete",
+      "data": {
+        "method": "delete_many"
+      }
+    }
+  ],
+  "rowKey": "id",
+  "columns": [
+    {
+      "value": "title",
+      "width": "80%",
+      "align": "left",
+      "template": "RowCellTitle",
+      "text": "title",
+      "title_ru": "Название",
+      "title_en": "Name",
+      "title_cn": "名称",
+      "subtitleField": "phone",
+      "infoField": "email"
+    },
+    {
+      "value": "action",
+      "width": "20%",
+      "align": "left",
+      "template": "RowCellActions",
+      "text": "action",
+      "title_ru": "Название",
+      "title_en": "Name",
+      "title_cn": "名称"
+    }
+  ],
+  "col_xl": 6,
+  "col_lg": 7,
+  "height": "100hv",
+  "inlineActions": {},
+  "projection": {
+    "_id": 1,
+    "title": 1
+  }
+}

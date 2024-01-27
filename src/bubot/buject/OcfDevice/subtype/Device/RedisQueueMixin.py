@@ -1,11 +1,11 @@
 import asyncio
 from uuid import uuid4
 
-import aioredis
+from redis import asyncio as aioredis
 import bson
 
-from Bubot.Helpers.ExtException import ExtException, ExtNotImplemented
-from Bubot.Ocf.OcfMessage import OcfMessage, OcfRequest as Request, OcfResponse as Response
+from bubot_helpers.ExtException import ExtException, ExtNotImplemented
+from bubot.Ocf.OcfMessage import OcfMessage, OcfRequest as Request, OcfResponse as Response
 
 
 class RedisQueueMixin:
@@ -21,7 +21,7 @@ class RedisQueueMixin:
         self.redis_url = self.get_param('/oic/con', 'redis_url', None)
         if not self.redis_url:
             return
-        self.redis_queues = [self.get_device_id()]
+        self.redis_queues = [self.di]
         for href in self.data:
             if 'bubot.redis.queue' in self.data[href].get('rt', []):
                 self.redis_queues.append(href)
@@ -32,7 +32,7 @@ class RedisQueueMixin:
         except Exception as err:
             err1 = ExtException(parent=err)
             self.log.error(err1)
-            raise err1 from err
+            raise err1
         self.redis_queue_worker_task = self.loop.create_task(self.run_redis_queue_worker())
 
     async def on_cancelled(self):
@@ -84,7 +84,7 @@ class RedisQueueMixin:
                 return
 
     async def execute_in_redis_queue(self, href, data=None):
-        src_redis = self.get_device_id()
+        src_redis = self.di
         request = Request(
             fr=f"redis://{src_redis}",
             to=f"redis://{href}",

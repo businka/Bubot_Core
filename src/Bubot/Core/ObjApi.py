@@ -1,10 +1,10 @@
 from typing import Optional, Type
 from urllib.parse import unquote
 
-from Bubot.Core.Obj import Obj
-from Bubot.Helpers.Action import Action
-from Bubot.Helpers.ActionDecorator import async_action
-from Bubot.Helpers.ExtException import KeyNotFound, AccessDenied
+from bubot.core.Obj import Obj
+from bubot_helpers.Action import Action
+from bubot_helpers.ActionDecorator import async_action
+from bubot_helpers.ExtException import KeyNotFound, AccessDenied
 
 
 class DeviceApi:
@@ -29,8 +29,8 @@ class ObjApi(DeviceApi):
     async def api_read(self, view, *, _action=None, **kwargs):
         handler, data = await self.prepare_json_request(view)
         _id = data.get('id')
-        result = _action.add_stat(await handler.find_by_id(_id))
-        return self.response.json_response(result)
+        handler = _action.add_stat(await handler.find_by_id(_id))
+        return self.response.json_response(handler.data)
 
     # @async_action
     # async def prepare_create_data(self, handler, data, **kwargs):
@@ -67,7 +67,7 @@ class ObjApi(DeviceApi):
     @async_action
     async def api_create(self, view, *, _action: Action = None, **kwargs):
         handler, data = await self.prepare_json_request(view)
-        handler.init_by_data(data)
+        handler = handler.init_by_data(data)
         # data = _action.add_stat(await self.prepare_create_data(handler, data))
         # handler.init_by_data(data)
         await handler.create()
@@ -76,7 +76,7 @@ class ObjApi(DeviceApi):
     @async_action
     async def api_update(self, view, **kwargs):
         handler, data = await self.prepare_json_request(view)
-        handler.init_by_data(data)
+        handler = handler.init_by_data(data)
         await handler.update()
         return self.response.json_response(handler.data)
 
@@ -130,9 +130,9 @@ class ObjApi(DeviceApi):
         handler: Optional[Obj] = None
         if self.handler:
             handler = self.handler(
-                view.storage, account_id=view.session.get('account'), user=view.session.get('user'), app_name=app_name)
-
-            subtype = data.get('subtype', view.request.match_info.get('subtype'))
+                view.storage, session=view.session, app_name=app_name)
+            request_subtype = view.request.match_info.get('subtype')
+            subtype = data.get('subtype', request_subtype) if data else request_subtype
             if subtype:
                 handler = handler.init_subtype(subtype)
 

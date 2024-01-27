@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "https://www.openconnectivity.org/ocf-apis/security/schemas/oic.sec.session.json#",
+  "title": "Device Identifier Format type",
+"definitions": {
+    "SP" : {
+      "properties": {
+        "rt": {
+          "description": "Resource Type of the Resource.",
+          "items": {
+            "maxLength": 64,
+            "type": "string",
+            "enum": ["oic.r.sp"]
+          },
+          "minItems": 1,
+          "readOnly": true,
+          "type": "array"
+        },
+        "n": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/n"
+        },
+        "id": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/id"
+        },
+        "currentprofile": {
+          "description": "Security Profile currently active.",
+          "type": "string"
+        },
+        "supportedprofiles": {
+          "description": "Array of supported Security Profiles.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "if": {
+          "description": "The interface set supported by this Resource.",
+          "items": {
+            "enum": [ "oic.if.rw", "oic.if.baseline" ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "readOnly": true,
+          "type": "array"
+        }
+      },
+      "type" : "object",
+      "required": ["supportedprofiles", "currentprofile"]
+    },
+    "SP-Update" : {
+      "properties": {
+        "currentprofile": {
+          "description": "Security Profile currently active.",
+          "type": "string"
+        },
+        "supportedprofiles": {
+          "description": "Array of supported Security Profiles.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type" : "object"
+    }
+  }
+}
