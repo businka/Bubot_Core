@@ -1,7 +1,7 @@
 import logging
 import os.path
 
-from BubotObj.OcfDevice.subtype.VirtualServer.VirtualServer import VirtualServer
+from bubot.buject.OcfDevice.subtype.VirtualServer.VirtualServer import VirtualServer
 
 if __name__ == '__main__':
     logging.basicConfig(

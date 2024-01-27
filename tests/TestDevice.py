@@ -1,24 +1,26 @@
-import unittest
-from unittest import IsolatedAsyncioTestCase
-from Bubot_CoAP.messages.response import Response
-from BubotObj.OcfDevice.subtype.Device.Device import Device
-from BubotObj.OcfDevice.subtype.EchoDevice.EchoDevice import EchoDevice as EchoDevice
-from Bubot.Core.TestHelper import async_test, wait_run_device
-from os import path
 import asyncio
 import logging
+import unittest
+from os import path
+from unittest import IsolatedAsyncioTestCase
+from bubot.core.ResourceLink import ResourceLink
 from Bubot_CoAP import defines
-from Bubot_CoAP.messages.request import Request
 from Bubot_CoAP.messages.numbers import NON, Code
+from Bubot_CoAP.messages.request import Request
+from Bubot_CoAP.messages.response import Response
+from bubot.buject.OcfDevice.subtype.Device.Device import Device
+from bubot.buject.OcfDevice.subtype.EchoDevice.EchoDevice import EchoDevice as EchoDevice
+from bubot.core.TestHelper import wait_run_device
 
 logging.basicConfig()
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 logger = logging.getLogger('Bubot_CoAP')
 logger.setLevel(logging.INFO)
+
+
 # logger = logging.getLogger('aio_dtls')
 # logger.setLevel(logging.DEBUG)
-
 
 
 class TestDevice(IsolatedAsyncioTestCase):
@@ -271,23 +273,47 @@ class TestDevice(IsolatedAsyncioTestCase):
         pass
 
     async def test_discovery_device(self):
-        device0 = Device.init_from_file(
-            di='10000000-0000-0000-0000-000000000001',
+        device1 = Device.init_from_file(
+            di='00000000-0000-0000-0000-000000000001',
             class_name='EchoDevice',
             path=self.config_path
         )
-        device_task = await wait_run_device(device0)
+        device2 = Device.init_from_file(
+            di='00000000-0000-0000-0000-000000000002',
+            class_name='EchoDevice',
+            path=self.config_path
+        )
+        device3 = Device.init_from_file(
+            di='00000000-0000-0000-0000-000000000003',
+            class_name='EchoDevice',
+            path=self.config_path
+        )
+        device4 = Device.init_from_file(
+            di='00000000-0000-0000-0000-000000000004',
+            class_name='EchoDevice',
+            path=self.config_path
+        )
+        devise_tasks = await asyncio.gather(
+            wait_run_device(device1),
+            wait_run_device(device2),
+            wait_run_device(device3),
+            wait_run_device(device4)
+        )
 
-        # device = Device.init_from_config()
-        # device_task = await wait_run_device(device)
-        # a = device0.transport_layer.eps
-        # await asyncio.sleep(10000)
-        result = await device0.transport_layer.discovery_resource()
-        di = device0.get_device_id()
-        self.assertIn(di, result, 'device found')
-        await device0.stop()
-        self.assertTrue(device0.coap.endpoint['IPv6']['transport'].is_closing(), 'clossing coap')
-        self.assertTrue(device0.coap.endpoint['multicast'][0]['transport'].is_closing(), 'run IPv6 transport')
+        result = await device1.transport_layer.discovery_resource(timeout=15)
+        self.assertLess(3, len(result))
+        finding_di = '00000000-0000-0000-0000-000000000004'
+        found_device = await device1.transport_layer.find_device(finding_di)
+        self.assertEqual(finding_di, found_device['di'])
+        # result = await device1.transport_layer.find_resource_by_link()
+        await asyncio.gather(
+            device1.stop(),
+            device2.stop(),
+            device3.stop(),
+            device4.stop()
+        )
+        # self.assertTrue(device0.coap.endpoint['IPv6']['transport'].is_closing(), 'clossing coap')
+        # self.assertTrue(device0.coap.endpoint['multicast'][0]['transport'].is_closing(), 'run IPv6 transport')
         pass
 
     async def test_observe_device(self):

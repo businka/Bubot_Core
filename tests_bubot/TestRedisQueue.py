@@ -3,11 +3,11 @@ import logging
 import unittest
 from os import path
 
-from Bubot.Core.TestHelper import wait_run_device
-from Bubot.OcfResource.OcfResource import OcfResource
+from bubot.core.TestHelper import wait_run_device
+from bubot.OcfResource.OcfResource import OcfResource
 # from bubot.CoapServer import CoapServer
-from BubotObj.OcfDevice.subtype.Device.Device import Device
-from BubotObj.OcfDevice.subtype.Device.RedisQueueMixin import RedisQueueMixin
+from bubot.buject.OcfDevice.subtype.Device.Device import Device
+from bubot.buject.OcfDevice.subtype.Device.RedisQueueMixin import RedisQueueMixin
 
 
 class TestRedisQueue(unittest.IsolatedAsyncioTestCase):

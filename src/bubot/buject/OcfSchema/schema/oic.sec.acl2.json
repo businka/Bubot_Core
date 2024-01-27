@@ -1,0 +1,339 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "https://www.openconnectivity.org/ocf-apis/security/schemas/oic.sec.acl2.json#",
+  "title": "Device Identifier Format type",
+  "definitions": {
+    "Acl2": {
+      "properties": {
+        "rowneruuid": {
+          "description": "The value identifies the unique Resource owner\nFormat pattern according to IETF RFC 4122.",
+          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+          "type": "string"
+        },
+        "rt": {
+          "description": "Resource Type of the Resource.",
+          "items": {
+            "maxLength": 64,
+            "type": "string",
+            "enum": [
+              "oic.r.acl2"
+            ]
+          },
+          "minItems": 1,
+          "readOnly": true,
+          "type": "array"
+        },
+        "aclist2": {
+          "description": "Access Control Entries in the ACL Resource.",
+          "items": {
+            "properties": {
+              "aceid": {
+                "description": "An identifier for the ACE that is unique within the ACL. In cases where it isn't supplied in an update, the Server will add the ACE and assign it a unique value.",
+                "minimum": 1,
+                "type": "integer"
+              },
+              "permission": {
+                "description": "Bitmask encoding of CRUDN permission\nThe encoded bitmask indicating permissions.",
+                "x-detail-desc": [
+                  "0  - No permissions",
+                  "1 - Create permission is granted",
+                  "2 - Read, observe, discover permission is granted",
+                  "4 - Write, update permission is granted",
+                  "8 - Delete permission is granted",
+                  "16 - Notify permission is granted"
+                ],
+                "maximum": 31,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "resources": {
+                "description": "References the application's Resources to which a security policy applies.",
+                "items": {
+                  "description": "Each Resource must have at least one of these properties set.",
+                  "properties": {
+                    "href": {
+                      "description": "When present, the ACE only applies when the href matches\nThis is the target URI, it can be specified as a Relative Reference or fully-qualified URI.",
+                      "format": "uri",
+                      "maxLength": 256,
+                      "type": "string"
+                    },
+                    "wc": {
+                      "description": "A wildcard matching policy.",
+                      "pattern": "^[-+*]$",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "subject": {
+                "anyOf": [
+                  {
+                    "description": "This is the Device identifier.",
+                    "properties": {
+                      "uuid": {
+                        "description": "A UUID Device ID\nFormat pattern according to IETF RFC 4122.",
+                        "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "uuid"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "description": "Security role specified as an <Authority> & <Rolename>. A NULL <Authority> refers to the local entity or Device.",
+                    "properties": {
+                      "authority": {
+                        "description": "The Authority component of the entity being identified. A NULL <Authority> refers to the local entity or Device.",
+                        "type": "string"
+                      },
+                      "role": {
+                        "description": "The ID of the role being identified.",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "role"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "properties": {
+                      "conntype": {
+                        "description": "This property allows an ACE to be matched based on the connection or message type.",
+                        "x-detail-desc": [
+                          "auth-crypt - ACE applies if the Client is authenticated and the data channel or message is encrypted and integrity protected",
+                          "anon-clear - ACE applies if the Client is not authenticated and the data channel or message is not encrypted but may be integrity protected"
+                        ],
+                        "enum": [
+                          "auth-crypt",
+                          "anon-clear"
+                        ],
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "conntype"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              },
+              "validity": {
+                "description": "validity is an array of time-pattern objects.",
+                "items": {
+                  "description": "The time-pattern contains a period and recurrence expressed in RFC5545 syntax.",
+                  "properties": {
+                    "period": {
+                      "description": "String represents a period using the RFC5545 Period.",
+                      "type": "string"
+                    },
+                    "recurrence": {
+                      "description": "String array represents a recurrence rule using the RFC5545 Recurrence.",
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "period"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "aceid",
+              "resources",
+              "permission",
+              "subject"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "n": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/n"
+        },
+        "id": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/id"
+        },
+        "if": {
+          "description": "The interface set supported by this Resource.",
+          "items": {
+            "enum": [
+              "oic.if.rw",
+              "oic.if.baseline"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "readOnly": true,
+          "type": "array"
+        }
+      },
+      "type": "object",
+      "required": [
+        "aclist2",
+        "rowneruuid"
+      ]
+    },
+    "Acl2-Update": {
+      "properties": {
+        "rowneruuid": {
+          "description": "The value identifies the unique Resource owner\n Format pattern according to IETF RFC 4122.",
+          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+          "type": "string"
+        },
+        "aclist2": {
+          "description": "Access Control Entries in the ACL Resource.",
+          "items": {
+            "properties": {
+              "aceid": {
+                "description": "An identifier for the ACE that is unique within the ACL. In cases where it isn't supplied in an update, the Server will add the ACE and assign it a unique value.",
+                "minimum": 1,
+                "type": "integer"
+              },
+              "permission": {
+                "description": "Bitmask encoding of CRUDN permission\nThe encoded bitmask indicating permissions.",
+                "x-detail-desc": [
+                  "0  - No permissions",
+                  "1 - Create permission is granted",
+                  "2 - Read, observe, discover permission is granted",
+                  "4 - Write, update permission is granted",
+                  "8 - Delete permission is granted",
+                  "16 - Notify permission is granted"
+                ],
+                "maximum": 31,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "resources": {
+                "description": "References the application's Resources to which a security policy applies.",
+                "items": {
+                  "description": "Each Resource must have at least one of these properties set.",
+                  "properties": {
+                    "href": {
+                      "description": "When present, the ACE only applies when the href matches\nThis is the target URI, it can be specified as a Relative Reference or fully-qualified URI.",
+                      "format": "uri",
+                      "maxLength": 256,
+                      "type": "string"
+                    },
+                    "wc": {
+                      "description": "A wildcard matching policy.",
+                      "x-detail-desc": [
+                        "+ - Matches all discoverable Resources",
+                        "- - Matches all non-discoverable Resources",
+                        "* - Matches all Resources"
+                      ],
+                      "enum": [
+                        "+",
+                        "-",
+                        "*"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "subject": {
+                "anyOf": [
+                  {
+                    "description": "This is the Device identifier.",
+                    "properties": {
+                      "uuid": {
+                        "description": "A UUID Device ID\n Format pattern according to IETF RFC 4122.",
+                        "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "uuid"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "description": "Security role specified as an <Authority> & <Rolename>. A NULL <Authority> refers to the local entity or Device.",
+                    "properties": {
+                      "authority": {
+                        "description": "The Authority component of the entity being identified. A NULL <Authority> refers to the local entity or Device.",
+                        "type": "string"
+                      },
+                      "role": {
+                        "description": "The ID of the role being identified.",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "role"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "properties": {
+                      "conntype": {
+                        "description": "This property allows an ACE to be matched based on the connection or message type.",
+                        "x-detail-desc": [
+                          "auth-crypt - ACE applies if the Client is authenticated and the data channel or message is encrypted and integrity protected",
+                          "anon-clear - ACE applies if the Client is not authenticated and the data channel or message is not encrypted but may be integrity protected"
+                        ],
+                        "enum": [
+                          "auth-crypt",
+                          "anon-clear"
+                        ],
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "conntype"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              },
+              "validity": {
+                "description": "validity is an array of time-pattern objects.",
+                "items": {
+                  "description": "The time-pattern contains a period and recurrence expressed in RFC5545 syntax.",
+                  "properties": {
+                    "period": {
+                      "description": "String represents a period using the RFC5545 Period.",
+                      "type": "string"
+                    },
+                    "recurrence": {
+                      "description": "String array represents a recurrence rule using the RFC5545 Recurrence.",
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "period"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "resources",
+              "permission",
+              "subject"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    }
+  }
+}

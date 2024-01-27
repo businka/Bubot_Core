@@ -1,0 +1,53 @@
+{
+  "id": "http://razgovorov.ru/bubot/schemas/bubot.con.json#",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description" : "",
+  "title": "configuration",
+  "definitions": {
+    "bubot.con": {
+      "type": "object",
+      "properties": {
+        "udpCoapPort": {
+          "type": "integer",
+          "format": "uri",
+          "description": "udp device port"
+        },
+        "udpCoapSslPort": {
+          "type": "integer",
+          "format": "uri",
+          "description": "udp device port"
+        },
+        "udpCoapIPv4": {
+          "type": "string"
+        },
+        "udpCoapIPv6": {
+          "type": "string"
+        },
+        "udpCoapIPv4Ssl": {
+          "type": "boolean",
+          "default": false
+        },
+        "udpCoapIPv6Ssl": {
+          "type": "boolean",
+          "default": false
+        },
+        "logLevel": {
+          "type": "string",
+          "enum": [
+            "",
+            "info",
+            "debug",
+            "warning",
+            "error"
+          ]
+        }
+      }
+
+    }
+  },
+  "type": "object",
+  "allOf": [
+    {"$ref": "oic.core.json#/definitions/oic.core"},
+    {"$ref": "#/definitions/bubot.con"}
+  ]
+}

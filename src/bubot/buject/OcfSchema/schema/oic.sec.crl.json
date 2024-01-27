@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "https://www.openconnectivity.org/ocf-apis/security/schemas/oic.sec.session.json#",
+  "title": "Device Identifier Format type",
+"definitions": {
+    "Crl" : {
+      "properties": {
+        "rt" : {
+          "description": "Resource Type of the Resource.",
+          "items": {
+            "maxLength": 64,
+            "type": "string",
+            "enum": ["oic.r.crl"]
+          },
+          "minItems": 1,
+          "readOnly": true,
+          "type": "array"
+        },
+        "n": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/n"
+        },
+        "id": {
+          "$ref": "https://openconnectivityfoundation.github.io/core/schemas/oic.common.properties.core-schema.json#/definitions/id"
+        },
+        "crldata" : {
+          "description": "Base64 BER encoded CRL data.",
+          "type": "string"
+        },
+        "crlid" : {
+          "description": "Local reference to a CRL Resource.",
+          "type": "integer"
+        },
+        "thisupdate" : {
+          "description": "UTC time of last CRL update.",
+          "type": "string"
+        },
+        "if" : {
+          "description": "The interface set supported by this Resource.",
+          "items": {
+            "enum": [ "oic.if.rw", "oic.if.baseline" ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "readOnly": true,
+          "type": "array"
+        }
+      },
+      "type": "object",
+      "required": ["crlid", "thisupdate", "crldata"]
+    }
+    ,
+    "Crl-Update": {
+      "properties": {
+        "crldata": {
+          "description": "Base64 BER encoded CRL data.",
+          "type": "string"
+        },
+        "crlid": {
+          "description": "Local reference to a CRL Resource.",
+          "type": "integer"
+        },
+        "thisupdate": {
+          "description": "UTC time of last CRL update.",
+          "type": "string"
+        }
+      },
+      "type" : "object"
+    }
+  }
+}

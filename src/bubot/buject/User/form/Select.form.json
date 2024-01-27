@@ -1,0 +1,52 @@
+{
+  "template": "SelectBrowser",
+  "dataSource": {
+    "type": "Service",
+    "keyProperty": "_id",
+    "objName": "User",
+    "filterFields": [
+    ]
+  },
+  "toolbarItemsBeforeFilter": [
+    {
+      "name": "Reload",
+      "icon": "mdi-reload",
+      "title": "Reload"
+    }
+  ],
+  "operationsPanelItems": [
+  ],
+  "rowTemplate": "rowViewer",
+  "rowActivateHandler": {
+    "name": "RightDrawerFormViewer3",
+    "form": "User/Item"
+  },
+  "rowActions": [
+    {
+      "name": "SelectItems",
+      "title": "SelectItem"
+    }
+  ],
+  "rowKey": "id",
+  "columns": [
+    {
+      "value": "title",
+      "width": "80%",
+      "align": "left",
+      "template": "RowCellTitle",
+      "text": "title",
+      "title_ru": "Название",
+      "title_en": "Name",
+      "title_cn": "名称",
+      "subtitleField": "phone",
+      "infoField": "email"
+    }
+  ],
+  "col_xl": 6,
+  "col_lg": 7,
+  "inlineActions": {},
+  "projection": {
+    "_id": 1,
+    "title": 1
+  }
+}
