@@ -56,7 +56,7 @@ class Session(Obj):
 
         if old_session:
             data['_id'] = old_session.data['_id']
-            data['date'] = old_session.data['date']
+            data['begin'] = old_session.data['begin']
         self = cls(view.storage)
         self.init_by_data(data)
         _action.add_stat(await self.update())
