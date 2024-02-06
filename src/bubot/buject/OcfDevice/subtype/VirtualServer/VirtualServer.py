@@ -74,44 +74,52 @@ class VirtualServer(Device):
         self.save_config()
 
     async def cancel_device(self, di):
-        device = self.running_devices.pop(di)
-        self.log.info(f'Begin cancelled {device.__class__.__name__} {di}')
-        if isinstance(device, multiprocessing.Process):
-            link = await self.transport_layer.find_device(di=di, timeout=15)
-            link['href'] = '/oic/mnt'
-            await self.send_request('update', link, dict(currentMachineState='cancelled'))
-            for i in range(15):
-                if not device.is_alive():
-                    break
-                self.log.debug(f'wait cancelled {di}')
-                await asyncio.sleep(i)
-        elif asyncio.isfuture(device):
-            device.cancel()
-            try:
-                await device
-            except asyncio.CancelledError:
-                pass
-        else:
-            await device.cancel()
+        try:
+            device = self.running_devices.pop(di)
+            self.log.info(f'Begin cancelled {device.__class__.__name__} {di}')
+            if isinstance(device, multiprocessing.Process):
+                if device.is_alive():
+                    link = await self.transport_layer.find_device(di=di, timeout=15)
+                    if link:
+                        link['href'] = '/oic/mnt'
+                        await self.send_request('update', link, dict(currentMachineState='cancelled'))
+                        for i in range(15):
+                            if not device.is_alive():
+                                break
+                            self.log.debug(f'wait cancelled {di}')
+                            await asyncio.sleep(i)
+            elif asyncio.isfuture(device):
+                device.cancel()
+                try:
+                    await device
+                except asyncio.CancelledError:
+                    pass
+            else:
+                await device.cancel()
 
-        self.log.debug(f'End cancelled {device.__class__.__name__} {di}')
+            self.log.info(f'End cancelled {device.__class__.__name__} {di}')
+        except Exception as err:
+            raise ExtException(parent=err)
 
     async def on_cancelled(self):
-        tasks = []
-        for di in list(self.running_devices.keys()):
-            tasks.append(self.cancel_device(di))
-        await asyncio.gather(*tasks)
-
-        if self.manager:
-            self.manager.shutdown()
         try:
-            if self.task_logger:
-                self.task_logger.cancel()
-                await self.task_logger
-        except asyncio.CancelledError:
-            pass
+            tasks = []
+            for di in list(self.running_devices.keys()):
+                tasks.append(self.cancel_device(di))
+            res = await asyncio.gather(*tasks)
 
-        await super(VirtualServer, self).on_cancelled()
+            if self.manager:
+                self.manager.shutdown()
+            try:
+                if self.task_logger:
+                    self.task_logger.cancel()
+                    await self.task_logger
+            except asyncio.CancelledError:
+                pass
+
+            await super(VirtualServer, self).on_cancelled()
+        except Exception as err:
+            raise ExtException(parent=err)
 
     async def on_stopped(self):
         pass

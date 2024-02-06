@@ -137,7 +137,7 @@ class User(Obj):
         action = kwargs['_action']
         try:
             storage = kwargs['storage']
-            user_ref = kwargs['user']
+            user_ref = kwargs['user_']
             account_id = kwargs['account']
             object_name = kwargs['object']
             level = kwargs['level']
@@ -145,17 +145,18 @@ class User(Obj):
         except KeyError as key:
             raise KeyNotFound(detail=str(key))
         try:
-            user = cls(storage, account_id=account_id)
-            action.add_stat(await user.find_by_id(user_ref['_id'], _form='AccessRight'))
-            rights = user.data.get('right')
+            right = await storage.find_one(account_id, 'UserRight', {
+                'user_._id': user_ref['_id'],
+                'obj': object_name
+            })
         except Exception as err:
             raise AccessDenied(parent=err)
-        if not rights:
-            raise AccessDenied(detail='Empty access list')
+        if not right:
+            raise AccessDenied(detail=f'{account_id}/{object_name}')
         try:
-            _level = rights[object_name]
+            _level = right.get('level', 0)
         except Exception:
-            raise AccessDenied(detail=object_name)
+            raise AccessDenied(detail=f'{account_id}/{object_name}')
         if _level < level:
-            raise AccessDenied(detail=object_name)
+            raise AccessDenied(detail=f'{account_id}/{object_name}={_level} need {level}')
         pass

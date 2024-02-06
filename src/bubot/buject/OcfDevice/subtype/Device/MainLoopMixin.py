@@ -52,24 +52,29 @@ class MainLoopMixin(DeviceCore):
             self.log.info(f"main begin, random sleep {random_sleep}")
             await self.transport_layer.start()
             await asyncio.sleep(random_sleep)
-
+            status = None
+            current_status = None
             while True:
-                last_run = time.time()
-                update_time = self.get_param('/oic/con', 'updateTime', 30)
-                self.set_param('/oic/mnt', 'lastRun', last_run)
-                status = self.get_param('/oic/mnt', 'currentMachineState', 'pending')
-                method = f'on_{status}'
-                if not status:
-                    break
-                if status not in ['cancelled', 'stoppe d']:
-                    await self.transport_layer.cloud.connect()
-
-                if not hasattr(self, method):
-                    err_msg = f'Unsupported device lifecycle status "{status}"'
-                    self.log.error(err_msg)
-                    self.set_param('/oic/mnt', 'currentMachineState', 'stopped')
-                    self.set_param('/oic/mnt', 'message', err_msg)
                 try:
+                    last_run = time.time()
+                    update_time = self.get_param('/oic/con', 'updateTime', 30)
+                    self.set_param('/oic/mnt', 'lastRun', last_run)
+                    status = self.get_param('/oic/mnt', 'currentMachineState', 'pending')
+                    if current_status == 'cancelled' and status == 'cancelled':
+                        self.log.error('Cancelled not worked')
+                        return
+                    method = f'on_{status}'
+                    if not status:
+                        break
+                    if status not in ['cancelled', 'stopped']:
+                        await self.transport_layer.cloud.connect()
+
+                    if not hasattr(self, method):
+                        err_msg = f'Unsupported device lifecycle status "{status}"'
+                        self.log.error(err_msg)
+                        self.set_param('/oic/mnt', 'currentMachineState', 'stopped')
+                        self.set_param('/oic/mnt', 'message', err_msg)
+
                     await getattr(self, method)()
                     await self.check_changes()
                     current_status = self.get_param('/oic/mnt', 'currentMachineState')
@@ -77,16 +82,23 @@ class MainLoopMixin(DeviceCore):
                     if current_status == status:  # Если статус не изменился, то следующий статус согласно настройка FPS
                         elapsed_time = time.time() - last_run
                         sleep_time = round(max(0.05, max(update_time - elapsed_time, 0)), 2)
+                    self.is_sleeping = True
                     await asyncio.sleep(sleep_time)
+                    self.is_sleeping = False
+
                 except asyncio.CancelledError:
-                    if self.get_param('/oic/mnt', 'currentMachineState', 'pending'):
-                        self.set_param('/oic/mnt', 'currentMachineState', 'cancelled')
-                    else:
-                        self.log.info("main cancelled")
-                        return
+                    current_status = self.get_param('/oic/mnt', 'currentMachineState')
+                    if current_status:
+                        if current_status != 'cancelled':
+                            self.set_param('/oic/mnt', 'currentMachineState', 'cancelled')
+                            continue
+                        if status != 'cancelled':  # мы отменили, но цикл ещё ни разу не ходил по отмене
+                            continue
+                    self.log.info("main cancelled")
+                    return
                         # raise asyncio.CancelledError
                 except (ExtException, Exception) as err:
-                    self.log.error(ExtException(detail=method, parent=err))
+                    self.log.error(ExtException(detail=status, parent=err))
                     self.set_param('/oic/mnt', 'currentMachineState', 'stopped')
                     self.set_param('/oic/mnt', 'message', str(err))
                     pass

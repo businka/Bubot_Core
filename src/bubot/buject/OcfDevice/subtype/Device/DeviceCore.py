@@ -45,6 +45,7 @@ class DeviceCore:
         self._link = None
         self.loop = None
         self.task = None
+        self.is_sleeping = False
         self.path = os.path.abspath(kwargs.get('path', './'))
 
     @property
@@ -260,12 +261,28 @@ class DeviceCore:
                 self.loop.create_task(self.cancel())
 
     async def cancel(self):
-        self.log.debug('begin cancelled')
-        self.set_param('/oic/mnt', 'currentMachineState', 'cancelled')
+        self.log.info('cancelled begin')
+        is_cancelled = False
         try:
-            await asyncio.wait_for(self.task, 10)
-        except asyncio.TimeoutError:
-            self.task.cancel()
+            for i in range(5):
+                if self.is_sleeping and not is_cancelled:
+                    self.task.cancel()
+                    self.log.info('cancelled hard')
+                    is_cancelled = True
+                if self.task.done():
+                    self.log.info('cancelled done')
+                    return
+            await asyncio.sleep(1)
+            if not is_cancelled:
+                self.log.info('cancelled hard')
+                self.task.cancel()
+                for i in range(5):
+                    if self.task.done():
+                        self.log.info('cancelled done')
+                        return
+                    await asyncio.sleep(1)
+        except Exception as err:
+            self.log.info(err)
 
     def get_discover_res(self):
         result = {}

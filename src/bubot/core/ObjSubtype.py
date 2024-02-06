@@ -12,6 +12,7 @@ from bubot_helpers.Helper import Helper
 
 
 class ObjSubtype(Obj):
+    is_subtype = True
 
     # def init(self, *, app_name=None, **kwargs):
     #     self.data = dict(

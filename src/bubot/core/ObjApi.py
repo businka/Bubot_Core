@@ -7,6 +7,7 @@ from bubot_helpers.ActionDecorator import async_action
 from bubot_helpers.ExtException import KeyNotFound, AccessDenied
 
 
+
 class DeviceApi:
     def __init__(self, response, *, db=None, **kwargs):
         self.response = response
@@ -25,9 +26,20 @@ class ObjApi(DeviceApi):
     mandatory_field_in_list_filter = []
     app_access = []
 
+    async def check_right(self, view, handler, level=11):
+        if self.handler:
+            if self.handler.is_subtype:
+                obj_name = f'{handler.__class__.__base__.__name__}/{handler.__class__.__name__}'
+            else:
+                obj_name = handler.__class__.__name__
+        else:
+            obj_name = handler.__class__.__name__
+        await view.check_right(account=handler.db, object=obj_name, level=level)
+
     @async_action
     async def api_read(self, view, *, _action=None, **kwargs):
         handler, data = await self.prepare_json_request(view)
+        await self.check_right(view, handler, 1)
         _id = data.get('id')
         handler = _action.add_stat(await handler.find_by_id(_id))
         return self.response.json_response(handler.data)
@@ -39,6 +51,7 @@ class ObjApi(DeviceApi):
     @async_action
     async def api_delete(self, view, **kwargs):
         handler, data = await self.prepare_json_request(view)
+        await self.check_right(view, handler, 11)
         await handler.delete_one(data['_id'])
         # await handler.update()
         return self.response.json_response(handler.data)
@@ -46,6 +59,7 @@ class ObjApi(DeviceApi):
     @async_action
     async def api_delete_many(self, view, *, _action=None, **kwargs):
         handler, data = await self.prepare_json_request(view)
+        await self.check_right(view, handler, 11)
         where = data.get('filter')
         if not where:
             _items = data.get('items')
@@ -67,6 +81,7 @@ class ObjApi(DeviceApi):
     @async_action
     async def api_create(self, view, *, _action: Action = None, **kwargs):
         handler, data = await self.prepare_json_request(view)
+        await self.check_right(view, handler, 11)
         handler = handler.init_by_data(data)
         # data = _action.add_stat(await self.prepare_create_data(handler, data))
         # handler.init_by_data(data)
@@ -76,6 +91,7 @@ class ObjApi(DeviceApi):
     @async_action
     async def api_update(self, view, **kwargs):
         handler, data = await self.prepare_json_request(view)
+        await self.check_right(view, handler, 11)
         handler = handler.init_by_data(data)
         await handler.update()
         return self.response.json_response(handler.data)
@@ -83,6 +99,7 @@ class ObjApi(DeviceApi):
     @async_action
     async def api_list(self, view, *, _action: Action = None, **kwargs):
         handler, data = await self.prepare_json_request(view, **kwargs)
+        await self.check_right(view, handler, 1)
         _data = self.prepare_list_filter(view, handler, data)
         data = _action.add_stat(await handler.list(**_data))
         data = _action.add_stat(await self.list_convert_result(data))
@@ -153,3 +170,4 @@ class ObjApi(DeviceApi):
         except (KeyError, TypeError):
             subtype = None
         return handler.init_subtype(subtype)
+
