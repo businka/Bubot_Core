@@ -106,8 +106,11 @@ class Obj:
             "_id": self.obj_id
         }
         title = self.data.get('title')
-        # if add_obj_type:
-        #     result['type'] =
+        if add_obj_type:
+            result['type'] = self.name
+            if self.is_subtype:
+                result['subtype'] = self.__class__.__name__
+
         if title:
             result['title'] = title
         if properties:
