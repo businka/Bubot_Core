@@ -36,7 +36,7 @@ class RedisQueueMixin:
         self.redis_queue_worker_task = self.loop.create_task(self.run_redis_queue_worker())
 
     async def on_cancelled(self):
-        if not self.redis_queue_worker_task.done():
+        if self.redis_queue_worker_task and not self.redis_queue_worker_task.done():
             self.redis_queue_worker_task.cancel()
             await self.redis_queue_worker_task
         if self.redis:
