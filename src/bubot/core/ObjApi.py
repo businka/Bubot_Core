@@ -7,11 +7,11 @@ from bubot_helpers.ActionDecorator import async_action
 from bubot_helpers.ExtException import KeyNotFound, AccessDenied
 
 
+
 class DeviceApi:
     def __init__(self, response, *, db=None, **kwargs):
         self.response = response
-        if db:
-            self.db = db
+        self.db = db
         self.filter_fields = {}
         self.list_limit = 1000
 
@@ -38,7 +38,7 @@ class ObjApi(DeviceApi):
 
     @async_action
     async def api_read(self, view, *, _action=None, **kwargs):
-        handler, data = await self.prepare_json_request(view, **kwargs)
+        handler, data = await self.prepare_json_request(view)
         await self.check_right(view, handler, 1)
         _id = data.get('id')
         handler = _action.add_stat(await handler.find_by_id(_id))
@@ -170,3 +170,4 @@ class ObjApi(DeviceApi):
         except (KeyError, TypeError):
             subtype = None
         return handler.init_subtype(subtype)
+
