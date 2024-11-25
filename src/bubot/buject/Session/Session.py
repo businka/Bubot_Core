@@ -1,4 +1,4 @@
-from _datetime import datetime, UTC
+from datetime import datetime, UTC
 
 from aiohttp_session import get_session, new_session
 
@@ -52,7 +52,7 @@ class Session(Obj):
         data = kwargs
         data["user_"] = user.get_link()
         data["account"] = user.get_default_account()
-        data["begin"] = datetime.utcnow()
+        data["begin"] = datetime.now(UTC)
 
         if old_session:
             data['_id'] = old_session.data['_id']
@@ -72,7 +72,7 @@ class Session(Obj):
     async def close(self, uuid=None, **kwargs):
         if uuid:
             await self.find_by_id(uuid)
-        self.data['end'] = datetime.utcnow()
+        self.data['end'] = datetime.now(UTC)
         await self.update()
 
     def get_identity(self):
@@ -92,9 +92,9 @@ class Session(Obj):
         except (KeyError, TypeError):
             return None
 
-    @property
-    def app_name(self):
-        try:
-            return self.data['app']
-        except:
-            return None
+    # @property
+    # def app_name(self):
+    #     try:
+    #         return self.data['app']
+    #     except:
+    #         return None

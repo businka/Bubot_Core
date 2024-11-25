@@ -109,14 +109,14 @@ class User(Obj):
         return auth[i]
 
     def get_default_account(self):
-        accounts = self.data.get('account', [])
+        accounts = self.data.get('accounts', [])
         if not accounts:
             return 'Bubot'
 
-        _account = self.data.get('last_account')
-        if _account is None:
-            _account = accounts[0]
-        return _account
+        last_account = self.data.get('last_account')
+        if last_account is None:
+            last_account = accounts[0]
+        return last_account
 
     @classmethod
     @async_action
@@ -145,7 +145,7 @@ class User(Obj):
         except KeyError as key:
             raise KeyNotFound(detail=str(key))
         try:
-            right = await storage.find_one(account_id, 'UserRight', {
+            right = await storage.find_one(account_id, 'user_right', {
                 'user_._id': user_ref['_id'],
                 'obj': object_name
             })

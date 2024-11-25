@@ -14,7 +14,7 @@ class Obj:
     tzinfo = get_tzinfo()
     file = __file__  # должен быть в каждом файле наследники для чтения форм
     extension = False
-    is_subtype = False
+    is_subtype = None
     name = None
     key_property = '_id'
     uuid_id = True
@@ -27,19 +27,20 @@ class Obj:
     #   * format - правила форматирования значения
     keys_meta = None
 
-    def __init__(self, storage, *, session=None, **kwargs):
+    def __init__(self, storage, *, session=None, app_name=None, **kwargs):
         self.data = {}
         self.storage = storage
+        self.app_name = app_name
         self.session = session
         self.debug = False
 
     @property
     def account_id(self):
-        return self.session.account_id if self.session else None
+        return self.session['account'] if self.session else None
 
-    @property
-    def app_name(self):
-        return self.session.app_name if self.session else None
+    # @property
+    # def app_name(self):
+    #     return self.session.app_name if self.session else None
 
     def init(self, **kwargs):
         self.data = dict(

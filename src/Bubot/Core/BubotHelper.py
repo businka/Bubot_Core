@@ -90,8 +90,9 @@ class BubotHelper:
         for buject_name in bujects:
             if not os.path.isdir(os.path.join(buject_dir, buject_name)):
                 continue
-            if os.path.isfile(os.path.join(buject_dir, buject_name, f'{buject_name}.py')):
-                _add(f'{buject_name}/')
+            # if os.path.isfile(os.path.join(buject_dir, buject_name, f'{buject_name}.py')):
+            if os.path.isfile(os.path.join(buject_dir, buject_name, '__init__.py')):
+                    _add(f'{buject_name}/')
             subtype_dir = os.path.join(buject_dir, buject_name, 'subtype')
             if not os.path.isdir(subtype_dir):
                 continue
@@ -99,5 +100,6 @@ class BubotHelper:
             for subtype_name in subtypes:
                 if not os.path.isdir(os.path.join(subtype_dir, subtype_name)):
                     continue
-                if os.path.isfile(os.path.join(subtype_dir, subtype_name, f'{subtype_name}.py')):
+                # if os.path.isfile(os.path.join(subtype_dir, subtype_name, f'{subtype_name}.py')):
+                if os.path.isfile(os.path.join(subtype_dir, subtype_name, '__init__.py')):
                     _add(f'{buject_name}/{subtype_name}')
