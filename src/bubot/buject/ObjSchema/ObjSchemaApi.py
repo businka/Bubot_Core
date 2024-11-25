@@ -6,6 +6,7 @@ from aiohttp.web import json_response, Response
 
 from bubot_helpers.ActionDecorator import async_action
 from bubot_helpers.JsonSchema4 import JsonSchema4
+from bubot.core.BubotHelper import BubotHelper
 
 
 class ObjSchemaApi:
@@ -56,17 +57,19 @@ class ObjSchemaLoader:
         :return:
         '''
 
+        discovered_packages = BubotHelper.find_bubot_packages()
         self.index = {}
-        for path1 in syspath:
-            bubot_obj_dir = f'{path1}/BubotObj/ObjSchema'
-            if not os.path.isdir(bubot_obj_dir):
+
+        for package_name in discovered_packages:
+            package = discovered_packages[package_name]
+            obj_schema_dir = os.path.join(package.__path__[0], 'buject', 'ObjSchema', 'schema')
+            if not os.path.isdir(obj_schema_dir):
                 continue
-            schemas_dir = os.path.normpath(f'{bubot_obj_dir}/schema')
-            if not os.path.isdir(schemas_dir):
-                continue
+
+            schemas_dir = os.path.normpath(obj_schema_dir)
+
             schema_list = os.listdir(schemas_dir)
             for schema_name in schema_list:
                 if schema_name[-5:] != ".json":
                     continue
                 self.index[schema_name[:-5]] = os.path.normpath(f'{schemas_dir}/{schema_name}')
-        pass

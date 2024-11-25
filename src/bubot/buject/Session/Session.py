@@ -1,4 +1,4 @@
-from _datetime import datetime
+from _datetime import datetime, UTC
 
 from aiohttp_session import get_session, new_session
 
@@ -20,7 +20,7 @@ class Session(Obj):
             "account": None,
             "app_": None,
             "lang": None,
-            "begin": datetime.utcnow(),
+            "begin": datetime.now(UTC),
             "end": None
         }
 
