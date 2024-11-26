@@ -59,6 +59,10 @@ class Mongo:
     @async_action
     async def update(self, db, table, data, create=True, *, where=None, pull=None, add_to_set=None, push=None,
                      _action=None, **kwargs):
+        if not db:
+            raise KeyNotFound(detail='db')
+        if not table:
+            raise KeyNotFound(detail='table')
         _id = data.get('_id')
         if _id or where:
 

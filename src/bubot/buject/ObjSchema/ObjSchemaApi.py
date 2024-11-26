@@ -5,6 +5,7 @@ from sys import path as syspath
 from aiohttp.web import json_response, Response
 
 from bubot_helpers.ActionDecorator import async_action
+from bubot_helpers.ExtException import ExtException, KeyNotFound
 from bubot_helpers.JsonSchema4 import JsonSchema4
 from bubot.core.BubotHelper import BubotHelper
 
@@ -44,7 +45,7 @@ class ObjSchemaLoader:
         try:
             path = self.index[schema_name]
         except KeyError:
-            return Response(text=f"Schema not found ({schema_name})", status=501)
+            raise KeyNotFound(message="Schema not found", detail=schema_name)
 
         with open(path, 'r', encoding='utf-8') as file:
             data = json.load(file)

@@ -183,7 +183,7 @@ class Obj:
             if self.uuid_id and not kwargs.get('where'):
                 _data['_id'] = str(uuid4())
         _action.add_stat(await self.before_update(_data, **kwargs))
-        res = await self.storage.update(self.db, self.obj_name, _data, **kwargs)
+        res = _action.add_stat(await self.storage.update(self.db, self.obj_name, _data, **kwargs))
         if data is None:
             self.data = _data
         return _data

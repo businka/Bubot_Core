@@ -133,6 +133,14 @@ class User(Obj):
         # запись          0010 2
         # чтение и запись 0011 3
         # выполнение
+        async def read_right(obj):
+            try:
+                return await storage.find_one(account_id, 'user_right', {
+                    'user_._id': user_ref['_id'],
+                    'obj': obj
+                })
+            except Exception as err:
+                raise AccessDenied(parent=err)
 
         action = kwargs['_action']
         try:
@@ -144,15 +152,11 @@ class User(Obj):
             params = kwargs.get('params', {})
         except KeyError as key:
             raise KeyNotFound(detail=str(key))
-        try:
-            right = await storage.find_one(account_id, 'user_right', {
-                'user_._id': user_ref['_id'],
-                'obj': object_name
-            })
-        except Exception as err:
-            raise AccessDenied(parent=err)
+        right = await read_right(object_name)
         if not right:
-            raise AccessDenied(detail=f'{account_id}/{object_name}')
+            right = await read_right('#all')
+            if not right:
+               raise AccessDenied(detail=f'{account_id}/{object_name}')
         try:
             _level = right.get('level', 0)
         except Exception:
