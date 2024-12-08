@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 
 from bubot.core.Obj import Obj
 
@@ -10,7 +10,7 @@ class DocumentObj(Obj):
         self.data = {
             "title": "",
             "name": "",
-            "date": datetime.now(),
+            "date": datetime.datetime.now(datetime.timezone.utc),
             "number": "",
             "keys": []
         }

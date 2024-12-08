@@ -178,50 +178,53 @@ class VirtualServer(Device):
         raise Exception('OcfDevice not found')
 
     async def action_run_device(self, link):
-        di = link.get('di')
         try:
-            class_name = link['dmno']
-        except KeyError:
-            raise KeyNotFound(detail='dmno', action='action_run_device') from None
-        if di and di in self.running_devices:
-            raise ExtException(message='Device is already running', detail=di)
-        device_class = self.get_device_class(class_name)
-        if link.get('process') or issubclass(device_class, VirtualServer):
-        # if issubclass(device_class, VirtualServer):
+            di = link.get('di')
             try:
-                # pool = concurrent.futures.ProcessPoolExecutor()
-                # self.running_devices[link['di']] = self.loop.run_in_executor(
-                #     pool,
-                #     self.device_process,
-                #     class_name,
-                #     di,
-                #     self.queue,
-                #     dict(path=self.path)
-                # )
-                process = multiprocessing.Process(
-                    target=self.device_process,
-                    args=(class_name, di, self.queue, dict(path=self.path)),
-                    daemon=True
-                )
-                process.start()
-                self.running_devices[link['di']] = process
-                return None
-            except Exception as err:
-                raise ExtException(parent=err)
+                class_name = link['dmno']
+            except KeyError:
+                raise KeyNotFound(detail='dmno', action='action_run_device') from None
+            if di and di in self.running_devices:
+                raise ExtException(message='Device is already running', detail=di)
+            device_class = self.get_device_class(class_name)
+            if link.get('process') or issubclass(device_class, VirtualServer):
+            # if issubclass(device_class, VirtualServer):
+                try:
+                    # pool = concurrent.futures.ProcessPoolExecutor()
+                    # self.running_devices[link['di']] = self.loop.run_in_executor(
+                    #     pool,
+                    #     self.device_process,
+                    #     class_name,
+                    #     di,
+                    #     self.queue,
+                    #     dict(path=self.path)
+                    # )
+                    process = multiprocessing.Process(
+                        target=self.device_process,
+                        args=(class_name, di, self.queue, dict(path=self.path)),
+                        daemon=True
+                    )
+                    process.start()
+                    self.running_devices[link['di']] = process
+                    return None
+                except Exception as err:
+                    raise ExtException(parent=err)
 
-        else:
-            device = Device.init_from_file(
-                class_name=class_name,
-                di=link.get('di'),
-                path=self.path,
-                loop=self.loop,
-                log=self.log
-            )
-            link['di'] = device.di
-            task = self.loop.create_task(device.main())
-            device.task = task
-            self.running_devices[link['di']] = device
-            return device
+            else:
+                device = Device.init_from_file(
+                    class_name=class_name,
+                    di=link.get('di'),
+                    path=self.path,
+                    loop=self.loop,
+                    log=self.log
+                )
+                link['di'] = device.di
+                task = self.loop.create_task(device.main())
+                device.task = task
+                self.running_devices[link['di']] = device
+                return device
+        except Exception as err:
+            raise ExtException(parent=err)
 
     async def action_stop_device(self, di):
         try:

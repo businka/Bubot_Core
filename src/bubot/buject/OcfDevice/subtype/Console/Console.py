@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime
+import datetime
 
 from bubot.buject.OcfDevice.subtype.Device.Device import Device
 from .__init__ import __version__ as device_version
@@ -14,7 +14,7 @@ class Console(Device):
     template = False
 
     async def on_idle(self):
-        i = datetime.now().strftime('%d.%m.%Y %H:%M:%S')
+        i = datetime.datetime.now().strftime('%d.%m.%Y %H:%M:%S')
         self.set_param('/oic/mnt', 'DateTime', i)
         self.log.info('DateTime: {}'.format(i))
         await asyncio.sleep(1)

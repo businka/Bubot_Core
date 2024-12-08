@@ -41,7 +41,8 @@ class BubotHelper:
         try:
             return cls.get_buject_class(package_name, obj_name, subtype, suffix=suffix)
         except ExtException as err:
-            raise HandlerNotFoundError(detail=f'package {package_name} object {obj_name} subtype {subtype}', parent=err)
+            raise HandlerNotFoundError(detail=f'package {package_name} object {obj_name} subtype {subtype}', parent=err,
+                                       action='get_subtype_class')
 
     @classmethod
     def get_extension_class(cls, device, obj_name, subtype=None, *, suffix=None, **kwargs):
@@ -92,7 +93,7 @@ class BubotHelper:
                 continue
             # if os.path.isfile(os.path.join(buject_dir, buject_name, f'{buject_name}.py')):
             if os.path.isfile(os.path.join(buject_dir, buject_name, '__init__.py')):
-                    _add(f'{buject_name}/')
+                _add(f'{buject_name}/')
             subtype_dir = os.path.join(buject_dir, buject_name, 'subtype')
             if not os.path.isdir(subtype_dir):
                 continue

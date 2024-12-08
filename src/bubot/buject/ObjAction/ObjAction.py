@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 from bubot_helpers.ExtException import ExtException
 from bubot_helpers.ActionDecorator import async_action
 
@@ -19,7 +19,7 @@ class ObjAction:
         else:
             error = False
         data = dict(
-            date=datetime.utcnow(),
+            date=datetime.datetime.now(datetime.timezone.utc),
             obj_=obj.get_link(add_obj_type=True) if obj is not None else None,
             action=action,
             error=error,
