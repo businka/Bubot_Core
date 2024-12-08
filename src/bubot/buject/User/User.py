@@ -98,9 +98,9 @@ class User(Obj):
             _form=None,
             limit=1
         ))
-        if not res['rows']:
+        if not res['Rows']:
             raise Unauthorized()
-        user_data = res['rows'][0]
+        user_data = res['Rows'][0]
         i = ArrayHelper.find_one(user_data['auth'], {'type': _type, 'id': _id})
         if i < 0:
             raise Unauthorized()

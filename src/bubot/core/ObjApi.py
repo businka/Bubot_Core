@@ -59,7 +59,7 @@ class ObjApi(DeviceApi):
     async def api_delete_many(self, view, *, _action=None, **kwargs):
         handler, data = await self.prepare_json_request(view)
         await self.check_right(view, handler, 3)
-        where = data.get('filter')
+        where = data.get('Filter')
         if not where:
             _items = data.get('items')
             ids = []
@@ -106,10 +106,10 @@ class ObjApi(DeviceApi):
 
     def prepare_list_filter(self, view, handler, data):
         where = {}
-        _where = data.get('filter', {})
-        nav = data.get('nav', {})
-        limit = int(nav.get('limit', 25))
-        page = int(nav.get('page', 1))
+        _where = data.get('Filter', {})
+        nav = data.get('Pagination', {})
+        limit = int(nav.get('PageSize', 25))
+        page = int(nav.get('Page', 1))
 
         for elem in self.mandatory_field_in_list_filter:
             try:

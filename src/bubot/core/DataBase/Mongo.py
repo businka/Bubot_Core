@@ -20,7 +20,12 @@ class Mongo:
         if device:
             url = device.get_param('/oic/con', 'storage_url', 'mongodb://localhost:27017')
         try:
-            client = motor_asyncio.AsyncIOMotorClient(url, serverSelectionTimeoutMS=5000, tz_aware=False)
+            client = motor_asyncio.AsyncIOMotorClient(
+                url,
+                serverSelectionTimeoutMS=5000,
+                tz_aware=True,
+                tzinfo=cls.tzinfo
+            )
             res = await client.server_info()
         except ServerSelectionTimeoutError as err:
             raise ExtTimeoutError(message='Mongo connection timeout', parent=err)
@@ -131,17 +136,17 @@ class Mongo:
         if not table:
             raise ExtException(message='table not defined', action=action)
 
-    async def list(self, db, table, *, where=None, projection=None, skip=0, limit=1000, order=None, _action=None,
+    async def list(self, db, table, *, filter=None, projection=None, skip=0, limit=1000, order=None, _action=None,
                    **kwargs):
         self.check_db_and_table(db, table, _action)
         self.set_timezone(db, table)
-        if where is not None:
-            full_text_search = where.pop('_search', None)
+        if filter is not None:
+            full_text_search = filter.pop('_search', None)
             if full_text_search:
-                where['$text'] = {'$search': full_text_search}
+                filter['$text'] = {'$search': full_text_search}
 
         cursor = self.client[db][table].find(
-            filter=where,
+            filter=filter,
             projection=projection,
             skip=skip,
             limit=limit

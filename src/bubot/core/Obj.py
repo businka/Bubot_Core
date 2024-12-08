@@ -150,7 +150,7 @@ class Obj:
         self.add_projection(_form, kwargs)
         kwargs = await self.list_set_default_params(**kwargs)
         result = await self.storage.list(self.db, self.obj_name, **kwargs)
-        return {'rows': result}
+        return {'Rows': result}
 
     async def list_set_default_params(self, **kwargs):
         return kwargs
