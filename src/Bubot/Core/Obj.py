@@ -88,12 +88,12 @@ class Obj:
         return _action.add_stat(await self.find_one({"_id": _id}, _form=_form, **kwargs))
 
     @async_action
-    async def find_one(self, where, *, _form="Item", _action=None, **kwargs):
+    async def find_one(self, filter, *, _form="Item", _action=None, **kwargs):
         self.add_projection(_form, kwargs)
-        res = await self.storage.find_one(self.db, self.obj_name, where, **kwargs)
+        res = await self.storage.find_one(self.db, self.obj_name, filter, **kwargs)
         if res:
             return self.init_by_data(res)
-        raise KeyNotFound(message=f'Object not found', detail=f'{self.obj_name}', dump=where, action=_action)
+        raise KeyNotFound(message=f'Object not found', detail=f'{self.obj_name}', dump=filter, action=_action)
 
     def get_link(self, *, properties=None, add_obj_type=False):
         '''
@@ -180,7 +180,7 @@ class Obj:
         try:
             _data['_id']
         except KeyError:
-            if self.uuid_id and not kwargs.get('where'):
+            if self.uuid_id and not kwargs.get('filter'):
                 _data['_id'] = str(uuid4())
         _action.add_stat(await self.before_update(_data, **kwargs))
         res = _action.add_stat(await self.storage.update(self.db, self.obj_name, _data, **kwargs))
@@ -199,15 +199,15 @@ class Obj:
         return res
 
     @async_action
-    async def delete_one(self, _id=None, *, where=None, _action=None):  # todo удаление из починенных таблиц
+    async def delete_one(self, _id=None, *, filter=None, _action=None):  # todo удаление из починенных таблиц
         _id = self.obj_id if _id is None else _id
-        where = where if where else dict(_id=_id)
-        await self.storage.delete_one(self.db, self.obj_name, where)
+        filter = filter if filter else dict(_id=_id)
+        await self.storage.delete_one(self.db, self.obj_name, filter)
         pass
 
     @async_action
-    async def delete_many(self, where, *, _action=None):
-        result = await self.storage.delete_many(self.db, self.obj_name, where)
+    async def delete_many(self, filter, *, _action=None):
+        result = await self.storage.delete_many(self.db, self.obj_name, filter)
         return result.raw_result
 
     @classmethod

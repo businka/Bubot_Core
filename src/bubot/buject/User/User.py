@@ -55,7 +55,7 @@ class User(Obj):
         try:
             res = _action.add_stat(await self.update(
                 {},
-                where={"_id": self.obj_id},
+                filter={"_id": self.obj_id},
                 pull={"auth": {"type": auth_type, "id": auth_id}}
             ))
             return res
@@ -91,7 +91,7 @@ class User(Obj):
         # self.add_projection(kwargs)
         # kwargs['projection']['auth'] = True
         res = _action.add_stat(await self.list(
-            where={
+            filter={
                 'auth.type': _type,
                 'auth.id': _id,
             },

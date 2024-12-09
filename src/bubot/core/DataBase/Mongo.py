@@ -62,14 +62,14 @@ class Mongo:
         return None
 
     @async_action
-    async def update(self, db, table, data, create=True, *, where=None, pull=None, add_to_set=None, push=None,
+    async def update(self, db, table, data, create=True, *, filter=None, pull=None, add_to_set=None, push=None,
                      _action=None, **kwargs):
         if not db:
             raise KeyNotFound(detail='db')
         if not table:
             raise KeyNotFound(detail='table')
         _id = data.get('_id')
-        if _id or where:
+        if _id or filter:
 
             raw_data = {}
             if data:
@@ -80,10 +80,10 @@ class Mongo:
                 raw_data['$addToSet'] = add_to_set
             if push:
                 raw_data['$push'] = push
-            if where:
+            if filter:
 
                 res = await self.client[db][table].update_many(
-                    where,
+                    filter,
                     raw_data, upsert=create, **kwargs)
             else:
                 res = await self.client[db][table].update_one(
@@ -114,19 +114,19 @@ class Mongo:
                 # tzinfo=self.tzinfo
             ))
 
-    async def find_one(self, db, table, where, **kwargs):
+    async def find_one(self, db, table, filter, **kwargs):
         self.set_timezone(db, table)
-        return await self.client[db][table].find_one(where, **kwargs)
+        return await self.client[db][table].find_one(filter, **kwargs)
 
-    async def delete_one(self, db, table, where):
-        return await self.client[db][table].delete_one(where)
+    async def delete_one(self, db, table, filter):
+        return await self.client[db][table].delete_one(filter)
 
-    async def delete_many(self, db, table, where):
-        return await self.client[db][table].delete_many(where)
+    async def delete_many(self, db, table, filter):
+        return await self.client[db][table].delete_many(filter)
 
     async def count(self, db, table, **kwargs):
         return await self.client[db][table].count_documents(
-            kwargs.get('where', {})
+            kwargs.get('filter', {})
         )
 
     @staticmethod
@@ -158,26 +158,26 @@ class Mongo:
         return result
 
     @async_action
-    async def get_previous(self, db, table, *, where=None, index=None, projection=None, skip=0, limit=1000, order=None,
+    async def get_previous(self, db, table, *, filter=None, index=None, projection=None, skip=0, limit=1000, order=None,
                            _action=None, **kwargs):
         self.check_db_and_table(db, table, _action)
         self.set_timezone(db, table)
 
         cursor = self.client[db][table].find(
-            filter=where,
+            filter=filter,
 
         ).sort([(index, -1)]).limit(10)
         result = await cursor.to_list(length=1000)
         await cursor.close()
         return result
 
-    async def pipeline(self, db, table, pipeline, *, projection=None, where=None, skip=0, sort=None, limit=1000,
+    async def pipeline(self, db, table, pipeline, *, projection=None, filter=None, skip=0, sort=None, limit=1000,
                        **kwargs):
         self.set_timezone(db, table)
         self.check_db(db)
         _pipeline = []
-        if where:
-            _pipeline.append({'$match': where})
+        if filter:
+            _pipeline.append({'$match': filter})
 
         _pipeline += pipeline
 
@@ -194,8 +194,8 @@ class Mongo:
         result = await cursor.to_list(length=limit)
         return result
 
-    async def find_one_and_update(self, db, table, where, data, **kwargs):
-        return await self.client[db][table].find_one_and_update(where, {'$set': data}, **kwargs)
+    async def find_one_and_update(self, db, table, filter, data, **kwargs):
+        return await self.client[db][table].find_one_and_update(filter, {'$set': data}, **kwargs)
 
     @classmethod
     def check_db(cls, db):

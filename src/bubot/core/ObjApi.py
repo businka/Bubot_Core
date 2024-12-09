@@ -59,8 +59,8 @@ class ObjApi(DeviceApi):
     async def api_delete_many(self, view, *, _action=None, **kwargs):
         handler, data = await self.prepare_json_request(view)
         await self.check_right(view, handler, 3)
-        where = data.get('Filter')
-        if not where:
+        filter = data.get('Filter')
+        if not filter:
             _items = data.get('items')
             ids = []
             for item in _items:
@@ -68,13 +68,13 @@ class ObjApi(DeviceApi):
                     ids.append(item)
                 else:
                     ids.append(item['_id'])
-            where = {'_id': {'$in': ids}}
-        _action.add_stat(await self._before_delete_many(view, handler, where))
-        result = _action.add_stat(await handler.delete_many(where))
+            filter = {'_id': {'$in': ids}}
+        _action.add_stat(await self._before_delete_many(view, handler, filter))
+        result = _action.add_stat(await handler.delete_many(filter))
         return self.response.json_response(result)
 
     @async_action
-    async def _before_delete_many(self, view, handler, where, *, _action=None, **kwargs):
+    async def _before_delete_many(self, view, handler, filter, *, _action=None, **kwargs):
         pass
 
     @async_action
@@ -105,27 +105,27 @@ class ObjApi(DeviceApi):
         return self.response.json_response(data)
 
     def prepare_list_filter(self, view, handler, data):
-        where = {}
-        _where = data.get('Filter', {})
+        filter = {}
+        _filter = data.get('Filter', {})
         nav = data.get('Pagination', {})
         limit = int(nav.get('PageSize', 25))
         page = int(nav.get('Page', 1))
 
         for elem in self.mandatory_field_in_list_filter:
             try:
-                _where[elem]
+                _filter[elem]
             except KeyError as err:
                 raise KeyNotFound(message='Отсутствует обязательный параметр', detail=str(err))
 
         if limit == -1:
             limit = None
-        for key in _where:
+        for key in _filter:
             if key in self.filter_fields:
-                self.filter_fields[key](where, key, _where[key])
+                self.filter_fields[key](filter, key, _filter[key])
             else:
-                where[key] = _where[key]
+                filter[key] = _filter[key]
         result = {
-            'where': where
+            'filter': filter
         }
 
         if limit:
