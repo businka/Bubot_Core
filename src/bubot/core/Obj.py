@@ -49,9 +49,12 @@ class Obj:
 
     def init_by_data(self, data):
         subtype = data.get('subtype')
-        obj_class = self
+
         if subtype and self.__class__.__name__ != subtype:
             obj_class = self.init_subtype(subtype)
+        else:
+            obj_class = type(self)(self.storage, session=self.session)
+
         try:
             obj_class.init()
             if data:
@@ -59,8 +62,7 @@ class Obj:
             if '_id' not in data:
                 obj_class.data['_id'] = str(uuid4())
 
-            if subtype and self.__class__.__name__ != subtype:
-                self.data = obj_class.data
+            self.data = obj_class.data
             return obj_class
         except Exception as err:
             raise ExtException(parent=err, action=f'{self.__class__.__name__}.init_by_data')
@@ -92,6 +94,7 @@ class Obj:
         self.add_projection(_form, kwargs)
         res = await self.storage.find_one(self.db, self.obj_name, filter, **kwargs)
         if res:
+            self.data = res
             return self.init_by_data(res)
         raise KeyNotFound(message=f'Object not found', detail=f'{self.obj_name}', dump=filter, action=_action)
 
