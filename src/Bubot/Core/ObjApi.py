@@ -26,6 +26,8 @@ class ObjApi(DeviceApi):
     app_access = []
 
     async def check_right(self, view, handler, level=3):
+        if not view.app['need_auth']:
+            return
         if self.handler:
             if self.handler.is_subtype and self.handler.is_subtype != handler.__class__.__name__:
                 obj_name = f'{self.handler.is_subtype}/{handler.__class__.__name__}'
