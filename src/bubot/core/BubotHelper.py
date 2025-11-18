@@ -68,6 +68,8 @@ class BubotHelper:
 
     @classmethod
     def init_buject_index(cls):
+        if cls.buject_index:
+            return cls.buject_index
         discovered_packages = cls.find_bubot_packages()
         cls.buject_index = {}
 
