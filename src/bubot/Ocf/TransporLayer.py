@@ -54,13 +54,15 @@ class TransportLayer:
 
     async def start_coap(self):
         try:
+            self.ipv6 = self.device.get_param('/oic/con', 'udpCoapIPv6', '::')
+            self.ipv4 = self.device.get_param('/oic/con', 'udpCoapIPv4', '')
+            if self.ipv6 is None and self.ipv4 is None:
+                return
             for href in self.device.res:
                 self.coap.root[href] = self.device.res[href]
                 # self.coap.add_resource(href, self.device.res[href])
                 # pass
 
-            self.ipv6 = self.device.get_param('/oic/con', 'udpCoapIPv6', '::')
-            self.ipv4 = self.device.get_param('/oic/con', 'udpCoapIPv4', '')
             self.ipv6ssl = self.device.get_param('/oic/con', 'udpCoapIPv6Ssl', True)
             self.ipv4ssl = self.device.get_param('/oic/con', 'udpCoapIPv4Ssl', True)
             certfile = f'{self.device.path}/bubot_cert.pem'

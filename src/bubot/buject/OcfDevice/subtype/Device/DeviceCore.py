@@ -406,7 +406,8 @@ class DeviceCore:
         try:
             return BubotHelper.get_subtype_class('OcfDevice', class_name, folder=True)
         except Exception as err:
-            raise ExtException(parent=err, message='Bad subtype device class', detail=class_name)
+            raise ExtException(parent=err, message='Bad subtype device class', detail=class_name,
+                               action='DeviceCore.get_device_class')
 
     async def check_link(self, resource, name, *, owned=None):
         link_data = self.get_param(resource, name)

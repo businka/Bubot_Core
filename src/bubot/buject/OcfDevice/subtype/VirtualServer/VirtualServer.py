@@ -224,7 +224,7 @@ class VirtualServer(Device):
                 self.running_devices[link['di']] = device
                 return device
         except Exception as err:
-            raise ExtException(parent=err)
+            raise ExtException(parent=err, action='VirtualServer.action_run_device')
 
     async def action_stop_device(self, di):
         try:
