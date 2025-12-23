@@ -140,20 +140,23 @@ class ObjApi(DeviceApi):
     async def list_convert_result(self, data, *, _action: Action = None):
         return data
 
-    async def prepare_json_request(self, view, **kwargs):
-        data = await view.loads_json_request_data(view)
+    def _init_handler(self, view, data=None):
+        handler: Optional[Obj, None] = None
         app_name = view.request.match_info['device']
         if self.app_access and app_name not in self.app_access:
             raise AccessDenied(detail='app')
-        handler: Optional[Obj, None] = None
         if self.handler:
             handler = self.handler(view.storage, session=view.session, app_name=app_name)
             request_subtype = view.request.match_info.get('subtype')
             subtype = data.get('subtype', request_subtype) if data else request_subtype
             if subtype:
                 handler = handler.init_subtype(subtype)
-
             handler.init()
+        return handler
+
+    async def prepare_json_request(self, view, **kwargs):
+        data = await view.loads_json_request_data(view)
+        handler = self._init_handler(view, data)
         return handler, data
 
     @staticmethod

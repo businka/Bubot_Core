@@ -96,6 +96,9 @@ class Obj:
         if res:
             self.data = res
             return self.init_by_data(res)
+        detail = ''
+        for key in list(filter.keys())[:3]:
+            detail += f'{key}={filter[key]}'
         raise KeyNotFound(message=f'Object not found', detail=f'{self.obj_name}', dump=filter, action=_action)
 
     def get_link(self, *, properties=None, add_obj_type=False):
