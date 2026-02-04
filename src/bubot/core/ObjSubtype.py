@@ -19,5 +19,6 @@ class ObjSubtype(Obj):
     #     )
 
     async def set_default_params(self, data):
-        data['subtype'] = self.__class__.__name__
+        if self.__class__.__module__.split('.')[-2] == 'subtype':
+            data['Subtype'] = self.__class__.__name__
         return data

@@ -1,6 +1,8 @@
 import os
 import sqlite3
 from bubot_helpers.ExtException import ExtException, ExtTimeoutError, KeyNotFound
+import json
+from typing import Any, Dict, Union, List
 
 
 class SqlLite:
@@ -131,10 +133,31 @@ class SqlLite:
                 res.append(f" {elem} {'ASC' if _order[elem] > 0 else 'DESC'}")
             return f"{query} ORDER BY {','.join(res)}"
 
+        def row_to_dict_with_json(row):
+            """Преобразует sqlite3.Row в dict с одновременным парсингом JSON полей"""
+            result = {}
+            for idx, column_name in enumerate(row.keys()):
+                value = row[idx]
+
+                if value is None:
+                    result[column_name] = None
+                elif isinstance(value, str):
+                    value_stripped = value.strip()
+                    if ((value_stripped.startswith('{') and value_stripped.endswith('}')) or
+                            (value_stripped.startswith('[') and value_stripped.endswith(']'))):
+                        try:
+                            result[column_name] = json.loads(value)
+                        except (json.JSONDecodeError, ValueError):
+                            result[column_name] = value
+                    else:
+                        result[column_name] = value
+                else:
+                    result[column_name] = value
+            return result
         try:
             projection = kwargs.get('projection', None)
             query = f"SELECT {self._projection_to_query('', projection)} FROM {table}"
-            query = self._filter_to_query(query, kwargs.get('filter', None))
+            query = MongoToSQLiteConverter.filter_to_query(query, kwargs.get('filter', None))
             query = order_to_query(query, kwargs.get('', None))
             limit = kwargs.get('limit')
             skip = kwargs.get('skip', 0)
@@ -148,7 +171,7 @@ class SqlLite:
                 conn.row_factory = sqlite3.Row
                 cursor = conn.cursor()
                 for row in cursor.execute(query):
-                    result.append(dict(row))
+                    result.append(row_to_dict_with_json(row))
             return result
         except Exception as err:
             raise ExtException(parent=err, message='SQL Lite error', detail=f"{str(err)} (db {db} table {table})")
@@ -183,3 +206,140 @@ class SqlLite:
 
     async def close(self):
         return
+
+
+class MongoToSQLiteConverter:
+    @staticmethod
+    def filter_to_query(_query: str, _filter: Dict[str, Any]) -> str:
+        """
+        Конвертирует MongoDB-подобный фильтр в SQLite WHERE-условие
+
+        Поддерживаемые операторы:
+        - Простое равенство: {"field": "value"} - обычное сравнение
+        - Оператор $in: {"field": {"$in": ["val1", "val2"]}}
+        - Оператор $ne: {"field": {"$ne": "value"}}
+        - Оператор $elemMatch: {"field": {"$elemMatch": "value"}} - поиск в JSON-массиве
+        - Оператор $exists: {"field": {"$exists": True/False}}
+        - Оператор $gt, $gte, $lt, $lte
+        """
+        if not _filter:
+            return _query
+
+        conditions = []
+
+        for field, value in _filter.items():
+            condition = MongoToSQLiteConverter._parse_condition(field, value)
+            if condition:
+                conditions.append(condition)
+
+        if conditions:
+            return f"{_query} WHERE {' AND '.join(conditions)}"
+        return _query
+
+    @staticmethod
+    def _parse_condition(field: str, value: Any) -> str:
+        """Парсит отдельное условие"""
+        # Если значение - словарь (MongoDB операторы)
+        if isinstance(value, dict):
+            return MongoToSQLiteConverter._parse_operator(field, value)
+
+        # Простое равенство - обычное сравнение (не JSON-массив)
+        return MongoToSQLiteConverter._build_simple_condition(field, value)
+
+    @staticmethod
+    def _parse_operator(field: str, operator_dict: Dict[str, Any]) -> str:
+        """Парсит MongoDB операторы"""
+        operators = list(operator_dict.keys())
+
+        # Оператор $elemMatch (для поиска в JSON-массиве)
+        if "$elemMatch" in operators:
+            elem_value = operator_dict["$elemMatch"]
+            # Только для $elemMatch считаем поле JSON-массивом
+            return MongoToSQLiteConverter._build_json_array_condition(field, elem_value)
+
+        # Оператор $in
+        if "$in" in operators:
+            in_values = operator_dict["$in"]
+            if isinstance(in_values, str):
+                in_values = [in_values]
+            if isinstance(in_values, list):
+                # Для обычного поля (не массива)
+                escaped_values = []
+                for val in in_values:
+                    if isinstance(val, str):
+                        escaped_values.append(f"'{val}'")
+                    else:
+                        escaped_values.append(str(val))
+                return f"{field} IN ({', '.join(escaped_values)})"
+
+        # Оператор $ne (not equal)
+        if "$ne" in operators:
+            ne_value = operator_dict["$ne"]
+            if ne_value is None:
+                return f"{field} IS NOT NULL"
+            # Обычное сравнение (не массив)
+            if isinstance(ne_value, str):
+                return f"{field} != '{ne_value}'"
+            return f"{field} != {ne_value}"
+
+        # Оператор $exists
+        if "$exists" in operators:
+            exists = operator_dict["$exists"]
+            if exists:
+                return f"{field} IS NOT NULL"
+            else:
+                return f"{field} IS NULL"
+
+        # Операторы сравнения
+        comparison_operators = {
+            "$gt": ">",
+            "$gte": ">=",
+            "$lt": "<",
+            "$lte": "<="
+        }
+
+        for mongo_op, sql_op in comparison_operators.items():
+            if mongo_op in operators:
+                op_value = operator_dict[mongo_op]
+                if isinstance(op_value, str):
+                    return f"{field} {sql_op} '{op_value}'"
+                return f"{field} {sql_op} {op_value}"
+
+        # Если оператор не распознан, считаем что это простой объект
+        raise NotImplementedError(f"Unsupported operator: {operators}")
+
+    @staticmethod
+    def _build_simple_condition(field: str, value: Any) -> str:
+        """Строит условие для простого поля (не JSON-массива)"""
+        if value is None:
+            return f"{field} IS NULL"
+        elif isinstance(value, str):
+            return f"{field} = '{value}'"
+        elif isinstance(value, (int, float, bool)):
+            value_str = str(value).lower() if isinstance(value, bool) else str(value)
+            return f"{field} = {value_str}"
+        else:
+            # Для других типов сериализуем в JSON
+            return f"{field} = '{json.dumps(value)}'"
+
+    @staticmethod
+    def _build_json_array_condition(field: str, value: Any) -> str:
+        """
+        Строит условие для поиска значения в JSON-массиве.
+        Используется ТОЛЬКО для $elemMatch.
+        """
+        # Экранируем значение
+        if value is None:
+            # Для NULL ищем JSON null
+            return f"EXISTS (SELECT 1 FROM json_each({field}) WHERE value IS NULL)"
+        elif isinstance(value, str):
+            escaped_value = f"'{value}'"
+        elif isinstance(value, (int, float, bool)):
+            escaped_value = str(value).lower() if isinstance(value, bool) else str(value)
+        else:
+            # Для сложных объектов
+            escaped_value = f"'{json.dumps(value)}'"
+
+        return f"EXISTS (SELECT 1 FROM json_each({field}) WHERE value = {escaped_value})"
+
+
