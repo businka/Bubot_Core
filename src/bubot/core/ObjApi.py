@@ -108,6 +108,7 @@ class ObjApi(DeviceApi):
 
     def prepare_list_filter(self, view, handler, data):
         filter = {}
+        _extra_fields = data.get('ExtraFields', {})
         _filter = data.get('Filter', {})
         nav = data.get('Pagination', {})
         limit = int(nav.get('PageSize', 25))
@@ -127,6 +128,7 @@ class ObjApi(DeviceApi):
             else:
                 filter[key] = _filter[key]
         result = {
+            'extra_fields': _extra_fields,
             'filter': filter
         }
 

@@ -158,7 +158,7 @@ class SqlLite:
             projection = kwargs.get('projection', None)
             query = f"SELECT {self._projection_to_query('', projection)} FROM {table}"
             query = MongoToSQLiteConverter.filter_to_query(query, kwargs.get('filter', None))
-            query = order_to_query(query, kwargs.get('', None))
+            query = order_to_query(query, kwargs.get('order', None))
             limit = kwargs.get('limit')
             skip = kwargs.get('skip', 0)
             if limit:
@@ -210,7 +210,7 @@ class SqlLite:
 
 class MongoToSQLiteConverter:
     @staticmethod
-    def filter_to_query(_query: str, _filter: Dict[str, Any]) -> str:
+    def filter_to_query(_query: str, _filter: Union[Dict[str, Any], List, None]) -> str:
         """
         Конвертирует MongoDB-подобный фильтр в SQLite WHERE-условие
 
@@ -221,20 +221,85 @@ class MongoToSQLiteConverter:
         - Оператор $elemMatch: {"field": {"$elemMatch": "value"}} - поиск в JSON-массиве
         - Оператор $exists: {"field": {"$exists": True/False}}
         - Оператор $gt, $gte, $lt, $lte
+        - Оператор $or: {"$or": [{"field1": "value1"}, {"field2": "value2"}]}
+        - Оператор $and: {"$and": [{"field1": "value1"}, {"field2": "value2"}]}
         """
         if not _filter:
             return _query
 
-        conditions = []
-
-        for field, value in _filter.items():
-            condition = MongoToSQLiteConverter._parse_condition(field, value)
-            if condition:
-                conditions.append(condition)
+        conditions = MongoToSQLiteConverter._parse_conditions(_filter)
 
         if conditions:
-            return f"{_query} WHERE {' AND '.join(conditions)}"
+            return f"{_query} WHERE {conditions}"
         return _query
+
+    @staticmethod
+    def _parse_conditions(filter_obj: Union[Dict[str, Any], List]) -> str:
+        """Парсит условия верхнего уровня"""
+        if isinstance(filter_obj, list):
+            # Если это массив условий, объединяем через AND
+            conditions = []
+            for cond in filter_obj:
+                parsed = MongoToSQLiteConverter._parse_conditions(cond)
+                if parsed:
+                    conditions.append(parsed)
+            return " AND ".join(conditions)
+
+        elif isinstance(filter_obj, dict):
+            # Проверяем наличие логических операторов на верхнем уровне
+            logical_operators = []
+            field_conditions = []
+
+            for key, value in filter_obj.items():
+                if key == "$or":
+                    logical_operators.append(MongoToSQLiteConverter._parse_or(value))
+                elif key == "$and":
+                    logical_operators.append(MongoToSQLiteConverter._parse_and(value))
+                else:
+                    # Обычное полевое условие
+                    condition = MongoToSQLiteConverter._parse_condition(key, value)
+                    if condition:
+                        field_conditions.append(condition)
+
+            # Собираем все условия
+            all_conditions = field_conditions + logical_operators
+            return " AND ".join(all_conditions) if all_conditions else ""
+
+        return ""
+
+    @staticmethod
+    def _parse_or(or_conditions: List[Dict[str, Any]]) -> str:
+        """Парсит $or оператор"""
+        if not or_conditions:
+            return "1=0"  # Пустой OR всегда false
+
+        conditions = []
+        for condition in or_conditions:
+            if isinstance(condition, dict):
+                # Каждое условие в OR - это отдельный набор условий
+                parsed = MongoToSQLiteConverter._parse_conditions(condition)
+                if parsed:
+                    conditions.append(f"({parsed})")
+                else:
+                    # Если условие пустое, добавляем 1=1 (всегда true)
+                    conditions.append("(1=1)")
+
+        return f"({' OR '.join(conditions)})" if conditions else "1=0"
+
+    @staticmethod
+    def _parse_and(and_conditions: List[Dict[str, Any]]) -> str:
+        """Парсит $and оператор"""
+        if not and_conditions:
+            return "1=1"  # Пустой AND всегда true
+
+        conditions = []
+        for condition in and_conditions:
+            if isinstance(condition, dict):
+                parsed = MongoToSQLiteConverter._parse_conditions(condition)
+                if parsed:
+                    conditions.append(f"({parsed})")
+
+        return f"({' AND '.join(conditions)})" if conditions else "1=1"
 
     @staticmethod
     def _parse_condition(field: str, value: Any) -> str:
