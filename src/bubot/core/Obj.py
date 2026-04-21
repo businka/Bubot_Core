@@ -5,7 +5,7 @@ from uuid import uuid4
 from bubot.core.BubotHelper import BubotHelper
 from bubot.core.ObjForm import ObjForm
 from bubot_helpers.ActionDecorator import async_action
-from bubot_helpers.ExtException import KeyNotFound, ExtException
+from bubot_helpers.ExtException import KeyNotFound, ExtException, HandlerNotFoundError
 from bubot_helpers.Helper import Helper
 from bubot_helpers.Helper import get_tzinfo
 
@@ -44,7 +44,7 @@ class Obj:
 
     def init(self, **kwargs):
         self.data = dict(
-            title=''
+            # title=''
         )
 
     def init_by_data(self, data):
@@ -280,11 +280,12 @@ class Obj:
         current_class = self.__class__.__name__
         if current_class == _subtype:
             return self
+        # todo если класс есть но не импортится должно валитиься
         try:
             handler = BubotHelper.get_subtype_class(self.__class__.__name__, _subtype)
-        except:
+        except HandlerNotFoundError:
             return self
-        return handler(self.storage, session=self.session)
+        return handler(self.storage, session=self.session, app_name=self.app_name)
 
     @classmethod
     def get_dir(cls):
@@ -402,4 +403,3 @@ class Obj:
             if not_null:
                 keys.append(obj_key)
         return keys
-

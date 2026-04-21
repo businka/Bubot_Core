@@ -40,7 +40,7 @@ class BubotHelper:
         package_name = cls.get_package_name(obj_name, subtype)
         try:
             return cls.get_buject_class(package_name, obj_name, subtype, suffix=suffix)
-        except ExtException as err:
+        except HandlerNotFoundError as err:
             raise HandlerNotFoundError(detail=f'package {package_name} object {obj_name} subtype {subtype}', parent=err,
                                        action='get_subtype_class')
 

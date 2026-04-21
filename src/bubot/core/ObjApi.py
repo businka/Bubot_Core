@@ -45,6 +45,18 @@ class ObjApi(DeviceApi):
         handler = _action.add_stat(await handler.find_by_id(_id))
         return self.response.json_response(handler.data)
 
+    @async_action
+    async def api_read_by_key(self, view, *, _action=None, **kwargs):
+        handler, data = await self.prepare_json_request(view)
+        await self.check_right(view, handler, 1)
+        try:
+            key = data['Key']
+        except KeyError as err:
+            raise KeyNotFound(message='Не заполен обязательный параметр', detail=err)
+        extra_fields = data.get('ExtraFields')
+        result = _action.add_stat(await handler.read_by_key(key, extra_fields=extra_fields))
+        return self.response.json_response(result)
+
     # @async_action
     # async def prepare_create_data(self, handler, data, **kwargs):
     #     return data
@@ -108,7 +120,7 @@ class ObjApi(DeviceApi):
 
     def prepare_list_filter(self, view, handler, data):
         filter = {}
-        _extra_fields = data.get('ExtraFields', {})
+        _extra_fields = data.get('ExtraFields', [])
         _filter = data.get('Filter', {})
         nav = data.get('Pagination', {})
         limit = int(nav.get('PageSize', 25))
