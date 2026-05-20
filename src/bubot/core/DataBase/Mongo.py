@@ -141,7 +141,7 @@ class Mongo:
         self.check_db_and_table(db, table, _action)
         self.set_timezone(db, table)
         if filter is not None:
-            full_text_search = filter.pop('_search', None)
+            full_text_search = filter.pop('Search', None)
             if full_text_search:
                 filter['$text'] = {'$search': full_text_search}
 

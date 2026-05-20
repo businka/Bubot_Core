@@ -102,12 +102,23 @@ class ObjApi(DeviceApi):
         return self.response.json_response(handler.data)
 
     @async_action
-    async def api_update(self, view, **kwargs):
+    async def api_write(self, view, **kwargs):
         handler, data = await self.prepare_json_request(view)
         await self.check_right(view, handler, 3)
         handler = handler.init_by_data(data)
         await handler.update()
         return self.response.json_response(handler.data)
+
+    @async_action
+    async def api_write_by_key(self, view, **kwargs):
+        handler, data = await self.prepare_json_request(view)
+        await self.check_right(view, handler, 3)
+        await handler.update_by_key(data)
+        return self.response.json_response(handler.data)
+
+    @async_action
+    async def api_update(self, view, **kwargs):
+        return await self.api_write(view, **kwargs)
 
     @async_action
     async def api_list(self, view, *, _action: Action = None, **kwargs):
